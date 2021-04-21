@@ -42,7 +42,7 @@ func (r *Rule) CreateOrUpdate() (err error) {
 		return
 	}
 	err = GetServer().updateRules()
-	return
+	return err
 }
 
 // Delete the mysql rule in database and ruleSet
@@ -53,7 +53,7 @@ func (r *Rule) Delete() (err error) {
 		return
 	}
 	err = GetServer().updateRules()
-	return
+	return err
 }
 
 // List all mysql rules those satisfy the filter

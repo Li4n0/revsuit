@@ -39,7 +39,7 @@ func newRecord(rule *Rule, flag, domain, remoteIp, ipArea string) (r *Record, er
 		Rule:   *rule,
 	}
 	err = database.DB.Create(r).Error
-	return
+	return r, err
 }
 
 func List(c *gin.Context) {

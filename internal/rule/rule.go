@@ -61,5 +61,5 @@ func (br BaseRule) Match(s string) (flag, flagGroup string) {
 			flagGroup = matched[1]
 		}
 	}
-	return
+	return flag, flagGroup
 }

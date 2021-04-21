@@ -8,7 +8,7 @@ import (
 	"github.com/li4n0/revsuit/internal/record"
 )
 
-func formatRecordField(r record.Record,fieldFormat string) (content string) {
+func formatRecordField(r record.Record, fieldFormat string) (content string) {
 	structType := reflect.ValueOf(r)
 	for i := 0; i < structType.NumField(); i++ {
 		structField := structType.Type().Field(i)
@@ -27,6 +27,6 @@ func formatRecordField(r record.Record,fieldFormat string) (content string) {
 		}
 		content += fmt.Sprintf(fieldFormat+"\n", strings.ToUpper(fieldName), value)
 	}
-	strings.TrimSuffix(content, "\n")
-	return
+	content = strings.TrimSuffix(content, "\n")
+	return content
 }

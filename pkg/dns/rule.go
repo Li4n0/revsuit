@@ -59,7 +59,7 @@ func (r *Rule) CreateOrUpdate() (err error) {
 		return
 	}
 	err = GetServer().updateRules()
-	return
+	return err
 }
 
 // Delete the dns rule in database and ruleSet
@@ -70,7 +70,7 @@ func (r *Rule) Delete() (err error) {
 		return
 	}
 	err = GetServer().updateRules()
-	return
+	return err
 }
 
 // List all dns rules those satisfy the filter
@@ -194,5 +194,4 @@ func DeleteRules(c *gin.Context) {
 		"error":  nil,
 		"data":   nil,
 	})
-	return
 }

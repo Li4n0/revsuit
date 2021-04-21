@@ -15,7 +15,6 @@ func (f *MapField) Scan(data interface{}) error {
 	return json.Unmarshal(data.([]byte), f)
 }
 
-
 type ListField []string
 
 func (f ListField) Value() (driver.Value, error) {

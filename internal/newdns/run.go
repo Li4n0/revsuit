@@ -11,13 +11,13 @@ func Accept(logger Logger) dns.MsgAcceptFunc {
 	return func(dh dns.Header) dns.MsgAcceptAction {
 		// check if request
 		if dh.Bits&(1<<15) != 0 {
-			log(logger, Ignored, nil, nil, fmt.Sprintf("not a request"))
+			log(logger, Ignored, nil, nil, "not a request")
 			return dns.MsgIgnore
 		}
 
 		// check opcode
 		if int(dh.Bits>>11)&0xF != dns.OpcodeQuery {
-			log(logger, Ignored, nil, nil, fmt.Sprintf("not a query"))
+			log(logger, Ignored, nil, nil, "not a query")
 			return dns.MsgIgnore
 		}
 

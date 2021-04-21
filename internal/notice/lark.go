@@ -27,7 +27,7 @@ type larkElement struct {
 }
 
 type larkCard struct {
-	Header larkHeader `json:"header"`
+	Header   larkHeader    `json:"header"`
 	Elements []larkElement `json:"elements"`
 }
 
@@ -44,9 +44,9 @@ func (d *Lark) buildPayload(r record.Record) string {
 	payload := larkPayload{
 		MsgType: "interactive",
 		Card: larkCard{
-			Header:larkHeader{
+			Header: larkHeader{
 				Title: larkText{
-					Tag: "plain_text",
+					Tag:     "plain_text",
 					Content: "New Connection",
 				},
 			},
@@ -55,7 +55,7 @@ func (d *Lark) buildPayload(r record.Record) string {
 					Tag: "div",
 					Text: larkText{
 						Tag:     "lark_md",
-						Content: formatRecordField(r,"**%s**: %v"),
+						Content: formatRecordField(r, "**%s**: %v"),
 					},
 				},
 			},

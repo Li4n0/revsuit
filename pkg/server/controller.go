@@ -14,7 +14,7 @@ func ping(c *gin.Context) {
 }
 
 func events(c *gin.Context) {
-	log.Info("Receive connection from ", c.Request.RemoteAddr)
+	log.Info("Receive connection from %v", c.Request.RemoteAddr)
 	c.Stream(func(w io.Writer) bool {
 		c.SSEvent("message", "connect succeed")
 		select {

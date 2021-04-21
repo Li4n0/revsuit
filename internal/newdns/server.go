@@ -272,7 +272,7 @@ func (s *Server) ServeDNS(w dns.ResponseWriter, req *dns.Msg) {
 
 // Close will close the server.
 func (s *Server) Close() {
-	defer func() { recover() }()
+	defer func() { recover() }() // nolint:errcheck
 	close(s.close)
 }
 

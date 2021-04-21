@@ -27,7 +27,7 @@ type slackBlock struct {
 }
 
 type slackAttachments struct {
-	Color string `json:"color"`
+	Color  string       `json:"color"`
 	Blocks []slackBlock `json:"blocks"`
 }
 

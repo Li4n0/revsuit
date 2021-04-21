@@ -17,7 +17,7 @@ type Record struct {
 	Path   string `form:"path" json:"path"`
 	record.BaseRecord
 	RawRequest string `json:"raw_request" notice:"-"`
-	Rule   Rule   `gorm:"foreignKey:RuleName;references:Name;constraint:OnUpdate:CASCADE,OnDelete:SET NULL;" form:"-" json:"-" notice:"-"`
+	Rule       Rule   `gorm:"foreignKey:RuleName;references:Name;constraint:OnUpdate:CASCADE,OnDelete:SET NULL;" form:"-" json:"-" notice:"-"`
 }
 
 func (Record) TableName() string {
@@ -42,7 +42,7 @@ func NewRecord(rule *Rule, flag, method, url, ip, area, raw string) (r *Record, 
 		Rule:       *rule,
 	}
 	err = database.DB.Create(r).Error
-	return
+	return r, err
 }
 
 func ListRecords(c *gin.Context) {

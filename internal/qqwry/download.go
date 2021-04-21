@@ -35,7 +35,7 @@ func get(url string) (b []byte, err error) {
 	defer resp.Body.Close()
 
 	b, err = ioutil.ReadAll(resp.Body)
-	return
+	return b, err
 }
 
 func getKey(b []byte) (key uint32, err error) {
@@ -43,7 +43,7 @@ func getKey(b []byte) (key uint32, err error) {
 		return 0, errors.New("copywrite.rar is corrupt")
 	}
 	key = binary.LittleEndian.Uint32(b[20:])
-	return
+	return key, err
 }
 
 func decrypt(b []byte, key uint32) (_ []byte, err error) {

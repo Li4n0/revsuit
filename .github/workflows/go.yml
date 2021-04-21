@@ -1,7 +1,7 @@
 name: Go
 on:
   push:
-    branches: [ master ]
+    branches: [ master,dev ]
     paths:
       - '**.go'
       - 'go.mod'
@@ -21,10 +21,6 @@ jobs:
     steps:
       - name: Checkout code
         uses: actions/checkout@v2
-#     Create frontend `dist` folder.
-#
-#     - name: Create frontend dist folder
-#       run: mkdir frontend/dist/ && touch frontend/dist/1
       - name: Run golangci-lint
         uses: golangci/golangci-lint-action@v2.4.0
         with:

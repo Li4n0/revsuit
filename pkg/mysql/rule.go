@@ -14,7 +14,7 @@ type Rule struct {
 	rule.BaseRule
 	Files             string            `form:"files" json:"files"`
 	ExploitJdbcClient bool              `gorm:"exploit_jdbc_client" form:"exploit_jdbc_client" json:"exploit_jdbc_client"`
-	Payloads          database.MapField `json:"payloads" json:"payloads"`
+	Payloads          database.MapField `json:"payloads" form:"payloads"`
 }
 
 func (Rule) TableName() string {
@@ -176,5 +176,4 @@ func DeleteRules(c *gin.Context) {
 		"error":  nil,
 		"data":   nil,
 	})
-	return
 }

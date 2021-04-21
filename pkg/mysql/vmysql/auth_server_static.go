@@ -18,17 +18,10 @@ package vmysql
 
 import (
     "bytes"
-    "flag"
     "net"
     "sync"
 
     querypb "vitess.io/vitess/go/vt/proto/query"
-)
-
-var (
-    mysqlAuthServerStaticFile           = flag.String("mysql_auth_server_static_file", "", "JSON File to read the users/passwords from.")
-    mysqlAuthServerStaticString         = flag.String("mysql_auth_server_static_string", "", "JSON representation of the users/passwords config.")
-    mysqlAuthServerStaticReloadInterval = flag.Duration("mysql_auth_static_reload_interval", 0, "Ticker to reload credentials")
 )
 
 const (

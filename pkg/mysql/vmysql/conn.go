@@ -429,30 +429,6 @@ func (c *Conn) readOnePacket() ([]byte, error) {
 	return data, nil
 }
 
-func (c *Conn) readOnePacketIgnoreSeq() ([]byte, error) {
-	r := c.getReader()
-
-	var header [4]byte
-	if _, err := io.ReadFull(r, header[:]); err != nil {
-		fmt.Println(fmt.Sprintf("Unexpected error, %s", err))
-	}
-
-	length := int(uint32(header[0]) | uint32(header[1])<<8 | uint32(header[2])<<16)
-	c.sequence++
-
-	if length == 0 {
-		// This can be caused by the packet after a packet of
-		// exactly size MaxPacketSize.
-		return nil, nil
-	}
-
-	data := make([]byte, length)
-	if _, err := io.ReadFull(r, data); err != nil {
-		return nil, vterrors.Wrapf(err, "io.ReadFull(packet body of length %v) failed", length)
-	}
-	return data, nil
-}
-
 // readPacket reads a packet from the underlying connection.
 // It re-assembles packets that span more than one message.
 // This method returns a generic error, not a SQLError.
@@ -606,21 +582,6 @@ func (c *Conn) recycleWritePacket() {
 	c.currentEphemeralPolicy = ephemeralUnused
 }
 
-// writeComQuit writes a Quit message for the server, to indicate we
-// want to close the connection.
-// Client -> Server.
-// Returns SQLError(CRServerGone) if it can't.
-func (c *Conn) writeComQuit() error {
-	// This is a new command, need to reset the sequence.
-	c.sequence = 0
-
-	data := c.startEphemeralPacket(1)
-	data[0] = ComQuit
-	if err := c.writeEphemeralPacket(); err != nil {
-		return NewSQLError(CRServerGone, SSUnknownSQLState, err.Error())
-	}
-	return nil
-}
 
 // RemoteAddr returns the underlying socket RemoteAddr().
 func (c *Conn) RemoteAddr() net.Addr {

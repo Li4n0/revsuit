@@ -46,30 +46,6 @@ func (c *Conn) WriteComQuery(query string) error {
     return nil
 }
 
-// writeComInitDB changes the default database to use.
-// Client -> Server.
-// Returns SQLError(CRServerGone) if it can't.
-func (c *Conn) writeComInitDB(db string) error {
-    data := c.startEphemeralPacket(len(db) + 1)
-    data[0] = ComInitDB
-    copy(data[1:], db)
-    if err := c.writeEphemeralPacket(); err != nil {
-        return NewSQLError(CRServerGone, SSUnknownSQLState, err.Error())
-    }
-    return nil
-}
-
-// writeComSetOption changes the connection's capability of executing multi statements.
-// Returns SQLError(CRServerGone) if it can't.
-func (c *Conn) writeComSetOption(operation uint16) error {
-    data := c.startEphemeralPacket(16 + 1)
-    data[0] = ComSetOption
-    writeUint16(data, 1, operation)
-    if err := c.writeEphemeralPacket(); err != nil {
-        return NewSQLError(CRServerGone, SSUnknownSQLState, err.Error())
-    }
-    return nil
-}
 
 // readColumnDefinition reads the next Column Definition packet.
 // Returns a SQLError.

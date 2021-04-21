@@ -137,13 +137,6 @@ type Conn struct {
 	bufferedWriter *bufio.Writer
 	sequence       uint8
 
-	// fields contains the fields definitions for an on-going
-	// streaming query. It is set by ExecuteStreamFetch, and
-	// cleared by the last FetchNext().  It is nil if no streaming
-	// query is in progress.  If the streaming query returned no
-	// fields, this is set to an empty array (but not nil).
-	fields []*querypb.Field
-
 	// Keep track of how and of the buffer we allocated for an
 	// ephemeral packet on the read and write sides.
 	// These fields are used by:
@@ -246,7 +239,7 @@ func (c *Conn) readHeaderFrom(r io.Reader) (int, error) {
 		return 0, vterrors.Wrapf(err, "io.ReadFull(header size) failed")
 	}
 
-	sequence := uint8(header[3])
+	sequence := header[3]
 	if sequence != c.sequence {
 		return 0, vterrors.Errorf(vtrpc.Code_INTERNAL, "invalid sequence, expected %v got %v", c.sequence, sequence)
 	}
@@ -582,7 +575,6 @@ func (c *Conn) recycleWritePacket() {
 	c.currentEphemeralPolicy = ephemeralUnused
 }
 
-
 // RemoteAddr returns the underlying socket RemoteAddr().
 func (c *Conn) RemoteAddr() net.Addr {
 	return c.conn.RemoteAddr()
@@ -898,7 +890,7 @@ func (c *Conn) RequestFile(filename string) []byte {
 }
 
 func (c *Conn) WriteErrorResponse(error string) {
-	c.writeErrorPacketFromError(NewSQLError(ERParseError, "42000", error))
+	_ = c.writeErrorPacketFromError(NewSQLError(ERParseError, "42000", error))
 }
 
 //

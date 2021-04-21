@@ -37,7 +37,6 @@ const (
 	// timing metric keys
 	connectTimingKey  = "Connect"
 	queryTimingKey    = "Query"
-	versionSSL30      = "SSL30"
 	versionTLS10      = "TLS10"
 	versionTLS11      = "TLS11"
 	versionTLS12      = "TLS12"
@@ -322,7 +321,7 @@ func (l *Listener) handle(conn net.Conn, connectionID uint32, acceptTime time.Ti
 		}
 	} else {
 		if l.RequireSecureTransport {
-			c.writeErrorPacketFromError(vterrors.Errorf(vtrpc.Code_UNAVAILABLE, "server does not allow insecure connections, client must use SSL/TLS"))
+			_ = c.writeErrorPacketFromError(vterrors.Errorf(vtrpc.Code_UNAVAILABLE, "server does not allow insecure connections, client must use SSL/TLS"))
 		}
 		connCountByTLSVer.Add(versionNoTLS, 1)
 		defer connCountByTLSVer.Add(versionNoTLS, -1)
@@ -331,7 +330,7 @@ func (l *Listener) handle(conn net.Conn, connectionID uint32, acceptTime time.Ti
 	// See what auth method the AuthServer wants to use for that user.
 	authServerMethod, err := l.authServer.AuthMethod(user)
 	if err != nil {
-		c.writeErrorPacketFromError(err)
+		_ = c.writeErrorPacketFromError(err)
 		return
 	}
 
@@ -344,7 +343,7 @@ func (l *Listener) handle(conn net.Conn, connectionID uint32, acceptTime time.Ti
 		userData, err := l.authServer.ValidateHash(salt, user, authResponse, conn.RemoteAddr())
 		if err != nil {
 			log.Trace("Error authenticating user using MySQL native password: %v", err)
-			c.writeErrorPacketFromError(err)
+			_ = c.writeErrorPacketFromError(err)
 			return
 		}
 		c.User = user
@@ -358,8 +357,7 @@ func (l *Listener) handle(conn net.Conn, connectionID uint32, acceptTime time.Ti
 		if err != nil {
 			return
 		}
-		//lint:ignore SA4006 This line is required because the binary protocol requires padding with 0
-		data := make([]byte, 21)
+		data := make([]byte, 21) //nolint:ineffassign,staticcheck // SA4006 This line is required because the binary protocol requires padding with 0
 		data = append(salt, byte(0x00))
 		if err := c.writeAuthSwitchRequest(MysqlNativePassword, data); err != nil {
 			log.Error("Error writing auth switch packet for %s: %v", c, err)
@@ -376,7 +374,7 @@ func (l *Listener) handle(conn net.Conn, connectionID uint32, acceptTime time.Ti
 		userData, err := l.authServer.ValidateHash(salt, user, response, conn.RemoteAddr())
 		if err != nil {
 			log.Trace("Error authenticating user using MySQL native password: %v", err)
-			c.writeErrorPacketFromError(err)
+			_ = c.writeErrorPacketFromError(err)
 			return
 		}
 		c.User = user
@@ -387,7 +385,7 @@ func (l *Listener) handle(conn net.Conn, connectionID uint32, acceptTime time.Ti
 
 		// The negotiation happens in clear text. Let's check we can.
 		if !l.AllowClearTextWithoutTLS && c.Capabilities&CapabilityClientSSL == 0 {
-			c.writeErrorPacket(CRServerHandshakeErr, SSUnknownSQLState, "Cannot use clear text authentication over non-SSL connections.")
+			_ = c.writeErrorPacket(CRServerHandshakeErr, SSUnknownSQLState, "Cannot use clear text authentication over non-SSL connections.")
 			return
 		}
 
@@ -406,7 +404,7 @@ func (l *Listener) handle(conn net.Conn, connectionID uint32, acceptTime time.Ti
 		// auth server.
 		userData, err := l.authServer.Negotiate(c, user, conn.RemoteAddr())
 		if err != nil {
-			c.writeErrorPacketFromError(err)
+			_ = c.writeErrorPacketFromError(err)
 			return
 		}
 		c.User = user
@@ -770,8 +768,6 @@ func (c *Conn) writeAuthSwitchRequest(pluginName string, pluginData []byte) erro
 // Whenever we move to a new version of go, we will need add any new supported TLS versions here
 func tlsVersionToString(version uint16) string {
 	switch version {
-	case tls.VersionSSL30:
-		return versionSSL30
 	case tls.VersionTLS10:
 		return versionTLS10
 	case tls.VersionTLS11:

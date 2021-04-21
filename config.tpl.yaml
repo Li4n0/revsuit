@@ -1,0 +1,20 @@
+version: 4.0
+addr: :10000
+token: token
+database: revsuit.db
+log_level: debug
+
+http:
+  ip_header:
+dns:
+  enable: true
+mysql:
+  enable: true
+  addr: :3306
+  version_string: 10.4.13-MariaDB-log
+
+notice:
+  dingtalk: https://oapi.dingtalk.com/robot/send?access_token={token}
+  lark: https://open.feishu.cn/open-apis/bot/v2/hook/{token}
+  weixin: https://qyapi.weixin.qq.com/cgi-bin/webhook/send?key={key}
+  slack: https://hooks.slack.com/services/{id}/{token}

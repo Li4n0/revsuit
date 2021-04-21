@@ -1,0 +1,20 @@
+.DS_Store
+
+# local files
+qqwry.dat
+revsuit.db
+
+# local config
+config.yaml
+
+# binary
+revsuit
+
+# Editor directories and files
+.idea
+.vscode
+*.suo
+*.ntvs*
+*.njsproj
+*.sln
+*.sw?

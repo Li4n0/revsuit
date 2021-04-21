@@ -116,7 +116,7 @@ func TestZoneLookup(t *testing.T) {
 			"ns1.example.com.",
 			"ns2.example.com.",
 		},
-		Handler: func(name,remoteAddr string) ([]Set, error) {
+		Handler: func(name, remoteAddr string) ([]Set, error) {
 			if name == "error" {
 				return nil, io.EOF
 			}

@@ -21,7 +21,7 @@ func init() {
 				log.Error("Download qqwry.dat failed, caused by:%v, recommend to download it by yourself otherwise the `IpArea` will be null", err.Error())
 			}
 		}
-	} else if info.ModTime().Sub(time.Now()) > 5*24*time.Hour {
+	} else if time.Until(info.ModTime()) > 5*24*time.Hour {
 		log.Info("Updating qqwry.dat...")
 		err := download()
 		if err != nil {

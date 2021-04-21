@@ -13,5 +13,6 @@ func TestServer_NewConnection(t *testing.T) {
 	if err != nil {
 		fmt.Println(err)
 	}
-	db.Exec("SELECT 1;")
+
+	_, _ = db.Exec("SELECT 1;")
 }

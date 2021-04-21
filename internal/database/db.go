@@ -9,5 +9,5 @@ func InitDB(driver, dsn string) (err error) {
 	case "sqlite":
 		DB, err = NewSqlite3(dsn)
 	}
-	return
+	return err
 }

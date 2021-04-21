@@ -13,7 +13,7 @@ import (
 // Http rule struct
 type Rule struct {
 	rule.BaseRule
-	ResponseStatusCode string               `gorm:"index;default:200;not null" form:"response_status_code" json:"response_status_code"`
+	ResponseStatusCode string            `gorm:"index;default:200;not null" form:"response_status_code" json:"response_status_code"`
 	ResponseHeaders    database.MapField `form:"response_headers" json:"response_headers"`
 	ResponseBody       string            `gorm:"default:Hello RevSuit!" form:"response_body" json:"response_body"`
 }
@@ -23,7 +23,7 @@ func (Rule) TableName() string {
 }
 
 // New http rule struct
-func NewRule(name, flagFormat, responseBody string, pushToClient, notice bool, responseStatus string, responseHeaders database.MapField, ) *Rule {
+func NewRule(name, flagFormat, responseBody string, pushToClient, notice bool, responseStatus string, responseHeaders database.MapField) *Rule {
 	return &Rule{
 		BaseRule: rule.BaseRule{
 			Name:         name,
@@ -59,7 +59,7 @@ func (r *Rule) CreateOrUpdate() (err error) {
 	}
 
 	err = GetServer().updateRules()
-	return
+	return err
 }
 
 // Delete the http rule in database and ruleSet
@@ -71,7 +71,7 @@ func (r *Rule) Delete() (err error) {
 	}
 
 	err = GetServer().updateRules()
-	return
+	return err
 }
 
 // List all http rules those satisfy the filter
@@ -195,5 +195,4 @@ func DeleteRules(c *gin.Context) {
 		"error":  nil,
 		"data":   nil,
 	})
-	return
 }

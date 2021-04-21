@@ -119,7 +119,7 @@ func compileTpl(c *gin.Context, tpl string) (compiled string) {
 	if headerVarMatcher.FindString(tpl) != "" {
 		compiled = headerVarMatcher.ReplaceAllString(compiled, c.GetHeader(headerVarMatcher.FindStringSubmatch(tpl)[1]))
 	}
-	return
+	return compiled
 }
 
 func (s *Server) Receive(c *gin.Context) {

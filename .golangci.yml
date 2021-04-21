@@ -1,0 +1,32 @@
+linters-settings:
+  nakedret:
+    max-func-lines: 0
+  govet:
+    settings:
+      printf:
+        funcs:
+          - (unknwon.dev/clog/v2).Trace
+          - (unknwon.dev/clog/v2).Info
+          - (unknwon.dev/clog/v2).Warn
+          - (unknwon.dev/clog/v2).Error
+          - (unknwon.dev/clog/v2).ErrorDepth
+          - (unknwon.dev/clog/v2).Fatal
+          - (unknwon.dev/clog/v2).FatalDepth
+
+linters:
+  enable:
+    - deadcode
+    - errcheck
+    - gosimple
+    - govet
+    - ineffassign
+    - staticcheck
+    - structcheck
+    - typecheck
+    - unused
+    - varcheck
+    - nakedret
+    - gofmt
+    - rowserrcheck
+    - unconvert
+    - goimports

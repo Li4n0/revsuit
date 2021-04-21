@@ -24,11 +24,29 @@ func initDatabase(dsn string) {
 	}
 
 	err = database.DB.AutoMigrate(&http.Record{})
+	if err != nil {
+		log.Fatal(err.Error())
+	}
 	err = database.DB.AutoMigrate(&dns.Record{})
+	if err != nil {
+		log.Fatal(err.Error())
+	}
 	err = database.DB.AutoMigrate(&mysql.Record{})
+	if err != nil {
+		log.Fatal(err.Error())
+	}
 	err = database.DB.AutoMigrate(&http.Rule{})
+	if err != nil {
+		log.Fatal(err.Error())
+	}
 	err = database.DB.AutoMigrate(&dns.Rule{})
+	if err != nil {
+		log.Fatal(err.Error())
+	}
 	err = database.DB.AutoMigrate(&mysql.Rule{})
+	if err != nil {
+		log.Fatal(err.Error())
+	}
 	err = database.DB.AutoMigrate(&mysql.File{})
 	if err != nil {
 		log.Fatal(err.Error())

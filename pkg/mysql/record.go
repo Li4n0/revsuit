@@ -14,13 +14,12 @@ var _ record.Record = (*Record)(nil)
 
 type Record struct {
 	record.BaseRecord
-	Username      string `gorm:"index",form:"username" json:"username" notice:"username"`
-	ClientName    string `gorm:"index",form:"client_name" json:"client_name" notice:"client_name"`
-	ClientOS      string `gorm:"index",form:"client_os" json:"client_os" notice:"client_os"`
-	LoadLocalData bool   `gorm:"index",form:"load_local_data" json:"load_local_data" notice:"load_local_data"`
-	//FileID        uint   `form:"file_id" json:"file_id" notice:"file_id"`
-	Files []File `form:"-" json:"files" notice:"-"`
-	Rule  Rule   `gorm:"foreignKey:RuleName;references:Name;constraint:OnUpdate:CASCADE,OnDelete:SET NULL;" form:"-" json:"-" notice:"-"`
+	Username      string `gorm:"index" form:"username" json:"username" notice:"username"`
+	ClientName    string `gorm:"index" form:"client_name" json:"client_name" notice:"client_name"`
+	ClientOS      string `gorm:"index" form:"client_os" json:"client_os" notice:"client_os"`
+	LoadLocalData bool   `gorm:"index" form:"load_local_data" json:"load_local_data" notice:"load_local_data"`
+	Files         []File `form:"-" json:"files" notice:"-"`
+	Rule          Rule   `gorm:"foreignKey:RuleName;references:Name;constraint:OnUpdate:CASCADE,OnDelete:SET NULL;" form:"-" json:"-" notice:"-"`
 }
 
 func (Record) TableName() string {
@@ -47,7 +46,7 @@ func newRecord(rule *Rule, flag, username, clientName, clientOS, remoteIp, ipAre
 		Rule:          *rule,
 	}
 	err = database.DB.Create(r).Error
-	return
+	return r, err
 }
 
 func List(c *gin.Context) {

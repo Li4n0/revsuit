@@ -172,7 +172,7 @@ func (z *Zone) Lookup(name, remoteAddr string, needle ...Type) ([]Set, bool, err
 
 	for i := 0; ; i++ {
 		// get sets
-		sets, err := z.Handler(TrimZone(z.Name, name),remoteAddr)
+		sets, err := z.Handler(TrimZone(z.Name, name), remoteAddr)
 		if err != nil {
 			return nil, false, errors.Wrap(err, "zone handler error")
 		}

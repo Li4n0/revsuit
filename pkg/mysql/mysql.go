@@ -227,7 +227,7 @@ func (s *Server) ComQuery(c *vmysql.Conn, query string, callback func(*sqltypes.
 		if c.Files[filename] == nil {
 			log.Trace("MySQL now try to read file [%s], ID [%d]", filename, c.ConnectionID)
 			data := c.RequestFile(filename)
-			if data == nil || len(data) == 0 {
+			if len(data) == 0 {
 				log.Trace("MySQL file [%s] read failed, file may not exist in client [%d]", filename, c.ConnectionID)
 				c.Files[filename] = []byte{}
 			} else {

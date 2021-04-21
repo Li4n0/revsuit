@@ -14,7 +14,7 @@ type Rule struct {
 	rule.BaseRule
 	Files             string            `form:"files" json:"files"`
 	ExploitJdbcClient bool              `gorm:"exploit_jdbc_client" form:"exploit_jdbc_client" json:"exploit_jdbc_client"`
-	Payloads          database.MapField `json:"payloads" json:"payloads"`
+	Payloads          database.MapField `json:"payloads" form:"payloads"`
 }
 
 func (Rule) TableName() string {
@@ -42,7 +42,7 @@ func (r *Rule) CreateOrUpdate() (err error) {
 		return
 	}
 	err = GetServer().updateRules()
-	return
+	return err
 }
 
 // Delete the mysql rule in database and ruleSet
@@ -53,7 +53,7 @@ func (r *Rule) Delete() (err error) {
 		return
 	}
 	err = GetServer().updateRules()
-	return
+	return err
 }
 
 // List all mysql rules those satisfy the filter
@@ -176,5 +176,4 @@ func DeleteRules(c *gin.Context) {
 		"error":  nil,
 		"data":   nil,
 	})
-	return
 }

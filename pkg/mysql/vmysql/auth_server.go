@@ -164,8 +164,8 @@ func isPassScrambleMysqlNativePassword(reply, salt []byte, mysqlNativePassword s
 
 	// scramble = SHA1(salt+hash)
 	crypt := sha1.New()
-	crypt.Write(salt)
-	crypt.Write(hash)
+	_, _ = crypt.Write(salt)
+	_, _ = crypt.Write(hash)
 	scramble := crypt.Sum(nil)
 
 	// token = scramble XOR stage1Hash
@@ -175,7 +175,7 @@ func isPassScrambleMysqlNativePassword(reply, salt []byte, mysqlNativePassword s
 	hashStage1 := scramble
 
 	crypt.Reset()
-	crypt.Write(hashStage1)
+	_, _ = crypt.Write(hashStage1)
 	candidateHash2 := crypt.Sum(nil)
 
 	return bytes.Equal(candidateHash2, hash)

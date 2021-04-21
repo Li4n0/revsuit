@@ -1,12 +1,16 @@
 name: Go
 on:
   push:
-    branches: [master,dev]
+    branches: [ master,dev ]
     paths:
       - '**.go'
+      - 'go.mod'
+      - '.github/workflows/go.yml'
   pull_request:
     paths:
       - '**.go'
+      - 'go.mod'
+      - '.github/workflows/go.yml'
 env:
   GOPROXY: "https://proxy.golang.org"
 
@@ -15,8 +19,10 @@ jobs:
     name: Lint
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v2
+      - name: Checkout code
+        uses: actions/checkout@v2
       - name: Run golangci-lint
-        uses: actions-contrib/golangci-lint@v1
+        uses: golangci/golangci-lint-action@v2.4.0
         with:
-          args: 'run --timeout=30m' 
+          version: v1.37.0
+          args: --timeout=30m

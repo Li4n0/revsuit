@@ -26,7 +26,6 @@ func (revsuit *Revsuit) registerPlatformRouter() {
 		if !(c.Request.Header.Get("Token") == revsuit.http.Token || err == nil && cookieToken.Value == revsuit.http.Token) {
 			c.Abort()
 			c.Status(403)
-			return
 		}
 	})
 	revsuit.http.ApiGroup = api

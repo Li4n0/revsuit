@@ -25,41 +25,29 @@ type BaseRule struct {
 	Notice       bool           `gorm:"default:false;not null;" form:"notice" json:"notice"`
 }
 
-func compileCatcher(flagFormat string) (reg *regexp.Regexp, err error) {
-	if reg, err := regexp.Compile(flagFormat); err == nil {
-		return reg, nil
-	} else {
-		// * meaning record all connections.
-		if flagFormat != "*" {
-			return nil, err
-		} else {
-			return nil, nil
-		}
-	}
-}
-
 func (br BaseRule) Match(s string) (flag, flagGroup string) {
-	if br.flagCatcher == nil && br.FlagFormat != "*" {
-		//	compile rule flags
-		catcher, err := compileCatcher(br.FlagFormat)
-		if err != nil {
-			log.Error("%s(rule:%s)", err.Error(), br.Name)
+	if br.flagCatcher == nil {
+		if br.FlagFormat == "*" {
+			flag = "*"
+			return
+		} else {
+			if catcher, err := regexp.Compile(br.FlagFormat); err != nil {
+				log.Error("%s(rule:%s)", err.Error(), br.Name)
+				return
+			} else {
+				br.flagCatcher = catcher
+			}
 		}
-		br.flagCatcher = catcher
 	}
 
-	if br.flagCatcher == nil {
-		// capture all connection.
-		flag = "*"
-	} else {
-		matched := br.flagCatcher.FindStringSubmatch(s)
-		if len(matched) == 0 {
-			return
-		}
-		flag = matched[0]
-		if len(matched) > 1 {
-			flagGroup = matched[1]
-		}
+	matched := br.flagCatcher.FindStringSubmatch(s)
+	if len(matched) == 0 {
+		return
+	}
+
+	flag = matched[0]
+	if len(matched) > 1 {
+		flagGroup = matched[1]
 	}
 	return flag, flagGroup
 }

@@ -8,6 +8,7 @@ import (
 	"strings"
 
 	"github.com/li4n0/revsuit/internal/record"
+	"github.com/pkg/errors"
 )
 
 var _ Bot = (*Lark)(nil)
@@ -69,16 +70,16 @@ func (d *Lark) buildPayload(r record.Record) string {
 }
 
 func (d *Lark) notice(r record.Record) error {
-	resp, err := http.DefaultClient.Post(d.URL, "application/json", strings.NewReader(d.buildPayload(r)))
+	resp, err := http.Post(d.URL, "application/json", strings.NewReader(d.buildPayload(r)))
 	if err != nil {
-		return fmt.Errorf("HTTP request: %v", err)
+		return errors.Wrap(err, "HTTP request")
 	}
 	defer resp.Body.Close()
 
 	if resp.StatusCode/100 != 2 {
 		data, err := ioutil.ReadAll(resp.Body)
 		if err != nil {
-			return fmt.Errorf("read HTTP response body: %v", err)
+			return errors.Wrap(err, "read HTTP response body")
 		}
 		return fmt.Errorf("non-success response status code %d with body: %s", resp.StatusCode, data)
 	}

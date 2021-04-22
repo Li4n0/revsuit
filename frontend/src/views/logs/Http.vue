@@ -159,6 +159,7 @@ export default {
       data: [],
       pagination: {current: 1},
       filters: {},
+      order: "desc",
       loading: false,
       columns,
       colors

@@ -8,6 +8,7 @@ import (
 	"strings"
 
 	"github.com/li4n0/revsuit/internal/record"
+	"github.com/pkg/errors"
 )
 
 var _ Bot = (*Weixin)(nil)
@@ -31,7 +32,7 @@ func (w *Weixin) buildPayload(r record.Record) string {
 		ToUser:  "@all",
 		MsgType: "markdown",
 		Markdown: weixinMarkdown{
-			Content: "<font color=\"#e96900\" face=\"Fira Code\" size=3>New Connection</font>\n" +
+			Content: "<font color='#e96900' face='Fira Code' size=3>New Connection</font>\n" +
 				formatRecordField(r, `> **<font color="#e96900" face="Fira Code">%s: </font>**<font color="#e96900" face="Fira Code">%v</font>`),
 		},
 	}
@@ -43,15 +44,15 @@ func (w *Weixin) buildPayload(r record.Record) string {
 }
 
 func (w *Weixin) notice(r record.Record) error {
-	resp, err := http.DefaultClient.Post(w.URL, "application/json", strings.NewReader(w.buildPayload(r)))
+	resp, err := http.Post(w.URL, "application/json", strings.NewReader(w.buildPayload(r)))
 	if err != nil {
-		return fmt.Errorf("HTTP request: %v", err)
+		return errors.Wrap(err, "HTTP request")
 	}
 	defer resp.Body.Close()
 	if resp.StatusCode/100 != 2 {
 		data, err := ioutil.ReadAll(resp.Body)
 		if err != nil {
-			return fmt.Errorf("read HTTP response body: %v", err)
+			return errors.Wrap(err, "read HTTP response body")
 		}
 		return fmt.Errorf("non-success response status code %d with body: %s", resp.StatusCode, data)
 	}

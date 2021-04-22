@@ -1,7 +1,6 @@
 package cli
 
 import (
-	"io/ioutil"
 	"os"
 	"sort"
 
@@ -35,12 +34,12 @@ func Start() {
 		},
 		Action: func(c *cli.Context) error {
 			conf := &server.Config{}
-			if content, err := ioutil.ReadFile("config.yaml"); err == nil {
+			if content, err := os.ReadFile("config.yaml"); err == nil {
 				if err := yaml.Unmarshal(content, conf); err != nil {
-					log.Fatal(err.Error())
+					return err
 				}
 			} else {
-				log.Fatal(err.Error())
+				return err
 			}
 			if c.String("addr") != "" {
 				conf.Addr = c.String("addr")

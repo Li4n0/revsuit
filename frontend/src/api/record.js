@@ -32,3 +32,14 @@ export function getMysqlRecord(params) {
         }
     })
 }
+
+export function getRmiRecord(params) {
+    return request({
+        url: '/record/rmi',
+        params: params,
+        method: 'get',
+        validateStatus: function (status) {
+            return status >= 200 && status < 300 // 默认的
+        }
+    })
+}

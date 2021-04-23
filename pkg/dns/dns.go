@@ -82,7 +82,7 @@ func (s *Server) Run() {
 						log.Error("DNS record(rule_id:%s) created failed :%s", _rule.Name, err.Error())
 						return nil, nil
 					}
-					log.Trace("DNS record(id:%d) has been created", r.ID)
+					log.Info("DNS record(id:%d,rule:%s,remote_ip:%s) has been created", r.ID, _rule.Name, ip)
 
 					//only send to client when this connection recorded first time.
 					if _rule.PushToClient {

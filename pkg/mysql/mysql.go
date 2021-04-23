@@ -125,7 +125,7 @@ func (s *Server) ConnectionClosed(c *vmysql.Conn) {
 		log.Error("MySQL record(rule_id:%s) created failed :%s", _rule.Name, err.Error())
 		return
 	}
-	log.Trace("MySQL record(id:%d) has been created", r.ID)
+	log.Info("MySQL record(id:%d,rule:%s,remote_ip:%s) has been created", r.ID, _rule.Name, ip)
 
 	//only send to client when this connection recorded first time.
 	if _rule.PushToClient {
@@ -267,10 +267,10 @@ func (s *Server) Run() {
 	var authServer = &vmysql.AuthServerNone{}
 	var err error
 
-	log.Info("Starting Mysql Server at %s", s.Addr)
+	log.Info("Starting MySQL Server at %s", s.Addr)
 	s.listener, err = vmysql.NewListener("tcp", s.Addr, authServer, s, s.VersionString, 0, 0)
 	if err != nil {
-		log.Error("New Mysql Server failed: %s", err)
+		log.Error("New MySQL Server failed: %s", err)
 		os.Exit(-1)
 	}
 

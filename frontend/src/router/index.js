@@ -26,6 +26,11 @@ const routes = [
         component: () => import(/* webpackChunkName: "about" */ '../views/logs/Mysql')
     },
     {
+        path: '/logs/rmi',
+        name: 'RmiLogs',
+        component: () => import(/* webpackChunkName: "about" */ '../views/logs/Rmi')
+    },
+    {
         path: '/rules/http',
         name: 'HttpRules',
         component: () => import(/* webpackChunkName: "about" */ '../views/rules/Http')
@@ -39,6 +44,11 @@ const routes = [
         path: '/rules/mysql',
         name: 'MysqlRules',
         component: () => import(/* webpackChunkName: "about" */ '../views/rules/Mysql')
+    },
+    {
+        path: '/rules/rmi',
+        name: 'RmiRules',
+        component: () => import(/* webpackChunkName: "about" */ '../views/rules/Rmi')
     }
 ]
 

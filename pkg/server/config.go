@@ -4,6 +4,7 @@ import (
 	"github.com/li4n0/revsuit/pkg/dns"
 	"github.com/li4n0/revsuit/pkg/mysql"
 	"github.com/li4n0/revsuit/pkg/rhttp"
+	"github.com/li4n0/revsuit/pkg/rmi"
 )
 
 type noticeConfig struct {
@@ -21,5 +22,6 @@ type Config struct {
 	Notice   noticeConfig
 	rhttp.Config
 	DNS   dns.Config
-	Mysql mysql.Config
+	MySQL mysql.Config
+	RMI   rmi.Config
 }

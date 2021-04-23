@@ -49,7 +49,7 @@ func newRecord(rule *Rule, flag, username, clientName, clientOS, remoteIp, ipAre
 	return r, err
 }
 
-func List(c *gin.Context) {
+func ListRecords(c *gin.Context) {
 	var (
 		mysqlRecord Record
 		res         []Record

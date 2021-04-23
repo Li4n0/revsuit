@@ -1,4 +1,4 @@
-package dns
+package rmi
 
 import (
 	"strconv"
@@ -13,30 +13,29 @@ import (
 var _ record.Record = (*Record)(nil)
 
 type Record struct {
-	Domain string `gorm:"index" form:"domain" json:"domain"`
-
+	Path string `form:"path" json:"path"`
 	record.BaseRecord
 	Rule Rule `gorm:"foreignKey:RuleName;references:Name;constraint:OnUpdate:CASCADE,OnDelete:SET NULL;" form:"-" json:"-" notice:"-"`
 }
 
 func (Record) TableName() string {
-	return "dns_records"
+	return "rmi_records"
 }
 
 func (r Record) Notice() {
 	notice.Notice(r)
 }
 
-func newRecord(rule *Rule, flag, domain, remoteIp, ipArea string) (r *Record, err error) {
+func NewRecord(rule *Rule, flag, path, ip, area string) (r *Record, err error) {
 	r = &Record{
 		BaseRecord: record.BaseRecord{
 			Flag:        flag,
-			RemoteIP:    remoteIp,
-			IpArea:      ipArea,
+			RemoteIP:    ip,
+			IpArea:      area,
 			RequestTime: time.Now(),
 		},
-		Domain: domain,
-		Rule:   *rule,
+		Path: path,
+		Rule: *rule,
 	}
 	err = database.DB.Create(r).Error
 	return r, err
@@ -44,31 +43,33 @@ func newRecord(rule *Rule, flag, domain, remoteIp, ipArea string) (r *Record, er
 
 func ListRecords(c *gin.Context) {
 	var (
-		dnsRecord Record
+		rmiRecord Record
 		res       []Record
 		count     int64
 		order     = c.Query("order")
 	)
-	if err := c.ShouldBind(&dnsRecord); err != nil {
+
+	if err := c.ShouldBind(&rmiRecord); err != nil {
 		c.JSON(400, gin.H{
 			"status": "failed",
 			"error":  err,
 			"result": nil,
 		})
+		return
 	}
 
-	db := database.DB.Model(&dnsRecord)
-	if dnsRecord.Flag != "" {
-		db.Where("flag = ?", dnsRecord.Flag)
+	db := database.DB.Model(&rmiRecord)
+	if rmiRecord.Flag != "" {
+		db.Where("flag = ?", rmiRecord.Flag)
 	}
-	if dnsRecord.Domain != "" {
-		db.Where("domain like ?", "%"+dnsRecord.Domain+"%")
+	if rmiRecord.Path != "" {
+		db.Where("path like ?", "%"+rmiRecord.Path+"%")
 	}
-	if dnsRecord.RemoteIP != "" {
-		db.Where("remote_ip = ?", dnsRecord.RemoteIP)
+	if rmiRecord.RemoteIP != "" {
+		db.Where("remote_ip = ?", rmiRecord.RemoteIP)
 	}
-	if dnsRecord.RuleName != "" {
-		db.Where("rule_name = ?", dnsRecord.RuleName)
+	if rmiRecord.RuleName != "" {
+		db.Where("rule_name = ?", rmiRecord.RuleName)
 	}
 
 	page, err := strconv.Atoi(c.Query("page"))
@@ -80,6 +81,7 @@ func ListRecords(c *gin.Context) {
 		})
 		return
 	}
+
 	if err := db.Order("id" + " " + order).Count(&count).Offset((page - 1) * 10).Limit(10).Find(&res).Error; err != nil {
 		c.JSON(400, gin.H{
 			"status": "failed",

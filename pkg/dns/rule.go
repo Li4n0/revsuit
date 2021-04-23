@@ -107,6 +107,10 @@ func ListRules(c *gin.Context) {
 		return
 	}
 
+	if order != "desc" && order != "asc" {
+		order = "desc"
+	}
+
 	if err := db.Order("rank desc").Order("id" + " " + order).Count(&count).Offset((page - 1) * 10).Limit(10).Find(&res).Error; err != nil {
 		c.JSON(400, gin.H{
 			"status": "failed",

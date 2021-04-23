@@ -1,4 +1,4 @@
-package rhttp
+package rmi
 
 import (
 	"strconv"
@@ -13,22 +13,20 @@ import (
 var _ record.Record = (*Record)(nil)
 
 type Record struct {
-	Method string `gorm:"index" form:"method" json:"method"`
-	Path   string `form:"path" json:"path"`
+	Path string `form:"path" json:"path"`
 	record.BaseRecord
-	RawRequest string `json:"raw_request" notice:"-"`
-	Rule       Rule   `gorm:"foreignKey:RuleName;references:Name;constraint:OnUpdate:CASCADE,OnDelete:SET NULL;" form:"-" json:"-" notice:"-"`
+	Rule Rule `gorm:"foreignKey:RuleName;references:Name;constraint:OnUpdate:CASCADE,OnDelete:SET NULL;" form:"-" json:"-" notice:"-"`
 }
 
 func (Record) TableName() string {
-	return "http_records"
+	return "rmi_records"
 }
 
 func (r Record) Notice() {
 	notice.Notice(r)
 }
 
-func NewRecord(rule *Rule, flag, method, url, ip, area, raw string) (r *Record, err error) {
+func NewRecord(rule *Rule, flag, path, ip, area string) (r *Record, err error) {
 	r = &Record{
 		BaseRecord: record.BaseRecord{
 			Flag:        flag,
@@ -36,10 +34,8 @@ func NewRecord(rule *Rule, flag, method, url, ip, area, raw string) (r *Record, 
 			IpArea:      area,
 			RequestTime: time.Now(),
 		},
-		Method:     method,
-		Path:       url,
-		RawRequest: raw,
-		Rule:       *rule,
+		Path: path,
+		Rule: *rule,
 	}
 	err = database.DB.Create(r).Error
 	return r, err
@@ -47,13 +43,13 @@ func NewRecord(rule *Rule, flag, method, url, ip, area, raw string) (r *Record, 
 
 func ListRecords(c *gin.Context) {
 	var (
-		httpRecord Record
-		res        []Record
-		count      int64
-		order      = c.Query("order")
+		rmiRecord Record
+		res       []Record
+		count     int64
+		order     = c.Query("order")
 	)
 
-	if err := c.ShouldBind(&httpRecord); err != nil {
+	if err := c.ShouldBind(&rmiRecord); err != nil {
 		c.JSON(400, gin.H{
 			"status": "failed",
 			"error":  err,
@@ -62,21 +58,18 @@ func ListRecords(c *gin.Context) {
 		return
 	}
 
-	db := database.DB.Model(&httpRecord)
-	if httpRecord.Flag != "" {
-		db.Where("flag = ?", httpRecord.Flag)
+	db := database.DB.Model(&rmiRecord)
+	if rmiRecord.Flag != "" {
+		db.Where("flag = ?", rmiRecord.Flag)
 	}
-	if httpRecord.Method != "" {
-		db.Where("method = ?", httpRecord.Method)
+	if rmiRecord.Path != "" {
+		db.Where("path like ?", "%"+rmiRecord.Path+"%")
 	}
-	if httpRecord.Path != "" {
-		db.Where("path like ?", "%"+httpRecord.Path+"%")
+	if rmiRecord.RemoteIP != "" {
+		db.Where("remote_ip = ?", rmiRecord.RemoteIP)
 	}
-	if httpRecord.RemoteIP != "" {
-		db.Where("remote_ip = ?", httpRecord.RemoteIP)
-	}
-	if httpRecord.RuleName != "" {
-		db.Where("rule_name = ?", httpRecord.RuleName)
+	if rmiRecord.RuleName != "" {
+		db.Where("rule_name = ?", rmiRecord.RuleName)
 	}
 
 	page, err := strconv.Atoi(c.Query("page"))

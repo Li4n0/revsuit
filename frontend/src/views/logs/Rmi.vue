@@ -52,18 +52,6 @@
     <span slot="time" slot-scope="time">
         {{ new Date(time).format("yyyy-MM-dd hh:mm:ss") }}
     </span>
-    <span slot="method" slot-scope="method">
-      <a-tag
-          :color="colors[method]"
-      >
-        {{ method.toUpperCase() }}
-      </a-tag>
-    </span>
-    <code slot="expandedRowRender" slot-scope="record" style="margin: 0">
-      <b style="color: gray">RAW REQUEST:</b><br>
-      <hr/>
-      <span style="white-space: pre-line">{{ record.raw_request }}</span>
-    </code>
   </a-table>
 </template>
 <style>
@@ -73,17 +61,8 @@
 </style>
 <script>
 
-import {getHttpRecord} from '@/api/record'
+import {getRmiRecord} from '@/api/record'
 import {store} from '@/main'
-
-const colors = {
-  "GET": "green",
-  "POST": "red",
-  "HEAD": "pink",
-  "PUT": "geekblue",
-  "OPTIONS": "cyan",
-  "DELETE": "purple",
-}
 
 const columns = [
   {
@@ -118,24 +97,10 @@ const columns = [
     },
   },
   {
-    title: 'METHOD',
-    dataIndex: 'method',
-    key: 'method',
-    scopedSlots: {
-      customRender: 'method',
-      filterDropdown: 'filterDropdown',
-      filterIcon: 'filterIcon',
-    },
-  },
-  {
     title: 'PATH',
     dataIndex: 'path',
     key: 'path',
     ellipsis: true,
-    scopedSlots: {
-      filterDropdown: 'filterDropdown',
-      filterIcon: 'filterIcon',
-    },
   },
   {
     title: 'REMOTE IP',
@@ -154,7 +119,7 @@ const columns = [
 ];
 
 export default {
-  name: 'HttpLogs',
+  name: 'DnsLogs',
   data() {
     return {
       data: [],
@@ -163,7 +128,6 @@ export default {
       order: "desc",
       loading: false,
       columns,
-      colors
     };
   },
   methods: {
@@ -181,7 +145,7 @@ export default {
         page: this.pagination.current,
         order: this.order
       }
-      getHttpRecord(params).then(res => {
+      getRmiRecord(params).then(res => {
         let result = res.data.result
         this.data = result.data
         const pagination = {...this.pagination};

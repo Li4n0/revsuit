@@ -1,30 +1,26 @@
-package dns
+package rmi
 
 import (
 	"strconv"
-	"time"
 
 	"github.com/gin-gonic/gin"
 	"github.com/li4n0/revsuit/internal/database"
-	"github.com/li4n0/revsuit/internal/newdns"
 	"github.com/li4n0/revsuit/internal/rule"
 	"gorm.io/gorm/clause"
 	log "unknwon.dev/clog/v2"
 )
 
+// Http rule struct
 type Rule struct {
 	rule.BaseRule
-	Type  newdns.Type   `gorm:"default:1" form:"type" json:"type"`
-	Value string        `form:"value" json:"value"`
-	TTL   time.Duration `gorm:"ttl;default:10" form:"ttl" json:"ttl"`
 }
 
 func (Rule) TableName() string {
-	return "dns_rules"
+	return "rmi_rules"
 }
 
-// New dns rule struct
-func NewRule(name, flagFormat, value string, pushToClient, notice bool, _type newdns.Type, ttl time.Duration) *Rule {
+// New rmi rule struct
+func NewRule(name, flagFormat string, pushToClient, notice bool) *Rule {
 	return &Rule{
 		BaseRule: rule.BaseRule{
 			Name:         name,
@@ -32,13 +28,10 @@ func NewRule(name, flagFormat, value string, pushToClient, notice bool, _type ne
 			PushToClient: pushToClient,
 			Notice:       notice,
 		},
-		Type:  _type,
-		Value: value,
-		TTL:   ttl,
 	}
 }
 
-// Create or update the dns rule in database and ruleSet
+// Create or update the rmi rule in database and ruleSet
 func (r *Rule) CreateOrUpdate() (err error) {
 	db := database.DB.Model(r)
 	err = db.Clauses(clause.OnConflict{
@@ -48,9 +41,6 @@ func (r *Rule) CreateOrUpdate() (err error) {
 				"name",
 				"flag_format",
 				"rank",
-				"type",
-				"value",
-				"ttl",
 				"push_to_client",
 				"notice",
 			}),
@@ -58,42 +48,44 @@ func (r *Rule) CreateOrUpdate() (err error) {
 	if err != nil {
 		return
 	}
+
 	err = GetServer().updateRules()
 	return err
 }
 
-// Delete the dns rule in database and ruleSet
+// Delete the rmi rule in database and ruleSet
 func (r *Rule) Delete() (err error) {
 	db := database.DB.Model(r)
 	err = db.Delete(r).Error
 	if err != nil {
 		return
 	}
+
 	err = GetServer().updateRules()
 	return err
 }
 
-// List all dns rules those satisfy the filter
+// List all rmi rules those satisfy the filter
 func ListRules(c *gin.Context) {
 	var (
-		dnsRule Rule
+		rmiRule Rule
 		res     []Rule
 		count   int64
 		order   = c.Query("order")
 	)
 
-	if err := c.ShouldBind(&dnsRule); err != nil {
+	if err := c.ShouldBind(&rmiRule); err != nil {
 		c.JSON(400, gin.H{
 			"status": "failed",
-			"error":  err.Error(),
+			"error":  err,
 			"result": nil,
 		})
 		return
 	}
 
-	db := database.DB.Model(&dnsRule)
-	if dnsRule.Name != "" {
-		db.Where("name = ?", dnsRule.Name)
+	db := database.DB.Model(&rmiRule)
+	if rmiRule.Name != "" {
+		db.Where("name = ?", rmiRule.Name)
 	}
 	db.Count(&count)
 
@@ -127,14 +119,14 @@ func ListRules(c *gin.Context) {
 	})
 }
 
-// Create or update dns rule from user submit
+// Create or update rmi rule from user submit
 func UpsertRules(c *gin.Context) {
 	var (
-		dnsRule Rule
+		rmiRule Rule
 		update  bool
 	)
 
-	if err := c.ShouldBind(&dnsRule); err != nil {
+	if err := c.ShouldBind(&rmiRule); err != nil {
 		c.JSON(400, gin.H{
 			"status": "failed",
 			"error":  err.Error(),
@@ -143,23 +135,23 @@ func UpsertRules(c *gin.Context) {
 		return
 	}
 
-	if dnsRule.ID != 0 {
+	if rmiRule.ID != 0 {
 		update = true
 	}
 
-	if err := dnsRule.CreateOrUpdate(); err != nil {
+	if err := rmiRule.CreateOrUpdate(); err != nil {
 		c.JSON(400, gin.H{
 			"status": "failed",
 			"error":  err.Error(),
-			"data":   nil,
+			"result": nil,
 		})
 		return
 	}
 
 	if update {
-		log.Trace("DNS rule(id:%d) has been updated", dnsRule.ID)
+		log.Trace("RMI rule(id:%d) has been updated", rmiRule.ID)
 	} else {
-		log.Trace("DNS rule(id:%d) has been created", dnsRule.ID)
+		log.Trace("RMI rule(id:%d) has been created", rmiRule.ID)
 	}
 
 	c.JSON(200, gin.H{
@@ -169,11 +161,11 @@ func UpsertRules(c *gin.Context) {
 	})
 }
 
-// Delete dns rule from user submit
+// Delete rmi rule from user submit
 func DeleteRules(c *gin.Context) {
-	var dnsRule Rule
+	var rmiRule Rule
 
-	if err := c.ShouldBind(&dnsRule); err != nil {
+	if err := c.ShouldBind(&rmiRule); err != nil {
 		c.JSON(400, gin.H{
 			"status": "failed",
 			"error":  err.Error(),
@@ -182,7 +174,7 @@ func DeleteRules(c *gin.Context) {
 		return
 	}
 
-	if err := dnsRule.Delete(); err != nil {
+	if err := rmiRule.Delete(); err != nil {
 		c.JSON(400, gin.H{
 			"status": "failed",
 			"error":  err.Error(),
@@ -191,7 +183,7 @@ func DeleteRules(c *gin.Context) {
 		return
 	}
 
-	log.Trace("DNS rule(id:%d) has been deleted", dnsRule.ID)
+	log.Trace("RMI rule(id:%d) has been deleted", rmiRule.ID)
 
 	c.JSON(200, gin.H{
 		"status": "succeed",

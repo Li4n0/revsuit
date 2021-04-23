@@ -99,3 +99,36 @@ export function deleteMysqlRule(data) {
         }
     })
 }
+
+export function getRmiRule(params) {
+    return request({
+        url: '/rule/rmi',
+        params: params,
+        method: 'get',
+        validateStatus: function (status) {
+            return status >= 200 && status < 300 // 默认的
+        }
+    })
+}
+
+export function upsertRmiRule(data) {
+    return request({
+        url: '/rule/rmi',
+        data: data,
+        method: 'post',
+        validateStatus: function (status) {
+            return status >= 200 && status < 300 // 默认的
+        }
+    })
+}
+
+export function deleteRmiRule(data) {
+    return request({
+        url: '/rule/rmi',
+        data: data,
+        method: 'delete',
+        validateStatus: function (status) {
+            return status >= 200 && status < 300 // 默认的
+        }
+    })
+}

@@ -9,6 +9,7 @@ import (
 	"github.com/li4n0/revsuit/pkg/dns"
 	"github.com/li4n0/revsuit/pkg/mysql"
 	"github.com/li4n0/revsuit/pkg/rhttp"
+	"github.com/li4n0/revsuit/pkg/rmi"
 	log "unknwon.dev/clog/v2"
 )
 
@@ -52,10 +53,13 @@ func (revsuit *Revsuit) registerHttpRouter() {
 	httpGroup.GET("", rhttp.ListRecords)
 
 	dnsGroup := recordGroup.Group("/dns")
-	dnsGroup.GET("", dns.List)
+	dnsGroup.GET("", dns.ListRecords)
 
 	mysqlGroup := recordGroup.Group("/mysql")
-	mysqlGroup.GET("", mysql.List)
+	mysqlGroup.GET("", mysql.ListRecords)
+
+	rmiGroup := recordGroup.Group("/rmi")
+	rmiGroup.GET("", rmi.ListRecords)
 
 	// init rule router group
 	ruleGroup := revsuit.http.ApiGroup.Group("/rule")
@@ -74,6 +78,11 @@ func (revsuit *Revsuit) registerHttpRouter() {
 	mysqlGroup.GET("", mysql.ListRules)
 	mysqlGroup.POST("", mysql.UpsertRules)
 	mysqlGroup.DELETE("", mysql.DeleteRules)
+
+	rmiGroup = ruleGroup.Group("/rmi")
+	rmiGroup.GET("", rmi.ListRules)
+	rmiGroup.POST("", rmi.UpsertRules)
+	rmiGroup.DELETE("", rmi.DeleteRules)
 
 	// init file router group
 	fileGroup := revsuit.http.ApiGroup.Group("/file")

@@ -157,7 +157,7 @@ func (s *Server) Receive(c *gin.Context) {
 			c.String(code, compileTpl(c, _rule.ResponseBody))
 			return
 		}
-		log.Trace("HTTP record(id:%d) has been created", r.ID)
+		log.Info("HTTP record(id:%d,rule:%s,remote_ip:%s) has been created", r.ID, _rule.Name, ip)
 
 		//only send to client when this connection recorded first time.
 		if _rule.PushToClient {

@@ -49,13 +49,14 @@ func newRecord(rule *Rule, flag, username, clientName, clientOS, remoteIp, ipAre
 	return r, err
 }
 
-func List(c *gin.Context) {
+func ListRecords(c *gin.Context) {
 	var (
 		mysqlRecord Record
 		res         []Record
 		count       int64
 		order       = c.Query("order")
 	)
+
 	if err := c.ShouldBind(&mysqlRecord); err != nil {
 		c.JSON(400, gin.H{
 			"status": "failed",
@@ -90,6 +91,11 @@ func List(c *gin.Context) {
 		})
 		return
 	}
+
+	if order != "desc" && order != "asc" {
+		order = "desc"
+	}
+
 	if err := db.Preload("Files").Order("id" + " " + order).Count(&count).Offset((page - 1) * 10).Limit(10).Find(&res).Error; err != nil {
 		c.JSON(400, gin.H{
 			"status": "failed",

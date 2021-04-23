@@ -42,7 +42,7 @@ func newRecord(rule *Rule, flag, domain, remoteIp, ipArea string) (r *Record, er
 	return r, err
 }
 
-func List(c *gin.Context) {
+func ListRecords(c *gin.Context) {
 	var (
 		dnsRecord Record
 		res       []Record
@@ -80,6 +80,11 @@ func List(c *gin.Context) {
 		})
 		return
 	}
+
+	if order != "desc" && order != "asc" {
+		order = "desc"
+	}
+
 	if err := db.Order("id" + " " + order).Count(&count).Offset((page - 1) * 10).Limit(10).Find(&res).Error; err != nil {
 		c.JSON(400, gin.H{
 			"status": "failed",

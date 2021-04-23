@@ -17,6 +17,9 @@
           <a-menu-item key="/logs/dns">
             <router-link to="/logs/dns">DNS Logs</router-link>
           </a-menu-item>
+          <a-menu-item key="/logs/rmi">
+            <router-link to="/logs/rmi">RMI Logs</router-link>
+          </a-menu-item>
           <a-menu-item key="/logs/mysql">
             <router-link to="/logs/mysql">MySQL Logs</router-link>
           </a-menu-item>
@@ -28,6 +31,9 @@
           </a-menu-item>
           <a-menu-item key="/rules/dns">
             <router-link to="/rules/dns">DNS Rules</router-link>
+          </a-menu-item>
+          <a-menu-item key="/rules/rmi">
+            <router-link to="/rules/rmi">RMI Rules</router-link>
           </a-menu-item>
           <a-menu-item key="/rules/mysql">
             <router-link to="/rules/mysql">MySQL Rules</router-link>

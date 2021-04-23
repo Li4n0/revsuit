@@ -7,6 +7,7 @@ import (
 	"github.com/li4n0/revsuit/pkg/dns"
 	"github.com/li4n0/revsuit/pkg/mysql"
 	http "github.com/li4n0/revsuit/pkg/rhttp"
+	"github.com/li4n0/revsuit/pkg/rmi"
 	"gorm.io/gorm/logger"
 	log "unknwon.dev/clog/v2"
 )
@@ -15,6 +16,7 @@ type Revsuit struct {
 	http  *http.Server
 	dns   *dns.Server
 	mysql *mysql.Server
+	rmi   *rmi.Server
 }
 
 func initDatabase(dsn string) {
@@ -48,6 +50,14 @@ func initDatabase(dsn string) {
 		log.Fatal(err.Error())
 	}
 	err = database.DB.AutoMigrate(&mysql.File{})
+	if err != nil {
+		log.Fatal(err.Error())
+	}
+	err = database.DB.AutoMigrate(&rmi.Record{})
+	if err != nil {
+		log.Fatal(err.Error())
+	}
+	err = database.DB.AutoMigrate(&rmi.Rule{})
 	if err != nil {
 		log.Fatal(err.Error())
 	}
@@ -122,9 +132,13 @@ func New(c *Config) *Revsuit {
 	if c.DNS.Enable {
 		s.dns = dns.GetServer()
 	}
-	if c.Mysql.Enable {
+	if c.MySQL.Enable {
 		s.mysql = mysql.GetServer()
-		s.mysql.Config = c.Mysql
+		s.mysql.Config = c.MySQL
+	}
+	if c.RMI.Enable {
+		s.rmi = rmi.GetServer()
+		s.rmi.Config = c.RMI
 	}
 
 	if c.Addr != "" {
@@ -148,6 +162,9 @@ func (revsuit *Revsuit) Run() {
 	}
 	if revsuit.mysql != nil {
 		go revsuit.mysql.Run()
+	}
+	if revsuit.rmi != nil {
+		go revsuit.rmi.Run()
 	}
 
 	revsuit.http.Run()

@@ -8,6 +8,9 @@ http:
   ip_header:
 dns:
   enable: true
+rmi:
+  enable: true
+  addr: :1099
 mysql:
   enable: true
   addr: :3306

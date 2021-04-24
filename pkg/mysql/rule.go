@@ -140,9 +140,9 @@ func UpsertRules(c *gin.Context) {
 	}
 
 	if update {
-		log.Trace("MySQL rule(id:%d) has been updated", mysqlRule.ID)
+		log.Trace("MySQL rule[id%d] has been updated", mysqlRule.ID)
 	} else {
-		log.Trace("MySQL rule(id:%d) has been created", mysqlRule.ID)
+		log.Trace("MySQL rule[id%d] has been created", mysqlRule.ID)
 	}
 
 	c.JSON(200, gin.H{
@@ -174,7 +174,7 @@ func DeleteRules(c *gin.Context) {
 		return
 	}
 
-	log.Trace("MySQL rule(id:%d) has been deleted", mysqlRule.ID)
+	log.Trace("MySQL rule[id%d] has been deleted", mysqlRule.ID)
 
 	c.JSON(200, gin.H{
 		"status": "succeed",

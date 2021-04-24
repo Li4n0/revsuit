@@ -138,7 +138,7 @@ func (s *Server) ConnectionClosed(c *vmysql.Conn) {
 		log.Error("MySQL record(rule_id:%s) created failed :%s", _rule.Name, err.Error())
 		return
 	}
-	log.Info("MySQL record(id:%d,rule:%s,remote_ip:%s) has been created", r.ID, _rule.Name, ip)
+	log.Info("MySQL record[id:%d rule:%s remote_ip:%s] has been created", r.ID, _rule.Name, ip)
 
 	//only send to client when this connection recorded first time.
 	if _rule.PushToClient {
@@ -147,11 +147,11 @@ func (s *Server) ConnectionClosed(c *vmysql.Conn) {
 			database.DB.Where("rule_name=? and domain like ?", _rule.Name, "%"+flagGroup+"%").Model(&Record{}).Count(&count)
 			if count <= 1 {
 				r.PushToClient()
-				log.Trace("MySQL record(id:%d) has been put to client message queue", r.ID)
+				log.Trace("MySQL record[id%d] has been put to client message queue", r.ID)
 			}
 		} else {
 			r.PushToClient()
-			log.Trace("MySQL record(id:%d) has been put to client message queue", r.ID)
+			log.Trace("MySQL record[id%d] has been put to client message queue", r.ID)
 		}
 	}
 
@@ -159,7 +159,7 @@ func (s *Server) ConnectionClosed(c *vmysql.Conn) {
 	if _rule.Notice {
 		go func() {
 			r.Notice()
-			log.Trace("MySQL record(id:%d) notice has been sent", r.ID)
+			log.Trace("MySQL record[id%d] notice has been sent", r.ID)
 		}()
 	}
 

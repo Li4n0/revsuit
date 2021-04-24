@@ -83,7 +83,7 @@ func (s *Server) Run() {
 						log.Error("DNS record(rule_id:%s) created failed :%s", _rule.Name, err.Error())
 						return nil, nil
 					}
-					log.Info("DNS record(id:%d,rule:%s,remote_ip:%s) has been created", r.ID, _rule.Name, ip)
+					log.Info("DNS record[id:%d rule:%s remote_ip:%s] has been created", r.ID, _rule.Name, ip)
 
 					//only send to client when this connection recorded first time.
 					if _rule.PushToClient {
@@ -92,11 +92,11 @@ func (s *Server) Run() {
 							database.DB.Where("rule_name=? and domain like ?", _rule.Name, "%"+flagGroup+"%").Model(&Record{}).Count(&count)
 							if count <= 1 {
 								r.PushToClient()
-								log.Trace("DNS record(id:%d) has been put to client message queue", r.ID)
+								log.Trace("DNS record[id%d] has been put to client message queue", r.ID)
 							}
 						} else {
 							r.PushToClient()
-							log.Trace("DNS record(id:%d) has been put to client message queue", r.ID)
+							log.Trace("DNS record[id%d] has been put to client message queue", r.ID)
 						}
 					}
 
@@ -104,7 +104,7 @@ func (s *Server) Run() {
 					if _rule.Notice {
 						go func() {
 							r.Notice()
-							log.Trace("DNS record(id:%d) notice has been sent", r.ID)
+							log.Trace("DNS record[id%d] notice has been sent", r.ID)
 						}()
 					}
 

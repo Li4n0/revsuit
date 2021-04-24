@@ -105,10 +105,10 @@ func (s *Server) handleConnection(conn net.Conn) {
 		// create new record
 		r, err := NewRecord(_rule, flag, path, ip, area)
 		if err != nil {
-			log.Error("RMI record(rule_id:%d) created failed :%s", _rule.ID, err.Error())
+			log.Error("RMI record[rule_id:%d] created failed :%s", _rule.ID, err.Error())
 			return
 		}
-		log.Info("RMI record(id:%d,rule:%s,remote_ip:%s) has been created", r.ID, _rule.Name, ip)
+		log.Info("RMI record[id:%d rule:%s remote_ip:%s] has been created", r.ID, _rule.Name, ip)
 
 		//only send to client when this connection recorded first time.
 		if _rule.PushToClient {
@@ -117,18 +117,18 @@ func (s *Server) handleConnection(conn net.Conn) {
 				database.DB.Where("rule_name=? and raw like ?", _rule.Name, "%"+flagGroup+"%").Model(&Record{}).Count(&count)
 				if count <= 1 {
 					r.PushToClient()
-					log.Trace("RMI record(id:%d) has been put to client message queue", r.ID)
+					log.Trace("RMI record[id%d] has been put to client message queue", r.ID)
 				}
 			}
 			r.PushToClient()
-			log.Trace("RMI record(id:%d) has been put to client message queue", r.ID)
+			log.Trace("RMI record[id%d] has been put to client message queue", r.ID)
 		}
 
 		//send notice
 		if _rule.Notice {
 			go func() {
 				r.Notice()
-				log.Trace("RMI record(id:%d) notice has been sent", r.ID)
+				log.Trace("RMI record[id%d] notice has been sent", r.ID)
 			}()
 		}
 	}

@@ -152,9 +152,9 @@ func UpsertRules(c *gin.Context) {
 	}
 
 	if update {
-		log.Trace("FTP rule(id:%d) has been updated", ftpRule.ID)
+		log.Trace("FTP rule[id%d] has been updated", ftpRule.ID)
 	} else {
-		log.Trace("FTP rule(id:%d) has been created", ftpRule.ID)
+		log.Trace("FTP rule[id%d] has been created", ftpRule.ID)
 	}
 
 	c.JSON(200, gin.H{
@@ -186,7 +186,7 @@ func DeleteRules(c *gin.Context) {
 		return
 	}
 
-	log.Trace("FTP rule(id:%d) has been deleted", ftpRule.ID)
+	log.Trace("FTP rule[id%d] has been deleted", ftpRule.ID)
 
 	c.JSON(200, gin.H{
 		"status": "succeed",

@@ -158,9 +158,9 @@ func UpsertRules(c *gin.Context) {
 	}
 
 	if update {
-		log.Trace("HTTP rule(id:%d) has been updated", httpRule.ID)
+		log.Trace("HTTP rule[id%d] has been updated", httpRule.ID)
 	} else {
-		log.Trace("HTTP rule(id:%d) has been created", httpRule.ID)
+		log.Trace("HTTP rule[id%d] has been created", httpRule.ID)
 	}
 
 	c.JSON(200, gin.H{
@@ -192,7 +192,7 @@ func DeleteRules(c *gin.Context) {
 		return
 	}
 
-	log.Trace("HTTP rule(id:%d) has been deleted", httpRule.ID)
+	log.Trace("HTTP rule[id%d] has been deleted", httpRule.ID)
 
 	c.JSON(200, gin.H{
 		"status": "succeed",

@@ -16,6 +16,11 @@ import (
 
 func (revsuit *Revsuit) registerRouter() {
 	revsuit.http.Router = gin.Default()
+	if revsuit.logLevel != log.LevelTrace {
+		revsuit.http.Router = gin.New()
+		revsuit.http.Router.Use(gin.Recovery())
+	}
+
 	revsuit.registerPlatformRouter()
 	revsuit.registerHttpRouter()
 }

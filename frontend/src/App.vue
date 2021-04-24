@@ -3,12 +3,12 @@
     <a-layout-sider v-model="collapsed" :trigger="null" collapsible>
       <div class="logo"><b>R</b><span v-if="!collapsed"><b>ev</b>Suit</span></div>
       <a-menu theme="dark" mode="inline" :selectedKeys="[this.$route.path]" :open-keys.sync='openKeys'>
-<!--        <a-menu-item key="/">-->
-<!--          <router-link to="/">-->
-<!--            <a-icon type="dashboard"/>-->
-<!--            <span>Dashboard</span>-->
-<!--          </router-link>-->
-<!--        </a-menu-item>-->
+        <!--        <a-menu-item key="/">-->
+        <!--          <router-link to="/">-->
+        <!--            <a-icon type="dashboard"/>-->
+        <!--            <span>Dashboard</span>-->
+        <!--          </router-link>-->
+        <!--        </a-menu-item>-->
         <a-sub-menu key="logs">
           <span slot="title"><a-icon type="bar-chart"/><span>Logs</span></span>
           <a-menu-item key="/logs/http">
@@ -22,6 +22,9 @@
           </a-menu-item>
           <a-menu-item key="/logs/mysql">
             <router-link to="/logs/mysql">MySQL Logs</router-link>
+          </a-menu-item>
+          <a-menu-item key="/logs/ftp">
+            <router-link to="/logs/ftp">FTP Logs</router-link>
           </a-menu-item>
         </a-sub-menu>
         <a-sub-menu key="rules">
@@ -37,6 +40,9 @@
           </a-menu-item>
           <a-menu-item key="/rules/mysql">
             <router-link to="/rules/mysql">MySQL Rules</router-link>
+          </a-menu-item>
+          <a-menu-item key="/rules/ftp">
+            <router-link to="/rules/ftp">FTP Rules</router-link>
           </a-menu-item>
         </a-sub-menu>
       </a-menu>

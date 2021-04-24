@@ -6,7 +6,7 @@
     </a-button>
     <!--    rule form-->
     <a-drawer
-        :title="formAction+ ' Dns rule'"
+        :title="formAction+ ' RMI rule'"
         :width="460"
         :visible="formVisible"
         :body-style="{ paddingBottom: '80px' }"
@@ -79,13 +79,6 @@
         {{ rank }}
       </a-tag>
     </span>
-      <span slot="type" slot-scope="type">
-      <a-tag
-          :color="colors[type]"
-      >
-        {{ resolveTypes[type] }}
-      </a-tag>
-    </span>
 
       <span slot="switchRender" slot-scope="checked,record,index,dataIndex">
         <a-switch :checked="checked" @click="clickSwitch(record,dataIndex.dataIndex)"></a-switch>
@@ -94,19 +87,19 @@
         <span v-for="value in values.split(',')" :key="value">{{ value }}<br/></span>
       </span>
       <span slot="action" slot-scope="text,record,index">
-<!--        <a-button @click="viewRule(record)" style="-->
-        <!--        color: #67C23A;-->
-        <!--    background-color: transparent;-->
-        <!--    border-color: #67C23A;-->
-        <!--    text-shadow: none;-->
-        <!--    margin-right: 10px;-->
-        <!--" size="small" ghost>View</a-button>-->
+        <a-button @click="viewRule(record)" style="
+                color: #67C23A;
+            background-color: transparent;
+            border-color: #67C23A;
+            text-shadow: none;
+            margin:0 10px 3px 0;
+        " size="small" ghost>View</a-button>
         <a-button @click="editRule(record,index)" style="
         color: #909399;
     background-color: transparent;
     border-color: #909399;
     text-shadow: none;
-    margin-right: 10px;
+    margin:0 10px 3px 0;
 " size="small" ghost>Edit</a-button>
         <a-popconfirm
             title="Are you sure delete this task?"
@@ -156,6 +149,7 @@ const columns = [
     title: 'FLAG FORMAT',
     dataIndex: 'flag_format',
     key: 'flag_format',
+    ellipsis: true,
   },
   {
     title: 'RANK',

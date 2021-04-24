@@ -77,12 +77,12 @@ import {getHttpRecord} from '@/api/record'
 import {store} from '@/main'
 
 const colors = {
-  "GET": "green",
-  "POST": "red",
-  "HEAD": "pink",
-  "PUT": "geekblue",
-  "OPTIONS": "cyan",
-  "DELETE": "purple",
+  "GET": "#52c41a",
+  "POST": "#f5222d",
+  "PUT": "#eb2f96",
+  "HEAD": "#02a7ff",
+  "OPTIONS": "#13c2c2",
+  "DELETE": "#722ed1",
 }
 
 const columns = [

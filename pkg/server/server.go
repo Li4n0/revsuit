@@ -5,6 +5,7 @@ import (
 	"github.com/li4n0/revsuit/internal/database"
 	"github.com/li4n0/revsuit/internal/notice"
 	"github.com/li4n0/revsuit/pkg/dns"
+	"github.com/li4n0/revsuit/pkg/ftp"
 	"github.com/li4n0/revsuit/pkg/mysql"
 	http "github.com/li4n0/revsuit/pkg/rhttp"
 	"github.com/li4n0/revsuit/pkg/rmi"
@@ -17,6 +18,7 @@ type Revsuit struct {
 	dns   *dns.Server
 	mysql *mysql.Server
 	rmi   *rmi.Server
+	ftp   *ftp.Server
 }
 
 func initDatabase(dsn string) {
@@ -58,6 +60,14 @@ func initDatabase(dsn string) {
 		log.Fatal(err.Error())
 	}
 	err = database.DB.AutoMigrate(&rmi.Rule{})
+	if err != nil {
+		log.Fatal(err.Error())
+	}
+	err = database.DB.AutoMigrate(&ftp.Record{})
+	if err != nil {
+		log.Fatal(err.Error())
+	}
+	err = database.DB.AutoMigrate(&ftp.Rule{})
 	if err != nil {
 		log.Fatal(err.Error())
 	}
@@ -140,6 +150,10 @@ func New(c *Config) *Revsuit {
 		s.rmi = rmi.GetServer()
 		s.rmi.Config = c.RMI
 	}
+	if c.FTP.Enable {
+		s.ftp = ftp.GetServer()
+		s.ftp.Config = c.FTP
+	}
 
 	if c.Addr != "" {
 		s.http.SetAddr(c.Addr)
@@ -165,6 +179,9 @@ func (revsuit *Revsuit) Run() {
 	}
 	if revsuit.rmi != nil {
 		go revsuit.rmi.Run()
+	}
+	if revsuit.ftp != nil {
+		go revsuit.ftp.Run()
 	}
 
 	revsuit.http.Run()

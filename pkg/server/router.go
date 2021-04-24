@@ -7,6 +7,7 @@ import (
 	"github.com/gin-gonic/gin"
 	"github.com/li4n0/revsuit/frontend"
 	"github.com/li4n0/revsuit/pkg/dns"
+	"github.com/li4n0/revsuit/pkg/ftp"
 	"github.com/li4n0/revsuit/pkg/mysql"
 	"github.com/li4n0/revsuit/pkg/rhttp"
 	"github.com/li4n0/revsuit/pkg/rmi"
@@ -61,6 +62,9 @@ func (revsuit *Revsuit) registerHttpRouter() {
 	rmiGroup := recordGroup.Group("/rmi")
 	rmiGroup.GET("", rmi.ListRecords)
 
+	ftpGroup := recordGroup.Group("/ftp")
+	ftpGroup.GET("", ftp.ListRecords)
+
 	// init rule router group
 	ruleGroup := revsuit.http.ApiGroup.Group("/rule")
 
@@ -83,6 +87,11 @@ func (revsuit *Revsuit) registerHttpRouter() {
 	rmiGroup.GET("", rmi.ListRules)
 	rmiGroup.POST("", rmi.UpsertRules)
 	rmiGroup.DELETE("", rmi.DeleteRules)
+
+	ftpGroup = ruleGroup.Group("/ftp")
+	ftpGroup.GET("", ftp.ListRules)
+	ftpGroup.POST("", ftp.UpsertRules)
+	ftpGroup.DELETE("", ftp.DeleteRules)
 
 	// init file router group
 	fileGroup := revsuit.http.ApiGroup.Group("/file")

@@ -2,6 +2,9 @@ package qqwry
 
 // Area return IpArea according to ip
 func Area(ip string) string {
+	defer func() {
+		_ = recover()
+	}()
 	if GetQQWry() == nil {
 		return ""
 	}

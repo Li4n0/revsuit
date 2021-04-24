@@ -21,7 +21,7 @@
               <span slot="label">
                   Response Status Code
                   <a-tooltip
-                      title="Number between 100-600, or template such as ${query.var_name}/${body.var_name}/${header.var_name}">
+                      title="Number between 100-600, or template such as ${query.varname}/${body.varname}/${header.varname}">
                     <a-icon type="question-circle-o"/>
                   </a-tooltip>
               </span>
@@ -39,7 +39,7 @@
               <span slot="label">
                   Response Headers
                   <a-tooltip
-                      title="Support template such as ${query.var_name}/${body.var_name}/${header.var_name}">
+                      title="Support template such as ${query.varname}/${body.varname}/${header.varname}">
                     <a-icon type="question-circle-o"/>
                   </a-tooltip>
               </span>
@@ -77,13 +77,14 @@
               <span slot="label">
                   Response Body
                   <a-tooltip
-                      title="Support template such as ${query.var_name}/${body.var_name}/${header.var_name}">
+                      title="Support template such as ${query.varname}/${body.varname}/${header.varname}">
                     <a-icon type="question-circle-o"/>
                   </a-tooltip>
               </span>
               <a-textarea v-model="form.response_body"
                           placeholder="Hello RevSuit!"
                           :readOnly="formReadOnly"
+                          rows="10"
               />
             </a-form-model-item>
           </a-col>
@@ -161,17 +162,17 @@
       <span slot="action" slot-scope="text,record,index">
         <a-button @click="viewRule(record)" style="
         color: #67C23A;
-    background-color: transparent;
-    border-color: #67C23A;
-    text-shadow: none;
-    margin-right: 10px;
+        background-color: transparent;
+        border-color: #67C23A;
+        text-shadow: none;
+        margin:0 10px 3px 0;
 " size="small" ghost>View</a-button>
         <a-button @click="editRule(record,index)" style="
         color: #909399;
     background-color: transparent;
     border-color: #909399;
     text-shadow: none;
-    margin-right: 10px;
+    margin:0 10px 3px 0;
 " size="small" ghost>Edit</a-button>
         <a-popconfirm
             title="Are you sure delete this task?"
@@ -221,6 +222,7 @@ const columns = [
     title: 'FLAG FORMAT',
     dataIndex: 'flag_format',
     key: 'flag_format',
+    ellipsis: true,
   },
   {
     title: 'RANK',

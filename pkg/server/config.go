@@ -2,6 +2,7 @@ package server
 
 import (
 	"github.com/li4n0/revsuit/pkg/dns"
+	"github.com/li4n0/revsuit/pkg/ftp"
 	"github.com/li4n0/revsuit/pkg/mysql"
 	"github.com/li4n0/revsuit/pkg/rhttp"
 	"github.com/li4n0/revsuit/pkg/rmi"
@@ -24,4 +25,5 @@ type Config struct {
 	DNS   dns.Config
 	MySQL mysql.Config
 	RMI   rmi.Config
+	FTP   ftp.Config
 }

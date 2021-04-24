@@ -8,6 +8,7 @@ import (
 	"github.com/li4n0/revsuit/internal/database"
 	"github.com/li4n0/revsuit/internal/newdns"
 	"github.com/li4n0/revsuit/internal/qqwry"
+	"github.com/li4n0/revsuit/internal/rule"
 	"github.com/patrickmn/go-cache"
 	log "unknwon.dev/clog/v2"
 )
@@ -72,7 +73,7 @@ func (s *Server) Run() {
 				ip := strings.Split(remoteAddr, ":")[0]
 
 				for _, _rule := range s.getRules() {
-					flag, flagGroup := _rule.Match(domain)
+					flag, flagGroup, vars := _rule.Match(domain)
 					if flag == "" {
 						continue
 					}
@@ -108,7 +109,7 @@ func (s *Server) Run() {
 					}
 
 					if _rule.Value != "" {
-
+						value := rule.CompileTpl(_rule.Value, vars)
 						_type := _rule.Type
 						if _rule.Type == newdns.REBINDING {
 							_type = newdns.A
@@ -121,16 +122,16 @@ func (s *Server) Run() {
 								Records: func() []newdns.Record {
 									switch _rule.Type {
 									case newdns.TXT:
-										return []newdns.Record{{Data: []string{_rule.Value}}}
+										return []newdns.Record{{Data: []string{value}}}
 									case newdns.CNAME, newdns.NS:
-										return []newdns.Record{{Address: _rule.Value + "."}}
+										return []newdns.Record{{Address: value + "."}}
 									case newdns.REBINDING:
 
 										// Get rebinding ip list
 										values, ok := rebindingCache.Get(ip)
 										if !ok {
-											rebindingCache.Set(ip, strings.Split(_rule.Value, ","), cache.DefaultExpiration)
-											values = strings.Split(_rule.Value, ",")
+											rebindingCache.Set(ip, strings.Split(value, ","), cache.DefaultExpiration)
+											values = strings.Split(value, ",")
 										}
 
 										//Choose and delete first ip
@@ -144,7 +145,7 @@ func (s *Server) Run() {
 										log.Trace("DNS rebinding client(ip:%v) to %v", ip, value)
 										return []newdns.Record{{Address: value}}
 									default:
-										return []newdns.Record{{Address: _rule.Value}}
+										return []newdns.Record{{Address: value}}
 									}
 								}(),
 								TTL: _rule.TTL * time.Second,

@@ -7,7 +7,7 @@
         @cancel="cancel"
         @ok="auth"
     >
-      <a-input v-model.lazy="token" placeholder="Your token"/>
+      <a-input v-model.lazy="token" @pressEnter="auth" placeholder="Your token"/>
     </a-modal>
   </div>
 </template>

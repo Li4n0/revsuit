@@ -13,42 +13,52 @@ const routes = [
     {
         path: '/logs/http',
         name: 'HttpLogs',
-        component: () => import(/* webpackChunkName: "about" */ '../views/logs/Http')
+        component: () => import( '../views/logs/Http')
     },
     {
         path: '/logs/dns',
         name: 'DnsLogs',
-        component: () => import(/* webpackChunkName: "about" */ '../views/logs/Dns')
+        component: () => import( '../views/logs/Dns')
     },
     {
         path: '/logs/mysql',
         name: 'MysqlLogs',
-        component: () => import(/* webpackChunkName: "about" */ '../views/logs/Mysql')
+        component: () => import( '../views/logs/Mysql')
     },
     {
         path: '/logs/rmi',
         name: 'RmiLogs',
-        component: () => import(/* webpackChunkName: "about" */ '../views/logs/Rmi')
+        component: () => import( '../views/logs/Rmi')
+    },
+    {
+        path: '/logs/ftp',
+        name: 'FtpLogs',
+        component: () => import( '../views/logs/Ftp')
     },
     {
         path: '/rules/http',
         name: 'HttpRules',
-        component: () => import(/* webpackChunkName: "about" */ '../views/rules/Http')
+        component: () => import( '../views/rules/Http')
     },
     {
         path: '/rules/dns',
         name: 'DnsRules',
-        component: () => import(/* webpackChunkName: "about" */ '../views/rules/Dns')
+        component: () => import( '../views/rules/Dns')
     },
     {
         path: '/rules/mysql',
         name: 'MysqlRules',
-        component: () => import(/* webpackChunkName: "about" */ '../views/rules/Mysql')
+        component: () => import( '../views/rules/Mysql')
     },
     {
         path: '/rules/rmi',
         name: 'RmiRules',
-        component: () => import(/* webpackChunkName: "about" */ '../views/rules/Rmi')
+        component: () => import( '../views/rules/Rmi')
+    },
+    {
+        path: '/rules/ftp',
+        name: 'FtpRules',
+        component: () => import( '../views/rules/Ftp')
     }
 ]
 

@@ -43,3 +43,14 @@ export function getRmiRecord(params) {
         }
     })
 }
+
+export function getFtpRecord(params) {
+    return request({
+        url: '/record/ftp',
+        params: params,
+        method: 'get',
+        validateStatus: function (status) {
+            return status >= 200 && status < 300 // 默认的
+        }
+    })
+}

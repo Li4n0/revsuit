@@ -49,10 +49,11 @@ func (s *Server) updateRules() error {
 func (s *Server) handleConnection(conn net.Conn) {
 	defer conn.Close()
 
-	ip, port, _ := net.SplitHostPort(conn.RemoteAddr().String())
 	if err := conn.SetDeadline(time.Now().Add(time.Second * 30)); err != nil {
 		log.Error("RMI set connection deadline error:%v", err.Error())
 	}
+
+	ip, port, _ := net.SplitHostPort(conn.RemoteAddr().String())
 
 	buf := make([]byte, 1024)
 	_, err := conn.Read(buf)
@@ -94,7 +95,7 @@ func (s *Server) handleConnection(conn net.Conn) {
 	path := strings.TrimRight(string(frags[len(frags)-1][2:]), "\x00")
 
 	for _, _rule := range s.getRules() {
-		flag, flagGroup := _rule.Match(path)
+		flag, flagGroup, _ := _rule.Match(path)
 		if flag == "" {
 			continue
 		}

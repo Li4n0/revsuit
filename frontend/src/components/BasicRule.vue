@@ -15,10 +15,13 @@
         <a-form-model-item :rules="rules.flagFormat" prop="flag_format">
               <span slot="label">
         Flag Format&nbsp;
-        <a-tooltip title="1. Only when the request contains content that satisfies the flag format, the request will be captured.
-        2. Please use regular expression syntax.
+        <a-tooltip title="Basic usage:
+        1. Only when the request contains content that satisfies the flag format, the request will be captured.
+        2. Use regular expression syntax.
         3. The character '*' means to capture all requests.
-        4. Advanced usage: When the format uses grouping, the platform will only notify the user or push to the client when the first group appears for the first time.">
+        Advanced usage:
+        1. When the regex uses grouping without group name, the platform will only notify the user or push to the client when the first group appears for the first time.
+        2. When the regex uses grouping with group name, you can get these submatches through template variables and use them in other fields of the rule.">
           <a-icon type="question-circle-o"/>
         </a-tooltip>
       </span>

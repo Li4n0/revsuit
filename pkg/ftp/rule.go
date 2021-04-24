@@ -1,4 +1,4 @@
-package rmi
+package ftp
 
 import (
 	"strconv"
@@ -10,17 +10,18 @@ import (
 	log "unknwon.dev/clog/v2"
 )
 
-// RMI rule struct
+// FTP rule struct
 type Rule struct {
 	rule.BaseRule
+	PasvAddress string `gorm:"pasv_address" json:"pasv_address" form:"pasv_address"`
 }
 
 func (Rule) TableName() string {
-	return "rmi_rules"
+	return "ftp_rules"
 }
 
-// New rmi rule struct
-func NewRule(name, flagFormat string, pushToClient, notice bool) *Rule {
+// New ftp rule struct
+func NewRule(name, flagFormat, pasvAddress string, pushToClient, notice bool) *Rule {
 	return &Rule{
 		BaseRule: rule.BaseRule{
 			Name:         name,
@@ -28,10 +29,11 @@ func NewRule(name, flagFormat string, pushToClient, notice bool) *Rule {
 			PushToClient: pushToClient,
 			Notice:       notice,
 		},
+		PasvAddress: pasvAddress,
 	}
 }
 
-// Create or update the rmi rule in database and ruleSet
+// Create or update the ftp rule in database and ruleSet
 func (r *Rule) CreateOrUpdate() (err error) {
 	db := database.DB.Model(r)
 	err = db.Clauses(clause.OnConflict{
@@ -41,6 +43,7 @@ func (r *Rule) CreateOrUpdate() (err error) {
 				"name",
 				"flag_format",
 				"rank",
+				"pasv_address",
 				"push_to_client",
 				"notice",
 			}),
@@ -53,7 +56,7 @@ func (r *Rule) CreateOrUpdate() (err error) {
 	return err
 }
 
-// Delete the rmi rule in database and ruleSet
+// Delete the ftp rule in database and ruleSet
 func (r *Rule) Delete() (err error) {
 	db := database.DB.Model(r)
 	err = db.Delete(r).Error
@@ -65,16 +68,16 @@ func (r *Rule) Delete() (err error) {
 	return err
 }
 
-// List all rmi rules those satisfy the filter
+// List all ftp rules those satisfy the filter
 func ListRules(c *gin.Context) {
 	var (
-		rmiRule Rule
+		ftpRule Rule
 		res     []Rule
 		count   int64
 		order   = c.Query("order")
 	)
 
-	if err := c.ShouldBind(&rmiRule); err != nil {
+	if err := c.ShouldBind(&ftpRule); err != nil {
 		c.JSON(400, gin.H{
 			"status": "failed",
 			"error":  err,
@@ -83,9 +86,9 @@ func ListRules(c *gin.Context) {
 		return
 	}
 
-	db := database.DB.Model(&rmiRule)
-	if rmiRule.Name != "" {
-		db.Where("name = ?", rmiRule.Name)
+	db := database.DB.Model(&ftpRule)
+	if ftpRule.Name != "" {
+		db.Where("name = ?", ftpRule.Name)
 	}
 	db.Count(&count)
 
@@ -119,14 +122,14 @@ func ListRules(c *gin.Context) {
 	})
 }
 
-// Create or update rmi rule from user submit
+// Create or update ftp rule from user submit
 func UpsertRules(c *gin.Context) {
 	var (
-		rmiRule Rule
+		ftpRule Rule
 		update  bool
 	)
 
-	if err := c.ShouldBind(&rmiRule); err != nil {
+	if err := c.ShouldBind(&ftpRule); err != nil {
 		c.JSON(400, gin.H{
 			"status": "failed",
 			"error":  err.Error(),
@@ -135,11 +138,11 @@ func UpsertRules(c *gin.Context) {
 		return
 	}
 
-	if rmiRule.ID != 0 {
+	if ftpRule.ID != 0 {
 		update = true
 	}
 
-	if err := rmiRule.CreateOrUpdate(); err != nil {
+	if err := ftpRule.CreateOrUpdate(); err != nil {
 		c.JSON(400, gin.H{
 			"status": "failed",
 			"error":  err.Error(),
@@ -149,9 +152,9 @@ func UpsertRules(c *gin.Context) {
 	}
 
 	if update {
-		log.Trace("RMI rule(id:%d) has been updated", rmiRule.ID)
+		log.Trace("FTP rule(id:%d) has been updated", ftpRule.ID)
 	} else {
-		log.Trace("RMI rule(id:%d) has been created", rmiRule.ID)
+		log.Trace("FTP rule(id:%d) has been created", ftpRule.ID)
 	}
 
 	c.JSON(200, gin.H{
@@ -161,11 +164,11 @@ func UpsertRules(c *gin.Context) {
 	})
 }
 
-// Delete rmi rule from user submit
+// Delete ftp rule from user submit
 func DeleteRules(c *gin.Context) {
-	var rmiRule Rule
+	var ftpRule Rule
 
-	if err := c.ShouldBind(&rmiRule); err != nil {
+	if err := c.ShouldBind(&ftpRule); err != nil {
 		c.JSON(400, gin.H{
 			"status": "failed",
 			"error":  err.Error(),
@@ -174,7 +177,7 @@ func DeleteRules(c *gin.Context) {
 		return
 	}
 
-	if err := rmiRule.Delete(); err != nil {
+	if err := ftpRule.Delete(); err != nil {
 		c.JSON(400, gin.H{
 			"status": "failed",
 			"error":  err.Error(),
@@ -183,7 +186,7 @@ func DeleteRules(c *gin.Context) {
 		return
 	}
 
-	log.Trace("RMI rule(id:%d) has been deleted", rmiRule.ID)
+	log.Trace("FTP rule(id:%d) has been deleted", ftpRule.ID)
 
 	c.JSON(200, gin.H{
 		"status": "succeed",

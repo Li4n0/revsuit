@@ -81,6 +81,13 @@ func ListRecords(c *gin.Context) {
 	if mysqlRecord.ClientName != "" {
 		db.Where("client_name like ?", "%"+mysqlRecord.ClientName)
 	}
+	if c.Query("load_local_data") != "" {
+		if c.Query("load_local_data") == "true" {
+			db.Where("load_local_data = ?", true)
+		} else {
+			db.Where("load_local_data = ?", false)
+		}
+	}
 
 	page, err := strconv.Atoi(c.Query("page"))
 	if err != nil {

@@ -47,10 +47,9 @@ func (s *Server) getRules() []*Rule {
 
 func (s *Server) updateRules() error {
 	db := database.DB.Model(new(Rule))
+	defer s.rulesLock.Unlock()
 	s.rulesLock.Lock()
-	db.Order("rank desc").Find(&s.rules)
-	s.rulesLock.Unlock()
-	return nil
+	return db.Order("rank desc").Find(&s.rules).Error
 }
 
 // NewConnection is part of the mysql.Handler interface.
@@ -90,27 +89,25 @@ func (s *Server) NewConnection(c *vmysql.Conn) {
 func (s *Server) ConnectionClosed(c *vmysql.Conn) {
 	log.Trace("MySQL Client leaved, ID [%d]", c.ConnectionID)
 
-	var (
-		user                                  = c.User
-		schema                                = c.SchemaName
-		supportLoadLocalData                  = c.SupportLoadDataLocal
-		cr, ok                                = s.connRulePool.Load(c.ConnectionID)
-		clientName, clientOS, flag, flagGroup string
-	)
+	var clientName, clientOS, flag, flagGroup string
 
+	user := c.User
+	schema := c.SchemaName
+	supportLoadLocalData := c.SupportLoadDataLocal
+
+	cr, ok := s.connRulePool.Load(c.ConnectionID)
 	if !ok {
+		log.Error("MySQL Connection rule(%d) not match flag", c.ConnectionID)
 		return
 	}
 
 	_rule := cr.(*Rule)
+	// flag must not be empty
 	for _, s := range []string{user, schema} {
 		flag, flagGroup, _ = _rule.Match(s)
 		if flag != "" {
 			break
 		}
-	}
-	if flag == "" {
-		log.Error("MySQL Connection rule(%d) not match flag", c.ConnectionID)
 	}
 
 	if c.ConnAttrs != nil {

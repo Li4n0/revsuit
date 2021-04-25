@@ -37,8 +37,7 @@ func NewRecord(rule *Rule, flag, path, ip, area string) (r *Record, err error) {
 		Path: path,
 		Rule: *rule,
 	}
-	err = database.DB.Create(r).Error
-	return r, err
+	return r, database.DB.Create(r).Error
 }
 
 func ListRecords(c *gin.Context) {
@@ -82,7 +81,7 @@ func ListRecords(c *gin.Context) {
 		return
 	}
 
-	if order != "desc" && order != "asc" {
+	if order != "asc" {
 		order = "desc"
 	}
 

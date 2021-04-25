@@ -81,10 +81,9 @@ func (s *Server) getRules() []*Rule {
 
 func (s *Server) updateRules() error {
 	db := database.DB.Model(new(Rule))
+	defer s.rulesLock.Unlock()
 	s.rulesLock.Lock()
-	db.Order("rank desc").Find(&s.rules)
-	s.rulesLock.Unlock()
-	return nil
+	return db.Order("rank desc").Find(&s.rules).Error
 }
 
 func (s *Server) Run() {

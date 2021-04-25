@@ -43,8 +43,7 @@ func NewRecord(rule *Rule, flag, user, password, path, ip, area string, status S
 		Status:   status,
 		Rule:     *rule,
 	}
-	err = database.DB.Create(r).Error
-	return r, err
+	return r, database.DB.Create(r).Error
 }
 
 func ListRecords(c *gin.Context) {

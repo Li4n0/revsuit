@@ -65,14 +65,9 @@ func (s *Server) NewConnection(c *vmysql.Conn) {
 	)
 
 	for _, _rule := range s.getRules() {
-		var flag string
-		for _, s := range []string{user, schema} {
-			flag, _, _ = _rule.Match(s)
-			if flag != "" {
-				break
-			}
-		}
-		if flag == "" {
+		userFlag, _, _ := _rule.Match(user)
+		schemaFlag, _, _ := _rule.Match(schema)
+		if userFlag == "" && schemaFlag == "" {
 			continue
 		}
 		s.connRulePool.Store(c.ConnectionID, _rule)

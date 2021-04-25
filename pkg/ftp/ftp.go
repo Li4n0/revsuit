@@ -206,7 +206,7 @@ func (s *Server) Run() {
 		log.Info("Start to listen FTP PASV port at %v", pasvAddress)
 		listener, err := net.Listen("tcp", pasvAddress)
 		if err != nil {
-			log.Fatal("FTP failed to listen on pasv port : %v", err.Error())
+			log.Fatal("FTP failed to listen on pasv port : %v", err)
 		}
 		for {
 			tcpConn, err := listener.Accept()

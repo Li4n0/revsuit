@@ -100,7 +100,7 @@ func ListRules(c *gin.Context) {
 		return
 	}
 
-	if order != "desc" && order != "asc" {
+	if order != "asc" {
 		order = "desc"
 	}
 

@@ -66,7 +66,7 @@ func (r *Rule) Delete() (err error) {
 	return GetServer().updateRules()
 }
 
-// List all ftp rules those satisfy the filter
+// ListRules lists all ftp rules those satisfy the filter
 func ListRules(c *gin.Context) {
 	var (
 		ftpRule Rule

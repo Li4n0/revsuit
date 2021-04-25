@@ -52,8 +52,7 @@ func (r *Rule) CreateOrUpdate() (err error) {
 		return
 	}
 
-	err = GetServer().updateRules()
-	return err
+	return GetServer().updateRules()
 }
 
 // Delete the ftp rule in database and ruleSet

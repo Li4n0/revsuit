@@ -33,7 +33,7 @@ func NewRule(name, flagFormat, pasvAddress string, pushToClient, notice bool) *R
 	}
 }
 
-// Create or update the ftp rule in database and ruleSet
+// CreateOrUpdate creates or updates the ftp rule in database and ruleSet
 func (r *Rule) CreateOrUpdate() (err error) {
 	db := database.DB.Model(r)
 	err = db.Clauses(clause.OnConflict{

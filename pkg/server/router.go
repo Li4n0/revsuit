@@ -38,6 +38,7 @@ func (revsuit *Revsuit) registerPlatformRouter() {
 	revsuit.http.ApiGroup = api
 
 	//platform routers
+	api.GET("/auth", auth)
 	api.GET("/events", events)
 	api.GET("/ping", ping)
 }

@@ -2,14 +2,20 @@ package server
 
 import (
 	"io"
+	"net/http"
 
 	"github.com/gin-gonic/gin"
 	"github.com/li4n0/revsuit/internal/record"
 	log "unknwon.dev/clog/v2"
 )
 
-func ping(c *gin.Context) {
+func auth(c *gin.Context) {
+	c.SetSameSite(http.SameSiteLaxMode)
 	c.SetCookie("token", c.Request.Header["Token"][0], 0, "/revsuit/api/", c.Request.Host, true, true)
+	c.String(200, "pong")
+}
+
+func ping(c *gin.Context) {
 	c.String(200, "pong")
 }
 

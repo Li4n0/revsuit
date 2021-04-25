@@ -8,7 +8,9 @@ import '@/utils/index'
 Vue.config.productionTip = false;
 
 Vue.use(Antd);
-export const store = Vue.observable({authed: localStorage.getItem("token")})
+export const store = Vue.observable({
+    authed: true,
+})
 /* eslint-disable no-new */
 new Vue({
     router: router,

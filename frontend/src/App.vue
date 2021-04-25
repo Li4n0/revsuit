@@ -28,7 +28,7 @@
           </a-menu-item>
         </a-sub-menu>
         <a-sub-menu key="rules">
-          <span slot="title"><a-icon type="radar-chart"/><span>Rules</span></span>
+          <span slot="title"><rule-icon/><span>Rules</span></span>
           <a-menu-item key="/rules/http">
             <router-link to="/rules/http">HTTP Rules</router-link>
           </a-menu-item>
@@ -54,12 +54,43 @@
             :type="collapsed ? 'menu-unfold' : 'menu-fold'"
             @click="() => (collapsed = !collapsed)"
         />
+        <!--        <transition name="list1">-->
+        <div v-if="$route.path.includes('logs')" style="float: right; width:45% ;padding: 12px 0;line-height: 24px;">
+          <a-row :gutter="24" type="flex">
+            <a-col :span="21">
+              <a-form-model v-show="showSettings" ref="settings" layout="inline">
+                <a-row :gutter="24" type="flex">
+                  <a-col :span="9" :offset="2">
+                    <a-form-model-item label="Auto Refresh">
+                      <a-switch id="auto-refresh" v-model="autoRefresh"></a-switch>
+                    </a-form-model-item>
+                  </a-col>
+                  <a-col :span="13">
+                    <a-form-model-item label="Refresh Interval">
+                      <a-input-number style="margin-right: -3rem;" id="refresh-interval"
+                                      v-model="refreshInterval"
+                                      :disabled="!autoRefresh"></a-input-number>
+                    </a-form-model-item>
+                  </a-col>
+                </a-row>
+              </a-form-model>
+            </a-col>
+            <a-col :span="3">
+              <a-icon
+                  :style="'font-size: 18px;padding: 12px 0;'+(showSettings?'color: #1b90ff;':'')"
+                  type="setting"
+                  @click="showSettings = !showSettings"
+              />
+            </a-col>
+          </a-row>
+        </div>
+        <!--        </transition>-->
       </a-layout-header>
       <a-layout-content
           :style="{ margin: '24px 16px', padding: '24px', borderRadius: '20px',background: '#fff', minHeight: 'initial' }"
       >
         <transition name="fade-transform">
-          <router-view></router-view>
+          <router-view ref='content'/>
         </transition>
       </a-layout-content>
     </a-layout>
@@ -68,15 +99,53 @@
 </template>
 <script>
 import Auth from '@/components/Auth'
+import RuleIcon from "@/components/Icon";
 
 export default {
   data() {
     return {
+      autoRefresh: localStorage.getItem("autoRefresh") === "true",
+      refreshInterval: localStorage.getItem("refreshInterval"),
       collapsed: false,
+      showSettings: false,
       openKeys: ['logs', "rules"],
     };
   },
+  methods: {
+    timing() {
+      if (this.timer !== null) {
+        clearInterval(this.timer)
+      }
+      this.timer = setInterval(() => {
+        this.$refs.content.fetch()
+      }, this.refreshInterval * 1000)
+    }
+  },
+  mounted() {
+    if (this.autoRefresh) {
+      this.timing()
+    }
+  },
+  destroyed() {
+    clearInterval(this.timer)
+  },
+  watch: {
+    autoRefresh(val) {
+      if (!val) {
+        clearInterval(this.timer)
+      } else {
+        this.timing()
+      }
+      localStorage.setItem('autoRefresh', val)
+    },
+    refreshInterval(val) {
+      clearInterval(this.timer)
+      this.timing()
+      localStorage.setItem('refreshInterval', val)
+    }
+  },
   components: {
+    RuleIcon,
     Auth
   }
 };
@@ -85,6 +154,17 @@ export default {
 html, body {
   height: 100%;
   margin: 0;
+}
+
+.fade-enter.fade-enter-active,
+.fade-appear.fade-appear-active {
+  -webkit-animation-name: none;
+  animation-name: none;
+}
+
+.fade-leave.fade-leave-active {
+  -webkit-animation-name: none;
+  animation-name: none;
 }
 
 /* fade-transform */

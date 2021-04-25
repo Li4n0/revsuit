@@ -5,13 +5,4 @@ const service = axios.create({
     timeout: 5000 // request timeout
 })
 
-service.interceptors.request.use(function (config) {
-    const token = localStorage.getItem("token")
-    if (token !== null) {
-        config.headers['Token'] = token
-    }
-    // 在发送请求之前做些什么
-    return config
-})
-
 export default service

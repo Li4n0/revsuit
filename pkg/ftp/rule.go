@@ -20,7 +20,7 @@ func (Rule) TableName() string {
 	return "ftp_rules"
 }
 
-// New ftp rule struct
+// NewRule creates a new ftp rule struct
 func NewRule(name, flagFormat, pasvAddress string, pushToClient, notice bool) *Rule {
 	return &Rule{
 		BaseRule: rule.BaseRule{

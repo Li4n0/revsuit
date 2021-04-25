@@ -248,6 +248,7 @@ export default {
   name: 'MysqlRules',
   data() {
     return {
+      store,
       data: [],
       formVisible: false,
       pagination: {current: 1},
@@ -270,18 +271,17 @@ export default {
       this.fetch();
     },
     fetch: function () {
-      this.loading = true;
       let params = {
         ...this.filters,
         page: this.pagination.current,
         order: this.order
       }
+      this.loading = true;
       getMysqlRule(params).then(res => {
         let result = res.data.result
         this.data = result.data
         const pagination = {...this.pagination};
-        // Read total count from server
-        // pagination.total = data.totalCount;
+
         pagination.total = result.count;
         this.pagination = pagination;
         this.loading = false
@@ -419,6 +419,11 @@ export default {
   },
   mounted() {
     this.fetch({page: "1"});
+  },
+  watch: {
+    'store.authed'() {
+      this.fetch()
+    }
   },
   components: {
     BasicRule,

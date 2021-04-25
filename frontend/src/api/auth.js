@@ -1,11 +1,12 @@
 import request from './index'
 
-export function ping() {
+export function auth(token) {
     return request({
-        url: '/ping',
+        url: '/auth',
         method: 'get',
+        headers: {"Token": token},
         validateStatus: function (status) {
-            return status >= 200 && status < 300 // 默认的
+            return status >= 200 && status < 300
         }
     })
 }

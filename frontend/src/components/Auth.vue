@@ -13,13 +13,13 @@
 </template>
 <script>
 import {store} from "@/main";
-import {ping} from "@/api/ping"
+import {auth} from "@/api/auth"
 
 export default {
   data() {
     return {
       confirmLoading: false,
-      token: localStorage.getItem("token")
+      token: ""
     };
   },
   computed: {
@@ -27,17 +27,13 @@ export default {
       return !store.authed
     },
   },
-  watch: {
-    token: function (val) {
-      localStorage.setItem("token", val)
-    }
-  },
   methods: {
     auth() {
       this.confirmLoading = true;
-      ping().then(() => {
+      auth(this.token).then(() => {
         store.authed = true;
         this.confirmLoading = false;
+        this.token = ""
       }).catch(e => {
         if (e.response.status === 403) {
           this.$notification.error({

@@ -67,6 +67,12 @@ func ListRecords(c *gin.Context) {
 	if ftpRecord.Flag != "" {
 		db.Where("flag = ?", ftpRecord.Flag)
 	}
+	if ftpRecord.User != "" {
+		db.Where("user like ?", "%"+ftpRecord.User+"%")
+	}
+	if ftpRecord.Password != "" {
+		db.Where("password like ?", "%"+ftpRecord.Password+"%")
+	}
 	if ftpRecord.Path != "" {
 		db.Where("path like ?", "%"+ftpRecord.Path+"%")
 	}

@@ -27,41 +27,16 @@
         False
       </a-checkbox>
     </div>
-    <div
+    <filter-dropdown
         slot="filterDropdown"
         slot-scope="{ setSelectedKeys, selectedKeys, clearFilters, column }"
-        style="padding: 8px"
-    >
-      <a-input
-          :placeholder="`Search ${column.dataIndex}`"
-          :value="selectedKeys[0]"
-          style="width: 188px; margin-bottom: 8px; display: block;"
-          @change="e => setSelectedKeys(e.target.value ? [e.target.value] : [])"
-          @pressEnter="() => {
-            filters[column.dataIndex] = selectedKeys[0];
-            fetch()
-          }"
-      />
-      <a-button
-          type="primary"
-          icon="search"
-          size="small"
-          style="width: 90px; margin-right: 8px"
-          @click="() => {
-            filters[column.dataIndex] = selectedKeys[0];
-            fetch()
-          }"
-      >
-        Search
-      </a-button>
-      <a-button size="small" style="width: 90px" @click="() =>{
-        clearFilters();
-        delete filters[column.dataIndex];
-        fetch()
-      }">
-        Reset
-      </a-button>
-    </div>
+        :set-selected-keys="setSelectedKeys"
+        :selected-keys="selectedKeys"
+        :clear-filters="clearFilters"
+        :column="column"
+        :filters="filters"
+        :fetch="fetch"
+    />
     <a-icon
         slot="filterIcon"
         slot-scope="filtered"
@@ -96,6 +71,7 @@
 
 import {getMysqlRecord} from '@/api/record'
 import {store} from '@/main'
+import FilterDropdown from '@/components/FilterDropdown'
 
 const colors = [
   "#13c2c2",
@@ -200,6 +176,7 @@ export default {
   name: 'MysqlLogs',
   data() {
     return {
+      store,
       data: [],
       pagination: {current: 1},
       filters: {},
@@ -218,18 +195,17 @@ export default {
       this.fetch();
     },
     fetch: function () {
-      this.loading = true;
       let params = {
         ...this.filters,
         page: this.pagination.current,
         order: this.order
       }
+      this.loading = true;
       getMysqlRecord(params).then(res => {
         let result = res.data.result
         this.data = result.data
         const pagination = {...this.pagination};
-        // Read total count from server
-        // pagination.total = data.totalCount;
+
         pagination.total = result.count;
         this.pagination = pagination;
         this.loading = false
@@ -241,10 +217,18 @@ export default {
           console.error(e)
         }
       })
-    }
+    },
   },
   mounted() {
-    this.fetch({page: "1"});
+    this.fetch();
   },
+  watch: {
+    'store.authed'() {
+      this.fetch()
+    }
+  },
+  components: {
+    FilterDropdown
+  }
 }
 </script>

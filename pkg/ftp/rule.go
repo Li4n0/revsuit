@@ -55,7 +55,7 @@ func (r *Rule) CreateOrUpdate() (err error) {
 	return GetServer().updateRules()
 }
 
-// Delete the ftp rule in database and ruleSet
+// Delete deletes the ftp rule in database and ruleSet
 func (r *Rule) Delete() (err error) {
 	db := database.DB.Model(r)
 	err = db.Delete(r).Error

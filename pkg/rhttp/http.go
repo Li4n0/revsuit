@@ -152,7 +152,7 @@ func (s *Server) Receive(c *gin.Context) {
 		// create new record
 		r, err := NewRecord(_rule, flag, c.Request.Method, u, ip, area, string(raw))
 		if err != nil {
-			log.Error("HTTP record[rule_id:%d] created failed :%s", _rule.ID, err.Error())
+			log.Error("HTTP record[rule_id:%d] created failed :%s", _rule.ID, err)
 			code, err := strconv.Atoi(compileTpl(c, _rule.ResponseStatusCode, vars))
 			if err != nil || code < 100 || code > 600 {
 				code = 400

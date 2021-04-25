@@ -127,7 +127,7 @@ func (s *Server) ConnectionClosed(c *vmysql.Conn) {
 
 	r, err := newRecord(_rule, flag, user, clientName, clientOS, ip, qqwry.Area(ip), supportLoadLocalData, files)
 	if err != nil {
-		log.Error("MySQL record(rule_id:%s) created failed :%s", _rule.Name, err.Error())
+		log.Error("MySQL record(rule_id:%s) created failed :%s", _rule.Name, err)
 		return
 	}
 	log.Info("MySQL record[id:%d rule:%s remote_ip:%s] has been created", r.ID, _rule.Name, ip)

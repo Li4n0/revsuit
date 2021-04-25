@@ -79,7 +79,7 @@ func (s *Server) Run() {
 
 					r, err := newRecord(_rule, flag, domain, ip, qqwry.Area(ip))
 					if err != nil {
-						log.Error("DNS record(rule_id:%s) created failed :%s", _rule.Name, err.Error())
+						log.Error("DNS record(rule_id:%s) created failed :%s", _rule.Name, err)
 						return nil, nil
 					}
 					log.Info("DNS record[id:%d rule:%s remote_ip:%s] has been created", r.ID, _rule.Name, ip)

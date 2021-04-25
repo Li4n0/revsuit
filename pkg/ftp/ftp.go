@@ -211,7 +211,7 @@ func (s *Server) Run() {
 		for {
 			tcpConn, err := listener.Accept()
 			if err != nil {
-				log.Error("FTP accept connection error: %v", err.Error())
+				log.Error("FTP accept connection error: %v", err)
 				continue
 			}
 			_ = tcpConn.Close()

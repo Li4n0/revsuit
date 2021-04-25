@@ -1,6 +1,6 @@
 package qqwry
 
-// Area return IpArea according to ip
+// Area returns IpArea according to ip
 func Area(ip string) string {
 	defer func() {
 		_ = recover()

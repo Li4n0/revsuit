@@ -10,7 +10,7 @@ import (
 	log "unknwon.dev/clog/v2"
 )
 
-// Http rule struct
+// RMI rule struct
 type Rule struct {
 	rule.BaseRule
 }
@@ -149,9 +149,9 @@ func UpsertRules(c *gin.Context) {
 	}
 
 	if update {
-		log.Trace("RMI rule(id:%d) has been updated", rmiRule.ID)
+		log.Trace("RMI rule[id%d] has been updated", rmiRule.ID)
 	} else {
-		log.Trace("RMI rule(id:%d) has been created", rmiRule.ID)
+		log.Trace("RMI rule[id%d] has been created", rmiRule.ID)
 	}
 
 	c.JSON(200, gin.H{
@@ -183,7 +183,7 @@ func DeleteRules(c *gin.Context) {
 		return
 	}
 
-	log.Trace("RMI rule(id:%d) has been deleted", rmiRule.ID)
+	log.Trace("RMI rule[id%d] has been deleted", rmiRule.ID)
 
 	c.JSON(200, gin.H{
 		"status": "succeed",

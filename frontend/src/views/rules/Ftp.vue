@@ -6,7 +6,7 @@
     </a-button>
     <!--    rule form-->
     <a-drawer
-        :title="formAction+ ' MySQL rule'"
+        :title="formAction+ ' FTP rule'"
         :width="460"
         :visible="formVisible"
         :body-style="{ paddingBottom: '80px' }"
@@ -16,57 +16,20 @@
         <BasicRule :form="form" :readOnly="formReadOnly"/>
         <a-row :gutter="24">
           <a-col :span="24">
-            <a-form-model-item label="Files" :rules="rules.files">
+            <a-form-model-item>
+              <span slot="label">
+                  Pasv Address
+                  <a-tooltip
+                      title="Support template such as ${user}/${password}/${varname}">
+                    <a-icon type="question-circle-o"/>
+                  </a-tooltip>
+              </span>
               <a-input
-                  v-model="form.files"
+                  v-model="form.pasv_address"
                   style="width: 100%"
-                  placeholder="please enter file name,use ';' to split multiple file names"
+                  placeholder="use default value in the config"
                   :readOnly="formReadOnly"
-                  :disabled="form.exploit_jdbc_client"
               />
-            </a-form-model-item>
-          </a-col>
-        </a-row>
-        <a-row>
-          <a-form-model-item>
-            <div class="ant-form-item-label">
-              <label for="exploit-jdbc-client">Exploit Jdbc Client
-                <a-tooltip placement="topLeft" title="Whether test to exploit jdbc client.">
-                  <a-icon type="question-circle"/>
-                </a-tooltip>
-              </label>
-            </div>
-            <a-switch v-model="form.exploit_jdbc_client" id="exploit-jdbc-client" :disabled="formReadOnly"/>
-          </a-form-model-item>
-        </a-row>
-        <a-row :gutter="24">
-          <a-col :span="24">
-            <a-form-model-item label="Payload">
-              <a-input-group compact v-for="payloadKey in payloadKeys" :key="payloadKey">
-                <a-input v-model="form['Key-'+payloadKey]"
-                         style="width: 47%;margin-bottom: 5px"
-                         v-decorator="['Key-'+payloadKey,]"
-                         :defaultOpen="false"
-                         placeholder="Key"
-                         :disabled="!form.exploit_jdbc_client"
-                         :readOnly="formReadOnly"
-                ></a-input>
-
-                <a-input v-model="form['Value-'+payloadKey]"
-                         @focus="()=>{ !formReadOnly&&(payloadKey === payloadKeys[payloadKeys.length-1]) && form['Key-'+payloadKey] ? addPayload(): null}"
-                         style="width: 53%"
-                         v-decorator="['Value-'+payloadKey,]"
-                         placeholder="Base64 encoded payload Value"
-                         :disabled="!form.exploit_jdbc_client"
-                         :readOnly="formReadOnly"
-                >
-                  <a-icon slot="addonAfter"
-                          class="dynamic-delete-button"
-                          type="minus-circle-o"
-                          @click="() => form.exploit_jdbc_client? removePayload(payloadKey):null"
-                  />
-                </a-input>
-              </a-input-group>
             </a-form-model-item>
           </a-col>
         </a-row>
@@ -129,7 +92,6 @@
           :style="{ color: filtered ? '#108ee9' : undefined }"
       />
       <span slot="rank" slot-scope="rank">
-
       <a-tag
           :color="'#'+(0x2db7f5+rank*80).toString(16)"
       >
@@ -139,6 +101,9 @@
 
       <span slot="switchRender" slot-scope="checked,record,index,dataIndex">
         <a-switch :checked="checked" @click="clickSwitch(record,dataIndex.dataIndex)"></a-switch>
+      </span>
+      <span slot="valueRender" slot-scope="values">
+        <span v-for="value in values.split(',')" :key="value">{{ value }}<br/></span>
       </span>
       <span slot="action" slot-scope="text,record,index">
         <a-button @click="viewRule(record)" style="
@@ -174,7 +139,7 @@
 </style>
 <script>
 
-import {getMysqlRule, upsertMysqlRule, deleteMysqlRule} from '@/api/rule'
+import {getFtpRule, upsertFtpRule, deleteFtpRule} from '@/api/rule'
 import {store} from '@/main'
 import BasicRule from "@/components/BasicRule";
 
@@ -210,14 +175,14 @@ const columns = [
     dataIndex: 'rank',
     key: 'rank',
     scopedSlots: {
-      customRender: "rank"
-    }
+      customRender: 'rank',
+    },
   },
   {
-    title: 'FILES',
-    dataIndex: 'files',
-    key: 'files',
-    ellipsis: true
+    title: 'PASV ADDRESS',
+    dataIndex: 'pasv_address',
+    key: 'pasv_address',
+    ellipsis: true,
   },
   {
     title: 'PUSH TO CLIENT',
@@ -241,11 +206,8 @@ const columns = [
     scopedSlots: {customRender: 'action'},
   },
 ];
-const rules = {
-  files: [{required: false, message: "please enter file name"}],
-}
 export default {
-  name: 'MysqlRules',
+  name: 'FtpRules',
   data() {
     return {
       data: [],
@@ -255,8 +217,6 @@ export default {
       loading: false,
       columns,
       form: {},
-      rules: rules,
-      payloadKeys: [1],
       formReadOnly: false,
       formAction: "", // View ,Create or Edit
     }
@@ -276,7 +236,7 @@ export default {
         page: this.pagination.current,
         order: this.order
       }
-      getMysqlRule(params).then(res => {
+      getFtpRule(params).then(res => {
         let result = res.data.result
         this.data = result.data
         const pagination = {...this.pagination};
@@ -303,7 +263,7 @@ export default {
     },
     clickSwitch(record, prop) {
       record[prop] = !record[prop]
-      upsertMysqlRule(record).then().catch(e => {
+      upsertFtpRule(record).then().catch(e => {
         this.$notification.error({
           message: 'Edit failed',
           description:
@@ -329,7 +289,7 @@ export default {
       this.showForm(EDIT)
     },
     deleteRule(record, index) {
-      deleteMysqlRule(record).then(() => {
+      deleteFtpRule(record).then(() => {
         this.data.splice(index, 1)
       }).catch(e => {
         this.$notification.error({
@@ -348,45 +308,14 @@ export default {
       this.formAction = action
       this.formReadOnly = action === VIEW;
       this.formVisible = true;
-
-      for (let k in this.form.payloads) {
-        this.form["Key-" + this.payloadKeys.length] = k
-        this.form["Value-" + this.payloadKeys.length] = this.form.payloads[k]
-        this.addPayload()
-      }
-      if (this.formReadOnly) {
-        this.removePayload(this.payloadKeys.length)
-      }
     },
     closeDrawer() {
       this.formVisible = false;
-      this.payloadKeys = [1]
-    },
-    addPayload() {
-      this.payloadKeys.push(this.payloadKeys[this.payloadKeys.length - 1] + 1)
-    },
-    removePayload(key) {
-      if (this.payloadKeys.length > 1) {
-        this.payloadKeys.splice(this.payloadKeys.indexOf(key), 1)
-      }
     },
     handleSubmit() {
       this.$refs.form.validate(valid => {
         if (valid) {
-          let payloads = {}
-          let form = {}
-          for (let k in this.form) {
-            if (k.indexOf("Key-") === 0) {
-              let i = k.substr("Key-".length)
-              if (this.form["Value-" + i]) {
-                payloads[this.form[k]] = this.form["Value-" + i]
-              }
-            } else if (k.indexOf("Value-") === -1) {
-              form[k] = this.form[k]
-            }
-          }
-          form.payloads = payloads
-          upsertMysqlRule(form).then(() => {
+          upsertFtpRule(this.form).then(() => {
             this.closeDrawer()
             this.fetch({page: this.pagination.current});
             this.$notification.info({

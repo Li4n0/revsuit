@@ -1,8 +1,8 @@
 version: 4.0
 addr: :10000
-token: token
+token:
 database: revsuit.db
-log_level: debug
+log_level: info
 
 http:
   ip_header:
@@ -15,6 +15,11 @@ mysql:
   enable: true
   addr: :3306
   version_string: 10.4.13-MariaDB-log
+ftp:
+  enable: true
+  addr: :21
+  pasv_ip: 127.0.0.1                   # your public network ip
+  pasv_port: 2020
 
 notice:
   dingtalk: https://oapi.dingtalk.com/robot/send?access_token={token}

@@ -8,6 +8,7 @@ import (
 	"github.com/li4n0/revsuit/internal/database"
 	"github.com/li4n0/revsuit/internal/newdns"
 	"github.com/li4n0/revsuit/internal/qqwry"
+	"github.com/li4n0/revsuit/internal/rule"
 	"github.com/patrickmn/go-cache"
 	log "unknwon.dev/clog/v2"
 )
@@ -72,7 +73,7 @@ func (s *Server) Run() {
 				ip := strings.Split(remoteAddr, ":")[0]
 
 				for _, _rule := range s.getRules() {
-					flag, flagGroup := _rule.Match(domain)
+					flag, flagGroup, vars := _rule.Match(domain)
 					if flag == "" {
 						continue
 					}
@@ -82,7 +83,7 @@ func (s *Server) Run() {
 						log.Error("DNS record(rule_id:%s) created failed :%s", _rule.Name, err.Error())
 						return nil, nil
 					}
-					log.Info("DNS record(id:%d,rule:%s,remote_ip:%s) has been created", r.ID, _rule.Name, ip)
+					log.Info("DNS record[id:%d rule:%s remote_ip:%s] has been created", r.ID, _rule.Name, ip)
 
 					//only send to client when this connection recorded first time.
 					if _rule.PushToClient {
@@ -91,11 +92,11 @@ func (s *Server) Run() {
 							database.DB.Where("rule_name=? and domain like ?", _rule.Name, "%"+flagGroup+"%").Model(&Record{}).Count(&count)
 							if count <= 1 {
 								r.PushToClient()
-								log.Trace("DNS record(id:%d) has been put to client message queue", r.ID)
+								log.Trace("DNS record[id%d] has been put to client message queue", r.ID)
 							}
 						} else {
 							r.PushToClient()
-							log.Trace("DNS record(id:%d) has been put to client message queue", r.ID)
+							log.Trace("DNS record[id%d] has been put to client message queue", r.ID)
 						}
 					}
 
@@ -103,12 +104,12 @@ func (s *Server) Run() {
 					if _rule.Notice {
 						go func() {
 							r.Notice()
-							log.Trace("DNS record(id:%d) notice has been sent", r.ID)
+							log.Trace("DNS record[id%d] notice has been sent", r.ID)
 						}()
 					}
 
 					if _rule.Value != "" {
-
+						value := rule.CompileTpl(_rule.Value, vars)
 						_type := _rule.Type
 						if _rule.Type == newdns.REBINDING {
 							_type = newdns.A
@@ -121,16 +122,16 @@ func (s *Server) Run() {
 								Records: func() []newdns.Record {
 									switch _rule.Type {
 									case newdns.TXT:
-										return []newdns.Record{{Data: []string{_rule.Value}}}
+										return []newdns.Record{{Data: []string{value}}}
 									case newdns.CNAME, newdns.NS:
-										return []newdns.Record{{Address: _rule.Value + "."}}
+										return []newdns.Record{{Address: value + "."}}
 									case newdns.REBINDING:
 
 										// Get rebinding ip list
 										values, ok := rebindingCache.Get(ip)
 										if !ok {
-											rebindingCache.Set(ip, strings.Split(_rule.Value, ","), cache.DefaultExpiration)
-											values = strings.Split(_rule.Value, ",")
+											rebindingCache.Set(ip, strings.Split(value, ","), cache.DefaultExpiration)
+											values = strings.Split(value, ",")
 										}
 
 										//Choose and delete first ip
@@ -144,7 +145,7 @@ func (s *Server) Run() {
 										log.Trace("DNS rebinding client(ip:%v) to %v", ip, value)
 										return []newdns.Record{{Address: value}}
 									default:
-										return []newdns.Record{{Address: _rule.Value}}
+										return []newdns.Record{{Address: value}}
 									}
 								}(),
 								TTL: _rule.TTL * time.Second,

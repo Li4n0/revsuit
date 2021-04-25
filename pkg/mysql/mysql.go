@@ -65,8 +65,9 @@ func (s *Server) NewConnection(c *vmysql.Conn) {
 	)
 
 	for _, _rule := range s.getRules() {
-		flag, _ := _rule.Match(user + schema)
-		if flag == "" {
+		userFlag, _, _ := _rule.Match(user)
+		schemaFlag, _, _ := _rule.Match(schema)
+		if userFlag == "" && schemaFlag == "" {
 			continue
 		}
 		s.connRulePool.Store(c.ConnectionID, _rule)
@@ -81,8 +82,6 @@ func (s *Server) NewConnection(c *vmysql.Conn) {
 		if strings.Contains(c.ConnAttrs["_client_name"], "MySQL Connector") {
 			c.IsJdbcClient = true
 			c.SupportLoadDataLocal = true
-			// 测试发现只有 pymysql 和原生命令行会对这个 flag 真正进行修改
-			// 而且 Connector/J 默认值为 False, 所以这里做特殊兼容
 		}
 	}
 }
@@ -90,21 +89,30 @@ func (s *Server) NewConnection(c *vmysql.Conn) {
 // ConnectionClosed is part of the mysql.Handler interface.
 func (s *Server) ConnectionClosed(c *vmysql.Conn) {
 	log.Trace("MySQL Client leaved, ID [%d]", c.ConnectionID)
+
 	var (
-		user                 = c.User
-		clientName           string
-		clientOS             string
-		supportLoadLocalData = c.SupportLoadDataLocal
-		cr, ok               = s.connRulePool.Load(c.ConnectionID)
+		user                                  = c.User
+		schema                                = c.SchemaName
+		supportLoadLocalData                  = c.SupportLoadDataLocal
+		cr, ok                                = s.connRulePool.Load(c.ConnectionID)
+		clientName, clientOS, flag, flagGroup string
 	)
+
 	if !ok {
 		return
 	}
+
 	_rule := cr.(*Rule)
-	flag, flagGroup := _rule.Match(user)
+	for _, s := range []string{user, schema} {
+		flag, flagGroup, _ = _rule.Match(s)
+		if flag != "" {
+			break
+		}
+	}
 	if flag == "" {
 		log.Error("MySQL Connection rule(%d) not match flag", c.ConnectionID)
 	}
+
 	if c.ConnAttrs != nil {
 		clientName = c.ConnAttrs["_client_name"] + " " + c.ConnAttrs["_client_version"]
 		clientOS = c.ConnAttrs["_os"] + " " + c.ConnAttrs["_platform"]
@@ -125,7 +133,7 @@ func (s *Server) ConnectionClosed(c *vmysql.Conn) {
 		log.Error("MySQL record(rule_id:%s) created failed :%s", _rule.Name, err.Error())
 		return
 	}
-	log.Info("MySQL record(id:%d,rule:%s,remote_ip:%s) has been created", r.ID, _rule.Name, ip)
+	log.Info("MySQL record[id:%d rule:%s remote_ip:%s] has been created", r.ID, _rule.Name, ip)
 
 	//only send to client when this connection recorded first time.
 	if _rule.PushToClient {
@@ -134,11 +142,11 @@ func (s *Server) ConnectionClosed(c *vmysql.Conn) {
 			database.DB.Where("rule_name=? and domain like ?", _rule.Name, "%"+flagGroup+"%").Model(&Record{}).Count(&count)
 			if count <= 1 {
 				r.PushToClient()
-				log.Trace("MySQL record(id:%d) has been put to client message queue", r.ID)
+				log.Trace("MySQL record[id%d] has been put to client message queue", r.ID)
 			}
 		} else {
 			r.PushToClient()
-			log.Trace("MySQL record(id:%d) has been put to client message queue", r.ID)
+			log.Trace("MySQL record[id%d] has been put to client message queue", r.ID)
 		}
 	}
 
@@ -146,7 +154,7 @@ func (s *Server) ConnectionClosed(c *vmysql.Conn) {
 	if _rule.Notice {
 		go func() {
 			r.Notice()
-			log.Trace("MySQL record(id:%d) notice has been sent", r.ID)
+			log.Trace("MySQL record[id%d] notice has been sent", r.ID)
 		}()
 	}
 

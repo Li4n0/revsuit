@@ -3,6 +3,8 @@
 # local files
 qqwry.dat
 revsuit.db
+revsuit.db-shm
+revsuit.db-wal
 
 # local config
 config.yaml

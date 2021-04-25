@@ -2,6 +2,7 @@ package rule
 
 import (
 	"regexp"
+	"strings"
 	"time"
 
 	log "unknwon.dev/clog/v2"
@@ -25,7 +26,9 @@ type BaseRule struct {
 	Notice       bool           `gorm:"default:false;not null;" form:"notice" json:"notice"`
 }
 
-func (br BaseRule) Match(s string) (flag, flagGroup string) {
+func (br BaseRule) Match(s string) (flag, flagGroup string, vars map[string]string) {
+	vars = make(map[string]string)
+
 	if br.flagCatcher == nil {
 		if br.FlagFormat == "*" {
 			flag = "*"
@@ -41,13 +44,22 @@ func (br BaseRule) Match(s string) (flag, flagGroup string) {
 	}
 
 	matched := br.flagCatcher.FindStringSubmatch(s)
+	groupNames := br.flagCatcher.SubexpNames()
+
 	if len(matched) == 0 {
 		return
 	}
 
 	flag = matched[0]
-	if len(matched) > 1 {
+	if len(matched) > 1 && len(groupNames) == 0 {
 		flagGroup = matched[1]
 	}
-	return flag, flagGroup
+
+	for j, name := range groupNames {
+		if j != 0 && name != "" {
+			vars[name] = strings.TrimSpace(matched[j])
+		}
+	}
+
+	return flag, flagGroup, vars
 }

@@ -157,9 +157,9 @@ func UpsertRules(c *gin.Context) {
 	}
 
 	if update {
-		log.Trace("DNS rule(id:%d) has been updated", dnsRule.ID)
+		log.Trace("DNS rule[id%d] has been updated", dnsRule.ID)
 	} else {
-		log.Trace("DNS rule(id:%d) has been created", dnsRule.ID)
+		log.Trace("DNS rule[id%d] has been created", dnsRule.ID)
 	}
 
 	c.JSON(200, gin.H{
@@ -191,7 +191,7 @@ func DeleteRules(c *gin.Context) {
 		return
 	}
 
-	log.Trace("DNS rule(id:%d) has been deleted", dnsRule.ID)
+	log.Trace("DNS rule[id%d] has been deleted", dnsRule.ID)
 
 	c.JSON(200, gin.H{
 		"status": "succeed",

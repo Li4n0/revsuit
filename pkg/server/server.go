@@ -5,6 +5,7 @@ import (
 	"github.com/li4n0/revsuit/internal/database"
 	"github.com/li4n0/revsuit/internal/notice"
 	"github.com/li4n0/revsuit/pkg/dns"
+	"github.com/li4n0/revsuit/pkg/ftp"
 	"github.com/li4n0/revsuit/pkg/mysql"
 	http "github.com/li4n0/revsuit/pkg/rhttp"
 	"github.com/li4n0/revsuit/pkg/rmi"
@@ -13,10 +14,13 @@ import (
 )
 
 type Revsuit struct {
+	logLevel log.Level
+
 	http  *http.Server
 	dns   *dns.Server
 	mysql *mysql.Server
 	rmi   *rmi.Server
+	ftp   *ftp.Server
 }
 
 func initDatabase(dsn string) {
@@ -61,11 +65,18 @@ func initDatabase(dsn string) {
 	if err != nil {
 		log.Fatal(err.Error())
 	}
+	err = database.DB.AutoMigrate(&ftp.Record{})
+	if err != nil {
+		log.Fatal(err.Error())
+	}
+	err = database.DB.AutoMigrate(&ftp.Rule{})
+	if err != nil {
+		log.Fatal(err.Error())
+	}
 
 }
 
-func initLog(level string) {
-	var logLevel log.Level
+func initLog(level string) (logLevel log.Level) {
 
 	switch level {
 	case "debug":
@@ -93,7 +104,7 @@ func initLog(level string) {
 		log.ConsoleConfig{
 			Level: logLevel,
 		})
-
+	return logLevel
 }
 
 func initNotice(nc noticeConfig) {
@@ -123,11 +134,12 @@ func initNotice(nc noticeConfig) {
 func New(c *Config) *Revsuit {
 
 	initDatabase(c.Database)
-	initLog(c.LogLevel)
+	logLevel := initLog(c.LogLevel)
 	initNotice(c.Notice)
 
 	s := &Revsuit{
-		http: http.GetServer(),
+		logLevel: logLevel,
+		http:     http.GetServer(),
 	}
 	if c.DNS.Enable {
 		s.dns = dns.GetServer()
@@ -139,6 +151,10 @@ func New(c *Config) *Revsuit {
 	if c.RMI.Enable {
 		s.rmi = rmi.GetServer()
 		s.rmi.Config = c.RMI
+	}
+	if c.FTP.Enable {
+		s.ftp = ftp.GetServer()
+		s.ftp.Config = c.FTP
 	}
 
 	if c.Addr != "" {
@@ -165,6 +181,9 @@ func (revsuit *Revsuit) Run() {
 	}
 	if revsuit.rmi != nil {
 		go revsuit.rmi.Run()
+	}
+	if revsuit.ftp != nil {
+		go revsuit.ftp.Run()
 	}
 
 	revsuit.http.Run()

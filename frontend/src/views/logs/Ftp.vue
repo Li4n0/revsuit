@@ -7,24 +7,20 @@
       @change="handleTableChange"
       :rowClassName="(record, index) => index % 2 === 0 ? '' : 'gray-table-row'"
   >
-    <div v-if="record.files.length" slot="expandedRowRender" slot-scope="record" style="margin: 0">
-      <b v-if="record.files.length" style="color: gray">FILES:</b><br>
-      <a v-for="file in record.files" :key="file.name+record.id" :href="'/revsuit/api/file/mysql/'+file.id"
-         target="_blank">{{ file.name }} </a>
-    </div>
+
     <div slot="selectDropdown"
          slot-scope="{ setSelectedKeys, selectedKeys, clearFilters, column }"
          style="padding: 8px">
       <a-checkbox
-          :checked="filters[column.dataIndex] === 'true'"
-          @change="(e)=>{e.target.checked?filters[column.dataIndex] = 'true':filters[column.dataIndex] = '';fetch()}">
-        True
+          :checked="filters[column.dataIndex] === 'CRASHED'"
+          @change="(e)=>{e.target.checked?filters[column.dataIndex] = 'CRASHED':filters[column.dataIndex] = '';fetch()}">
+        CRASHED
       </a-checkbox>
       <br/>
       <a-checkbox
-          :checked="filters[column.dataIndex] === 'false'"
-          @change="(e)=>{e.target.checked?filters[column.dataIndex] = 'false':filters[column.dataIndex] = '';fetch()}">
-        False
+          :checked="filters[column.dataIndex] === 'FINISHED'"
+          @change="(e)=>{e.target.checked?filters[column.dataIndex] = 'FINISHED':filters[column.dataIndex] = '';fetch()}">
+        FINISHED
       </a-checkbox>
     </div>
     <div
@@ -72,17 +68,11 @@
     <span slot="time" slot-scope="time">
         {{ new Date(time).format("yyyy-MM-dd hh:mm:ss") }}
     </span>
-    <span slot="loadData" slot-scope="loadData">
-       <a-tag v-if="loadData"
-              color="#eb2f96"
-       >True</a-tag><a-tag v-else color="#f5222d">False</a-tag>
-    </span>
-    <span slot="fileNum" slot-scope="files">
-       <a-tag v-if="files.length>=3"
-              color="#722ed1"
-       >{{ files.length }}</a-tag>
-      <a-tag v-else :color="colors[files.length]">
-        {{ files.length }}
+    <span slot="status" slot-scope="status">
+      <a-tag
+          :color="colors[status]"
+      >
+        {{ status }}
       </a-tag>
     </span>
   </a-table>
@@ -94,14 +84,13 @@
 </style>
 <script>
 
-import {getMysqlRecord} from '@/api/record'
+import {getFtpRecord} from '@/api/record'
 import {store} from '@/main'
 
-const colors = [
-  "#13c2c2",
-  "#52c41a",
-  "#02a7ff",
-]
+const colors = {
+  "CRASHED": "#f50",
+  "FINISHED": "#87d068"
+}
 
 const columns = [
   {
@@ -137,46 +126,27 @@ const columns = [
   },
   {
     title: 'USER',
-    dataIndex: 'username',
-    key: 'username',
-    scopedSlots: {
-      filterDropdown: 'filterDropdown',
-      filterIcon: 'filterIcon',
-    },
+    dataIndex: 'user',
+    key: 'user',
   },
   {
-    title: 'LOAD DATA',
-    dataIndex: 'load_local_data',
-    key: 'load_local_data',
+    title: 'PASSWORD',
+    dataIndex: 'password',
+    key: 'password',
+  },
+  {
+    title: 'PATH',
+    dataIndex: 'path',
+    key: 'path',
+    ellipsis: true,
+  },
+  {
+    title: 'STATUS',
+    dataIndex: 'status',
+    key: 'status',
     scopedSlots: {
+      customRender: 'status',
       filterDropdown: 'selectDropdown',
-      filterIcon: 'filterIcon',
-      customRender: "loadData",
-    }
-  },
-  {
-    title: 'FILE NUM',
-    dataIndex: 'files',
-    key: 'files',
-    scopedSlots: {
-      customRender: "fileNum",
-    }
-  },
-  {
-    title: 'CLIENT NAME',
-    dataIndex: 'client_name',
-    key: 'client_name',
-    scopedSlots: {
-      filterDropdown: 'filterDropdown',
-      filterIcon: 'filterIcon',
-    },
-  },
-  {
-    title: 'CLIENT OS',
-    dataIndex: 'client_os',
-    key: 'client_os',
-    scopedSlots: {
-      filterDropdown: 'filterDropdown',
       filterIcon: 'filterIcon',
     },
   },
@@ -197,7 +167,7 @@ const columns = [
 ];
 
 export default {
-  name: 'MysqlLogs',
+  name: 'DnsLogs',
   data() {
     return {
       data: [],
@@ -206,7 +176,7 @@ export default {
       order: "desc",
       loading: false,
       columns,
-      colors
+      colors: colors
     };
   },
   methods: {
@@ -224,7 +194,7 @@ export default {
         page: this.pagination.current,
         order: this.order
       }
-      getMysqlRecord(params).then(res => {
+      getFtpRecord(params).then(res => {
         let result = res.data.result
         this.data = result.data
         const pagination = {...this.pagination};

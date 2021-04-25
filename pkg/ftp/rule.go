@@ -1,4 +1,4 @@
-package mysql
+package ftp
 
 import (
 	"strconv"
@@ -10,18 +10,30 @@ import (
 	log "unknwon.dev/clog/v2"
 )
 
+// FTP rule struct
 type Rule struct {
 	rule.BaseRule
-	Files             string            `form:"files" json:"files"`
-	ExploitJdbcClient bool              `gorm:"exploit_jdbc_client" form:"exploit_jdbc_client" json:"exploit_jdbc_client"`
-	Payloads          database.MapField `json:"payloads" form:"payloads"`
+	PasvAddress string `gorm:"pasv_address" json:"pasv_address" form:"pasv_address"`
 }
 
 func (Rule) TableName() string {
-	return "mysql_rules"
+	return "ftp_rules"
 }
 
-// Create or update the mysql rule in database and ruleSet
+// NewRule creates a new ftp rule struct
+func NewRule(name, flagFormat, pasvAddress string, pushToClient, notice bool) *Rule {
+	return &Rule{
+		BaseRule: rule.BaseRule{
+			Name:         name,
+			FlagFormat:   flagFormat,
+			PushToClient: pushToClient,
+			Notice:       notice,
+		},
+		PasvAddress: pasvAddress,
+	}
+}
+
+// CreateOrUpdate creates or updates the ftp rule in database and ruleSet
 func (r *Rule) CreateOrUpdate() (err error) {
 	db := database.DB.Model(r)
 	err = db.Clauses(clause.OnConflict{
@@ -31,9 +43,7 @@ func (r *Rule) CreateOrUpdate() (err error) {
 				"name",
 				"flag_format",
 				"rank",
-				"files",
-				"exploit_jdbc_client",
-				"payloads",
+				"pasv_address",
 				"push_to_client",
 				"notice",
 			}),
@@ -41,42 +51,42 @@ func (r *Rule) CreateOrUpdate() (err error) {
 	if err != nil {
 		return
 	}
-	err = GetServer().updateRules()
-	return err
+
+	return GetServer().updateRules()
 }
 
-// Delete the mysql rule in database and ruleSet
+// Delete deletes the ftp rule in database and ruleSet
 func (r *Rule) Delete() (err error) {
 	db := database.DB.Model(r)
 	err = db.Delete(r).Error
 	if err != nil {
 		return
 	}
-	err = GetServer().updateRules()
-	return err
+
+	return GetServer().updateRules()
 }
 
-// List all mysql rules those satisfy the filter
+// ListRules lists all ftp rules those satisfy the filter
 func ListRules(c *gin.Context) {
 	var (
-		mysqlRule Rule
-		res       []Rule
-		count     int64
-		order     = c.Query("order")
+		ftpRule Rule
+		res     []Rule
+		count   int64
+		order   = c.Query("order")
 	)
 
-	if err := c.ShouldBind(&mysqlRule); err != nil {
+	if err := c.ShouldBind(&ftpRule); err != nil {
 		c.JSON(400, gin.H{
 			"status": "failed",
-			"error":  err.Error(),
+			"error":  err,
 			"result": nil,
 		})
 		return
 	}
 
-	db := database.DB.Model(&mysqlRule)
-	if mysqlRule.Name != "" {
-		db.Where("name = ?", mysqlRule.Name)
+	db := database.DB.Model(&ftpRule)
+	if ftpRule.Name != "" {
+		db.Where("name = ?", ftpRule.Name)
 	}
 	db.Count(&count)
 
@@ -90,14 +100,14 @@ func ListRules(c *gin.Context) {
 		return
 	}
 
-	if order != "desc" && order != "asc" {
+	if order != "asc" {
 		order = "desc"
 	}
 
 	if err := db.Order("rank desc").Order("id" + " " + order).Count(&count).Offset((page - 1) * 10).Limit(10).Find(&res).Error; err != nil {
 		c.JSON(400, gin.H{
 			"status": "failed",
-			"error":  err.Error(),
+			"error":  err,
 			"data":   nil,
 		})
 		return
@@ -110,14 +120,14 @@ func ListRules(c *gin.Context) {
 	})
 }
 
-// Create or update mysql rule from user submit
+// Create or update ftp rule from user submit
 func UpsertRules(c *gin.Context) {
 	var (
-		mysqlRule Rule
-		update    bool
+		ftpRule Rule
+		update  bool
 	)
 
-	if err := c.ShouldBind(&mysqlRule); err != nil {
+	if err := c.ShouldBind(&ftpRule); err != nil {
 		c.JSON(400, gin.H{
 			"status": "failed",
 			"error":  err.Error(),
@@ -126,23 +136,23 @@ func UpsertRules(c *gin.Context) {
 		return
 	}
 
-	if mysqlRule.ID != 0 {
+	if ftpRule.ID != 0 {
 		update = true
 	}
 
-	if err := mysqlRule.CreateOrUpdate(); err != nil {
+	if err := ftpRule.CreateOrUpdate(); err != nil {
 		c.JSON(400, gin.H{
 			"status": "failed",
 			"error":  err.Error(),
-			"data":   nil,
+			"result": nil,
 		})
 		return
 	}
 
 	if update {
-		log.Trace("MySQL rule[id%d] has been updated", mysqlRule.ID)
+		log.Trace("FTP rule[id%d] has been updated", ftpRule.ID)
 	} else {
-		log.Trace("MySQL rule[id%d] has been created", mysqlRule.ID)
+		log.Trace("FTP rule[id%d] has been created", ftpRule.ID)
 	}
 
 	c.JSON(200, gin.H{
@@ -152,11 +162,11 @@ func UpsertRules(c *gin.Context) {
 	})
 }
 
-// Delete mysql rule from user submit
+// Delete ftp rule from user submit
 func DeleteRules(c *gin.Context) {
-	var mysqlRule Rule
+	var ftpRule Rule
 
-	if err := c.ShouldBind(&mysqlRule); err != nil {
+	if err := c.ShouldBind(&ftpRule); err != nil {
 		c.JSON(400, gin.H{
 			"status": "failed",
 			"error":  err.Error(),
@@ -165,7 +175,7 @@ func DeleteRules(c *gin.Context) {
 		return
 	}
 
-	if err := mysqlRule.Delete(); err != nil {
+	if err := ftpRule.Delete(); err != nil {
 		c.JSON(400, gin.H{
 			"status": "failed",
 			"error":  err.Error(),
@@ -174,7 +184,7 @@ func DeleteRules(c *gin.Context) {
 		return
 	}
 
-	log.Trace("MySQL rule[id%d] has been deleted", mysqlRule.ID)
+	log.Trace("FTP rule[id%d] has been deleted", ftpRule.ID)
 
 	c.JSON(200, gin.H{
 		"status": "succeed",

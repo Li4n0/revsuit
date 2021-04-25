@@ -132,3 +132,36 @@ export function deleteRmiRule(data) {
         }
     })
 }
+
+export function getFtpRule(params) {
+    return request({
+        url: '/rule/ftp',
+        params: params,
+        method: 'get',
+        validateStatus: function (status) {
+            return status >= 200 && status < 300 // 默认的
+        }
+    })
+}
+
+export function upsertFtpRule(data) {
+    return request({
+        url: '/rule/ftp',
+        data: data,
+        method: 'post',
+        validateStatus: function (status) {
+            return status >= 200 && status < 300 // 默认的
+        }
+    })
+}
+
+export function deleteFtpRule(data) {
+    return request({
+        url: '/rule/ftp',
+        data: data,
+        method: 'delete',
+        validateStatus: function (status) {
+            return status >= 200 && status < 300 // 默认的
+        }
+    })
+}

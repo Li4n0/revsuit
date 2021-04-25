@@ -106,26 +106,31 @@ func getRawRequest(r *http.Request) ([]byte, error) {
 	return httputil.DumpRequestOut(r, true)
 }
 
-func compileTpl(c *gin.Context, tpl string) (compiled string) {
+func compileTpl(c *gin.Context, tpl string, vars map[string]string) (compiled string) {
 	compiled = tpl
-	if queryVarMatcher.FindString(tpl) != "" {
-		compiled = queryVarMatcher.ReplaceAllString(compiled, c.Query(queryVarMatcher.FindStringSubmatch(tpl)[1]))
+	for _, submatch := range queryVarMatcher.FindAllStringSubmatch(tpl, -1) {
+		compiled = strings.ReplaceAll(compiled, submatch[0], c.Query(submatch[1]))
 	}
 
-	if bodyVarMatcher.FindString(tpl) != "" {
-		compiled = bodyVarMatcher.ReplaceAllString(compiled, c.PostForm(bodyVarMatcher.FindStringSubmatch(tpl)[1]))
+	for _, submatch := range bodyVarMatcher.FindAllStringSubmatch(tpl, -1) {
+		compiled = strings.ReplaceAll(compiled, submatch[0], c.PostForm(submatch[1]))
 	}
 
-	if headerVarMatcher.FindString(tpl) != "" {
-		compiled = headerVarMatcher.ReplaceAllString(compiled, c.GetHeader(headerVarMatcher.FindStringSubmatch(tpl)[1]))
+	for _, submatch := range headerVarMatcher.FindAllStringSubmatch(tpl, -1) {
+		compiled = strings.ReplaceAll(compiled, submatch[0], c.GetHeader(submatch[1]))
 	}
+
+	for n, v := range vars {
+		compiled = strings.ReplaceAll(compiled, "${"+n+"}", v)
+	}
+
 	return compiled
 }
 
 func (s *Server) Receive(c *gin.Context) {
 	u := c.Request.URL.String()
 	for _, _rule := range s.getRules() {
-		flag, flagGroup := _rule.Match(u)
+		flag, flagGroup, vars := _rule.Match(u)
 		if flag == "" {
 			continue
 		}
@@ -148,16 +153,16 @@ func (s *Server) Receive(c *gin.Context) {
 		// create new record
 		r, err := NewRecord(_rule, flag, c.Request.Method, u, ip, area, string(raw))
 		if err != nil {
-			log.Error("HTTP record(rule_id:%d) created failed :%s", _rule.ID, err.Error())
-			code, err := strconv.Atoi(compileTpl(c, _rule.ResponseStatusCode))
+			log.Error("HTTP record[rule_id:%d] created failed :%s", _rule.ID, err.Error())
+			code, err := strconv.Atoi(compileTpl(c, _rule.ResponseStatusCode, vars))
 			if err != nil || code < 100 || code > 600 {
 				code = 400
 			}
 
-			c.String(code, compileTpl(c, _rule.ResponseBody))
+			c.String(code, compileTpl(c, _rule.ResponseBody, vars))
 			return
 		}
-		log.Info("HTTP record(id:%d,rule:%s,remote_ip:%s) has been created", r.ID, _rule.Name, ip)
+		log.Info("HTTP record[id:%d rule:%s remote_ip:%s] has been created", r.ID, _rule.Name, ip)
 
 		//only send to client when this connection recorded first time.
 		if _rule.PushToClient {
@@ -166,31 +171,31 @@ func (s *Server) Receive(c *gin.Context) {
 				database.DB.Where("rule_name=? and raw like ?", _rule.Name, "%"+flagGroup+"%").Model(&Record{}).Count(&count)
 				if count <= 1 {
 					r.PushToClient()
-					log.Trace("HTTP record(id:%d) has been put to client message queue", r.ID)
+					log.Trace("HTTP record[id%d] has been put to client message queue", r.ID)
 				}
 			}
 			r.PushToClient()
-			log.Trace("HTTP record(id:%d) has been put to client message queue", r.ID)
+			log.Trace("HTTP record[id%d] has been put to client message queue", r.ID)
 		}
 
 		//send notice
 		if _rule.Notice {
 			go func() {
 				r.Notice()
-				log.Trace("HTTP record(id:%d) notice has been sent", r.ID)
+				log.Trace("HTTP record[id%d] notice has been sent", r.ID)
 			}()
 		}
 
 		for header, value := range _rule.ResponseHeaders {
-			c.Header(compileTpl(c, header), compileTpl(c, value))
+			c.Header(compileTpl(c, header, vars), compileTpl(c, value, vars))
 		}
 
-		code, err := strconv.Atoi(compileTpl(c, _rule.ResponseStatusCode))
+		code, err := strconv.Atoi(compileTpl(c, _rule.ResponseStatusCode, vars))
 		if err != nil || code < 100 || code > 600 {
 			code = 400
 		}
 
-		c.String(code, compileTpl(c, _rule.ResponseBody))
+		c.String(code, compileTpl(c, _rule.ResponseBody, vars))
 		return
 	}
 

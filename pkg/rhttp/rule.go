@@ -102,20 +102,20 @@ func ListRules(c *gin.Context) {
 	if err != nil {
 		c.JSON(400, gin.H{
 			"status": "failed",
-			"error":  err.Error(),
+			"error":  err,
 			"result": nil,
 		})
 		return
 	}
 
-	if order != "desc" && order != "asc" {
+	if order != "asc" {
 		order = "desc"
 	}
 
 	if err := db.Order("rank desc").Order("id" + " " + order).Count(&count).Offset((page - 1) * 10).Limit(10).Find(&res).Error; err != nil {
 		c.JSON(400, gin.H{
 			"status": "failed",
-			"error":  err.Error(),
+			"error":  err,
 			"data":   nil,
 		})
 		return
@@ -138,7 +138,7 @@ func UpsertRules(c *gin.Context) {
 	if err := c.ShouldBind(&httpRule); err != nil {
 		c.JSON(400, gin.H{
 			"status": "failed",
-			"error":  err.Error(),
+			"error":  err,
 			"data":   nil,
 		})
 		return
@@ -151,7 +151,7 @@ func UpsertRules(c *gin.Context) {
 	if err := httpRule.CreateOrUpdate(); err != nil {
 		c.JSON(400, gin.H{
 			"status": "failed",
-			"error":  err.Error(),
+			"error":  err,
 			"result": nil,
 		})
 		return
@@ -177,7 +177,7 @@ func DeleteRules(c *gin.Context) {
 	if err := c.ShouldBind(&httpRule); err != nil {
 		c.JSON(400, gin.H{
 			"status": "failed",
-			"error":  err.Error(),
+			"error":  err,
 			"data":   nil,
 		})
 		return
@@ -186,7 +186,7 @@ func DeleteRules(c *gin.Context) {
 	if err := httpRule.Delete(); err != nil {
 		c.JSON(400, gin.H{
 			"status": "failed",
-			"error":  err.Error(),
+			"error":  err,
 			"data":   nil,
 		})
 		return

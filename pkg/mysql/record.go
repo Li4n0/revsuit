@@ -45,8 +45,7 @@ func newRecord(rule *Rule, flag, username, clientName, clientOS, remoteIp, ipAre
 		Files:         files,
 		Rule:          *rule,
 	}
-	err = database.DB.Create(r).Error
-	return r, err
+	return r, database.DB.Create(r).Error
 }
 
 func ListRecords(c *gin.Context) {
@@ -93,20 +92,20 @@ func ListRecords(c *gin.Context) {
 	if err != nil {
 		c.JSON(400, gin.H{
 			"status": "failed",
-			"error":  err.Error(),
+			"error":  err,
 			"result": nil,
 		})
 		return
 	}
 
-	if order != "desc" && order != "asc" {
+	if order != "asc" {
 		order = "desc"
 	}
 
 	if err := db.Preload("Files").Order("id" + " " + order).Count(&count).Offset((page - 1) * 10).Limit(10).Find(&res).Error; err != nil {
 		c.JSON(400, gin.H{
 			"status": "failed",
-			"error":  err.Error(),
+			"error":  err,
 			"data":   nil,
 		})
 		return

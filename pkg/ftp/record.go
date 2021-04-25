@@ -43,8 +43,7 @@ func NewRecord(rule *Rule, flag, user, password, path, ip, area string, status S
 		Status:   status,
 		Rule:     *rule,
 	}
-	err = database.DB.Create(r).Error
-	return r, err
+	return r, database.DB.Create(r).Error
 }
 
 func ListRecords(c *gin.Context) {
@@ -85,7 +84,7 @@ func ListRecords(c *gin.Context) {
 	if err != nil {
 		c.JSON(400, gin.H{
 			"status": "failed",
-			"error":  err.Error(),
+			"error":  err,
 			"result": nil,
 		})
 		return
@@ -98,7 +97,7 @@ func ListRecords(c *gin.Context) {
 	if err := db.Order("id" + " " + order).Count(&count).Offset((page - 1) * 10).Limit(10).Find(&res).Error; err != nil {
 		c.JSON(400, gin.H{
 			"status": "failed",
-			"error":  err.Error(),
+			"error":  err,
 			"data":   nil,
 		})
 		return

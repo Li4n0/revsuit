@@ -94,7 +94,7 @@ func ListRules(c *gin.Context) {
 	if err != nil {
 		c.JSON(400, gin.H{
 			"status": "failed",
-			"error":  err.Error(),
+			"error":  err,
 			"result": nil,
 		})
 		return
@@ -130,7 +130,7 @@ func UpsertRules(c *gin.Context) {
 	if err := c.ShouldBind(&ftpRule); err != nil {
 		c.JSON(400, gin.H{
 			"status": "failed",
-			"error":  err.Error(),
+			"error":  err,
 			"data":   nil,
 		})
 		return
@@ -143,7 +143,7 @@ func UpsertRules(c *gin.Context) {
 	if err := ftpRule.CreateOrUpdate(); err != nil {
 		c.JSON(400, gin.H{
 			"status": "failed",
-			"error":  err.Error(),
+			"error":  err,
 			"result": nil,
 		})
 		return
@@ -169,7 +169,7 @@ func DeleteRules(c *gin.Context) {
 	if err := c.ShouldBind(&ftpRule); err != nil {
 		c.JSON(400, gin.H{
 			"status": "failed",
-			"error":  err.Error(),
+			"error":  err,
 			"data":   nil,
 		})
 		return
@@ -178,7 +178,7 @@ func DeleteRules(c *gin.Context) {
 	if err := ftpRule.Delete(); err != nil {
 		c.JSON(400, gin.H{
 			"status": "failed",
-			"error":  err.Error(),
+			"error":  err,
 			"data":   nil,
 		})
 		return

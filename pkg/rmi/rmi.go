@@ -40,17 +40,16 @@ func (s *Server) getRules() []*Rule {
 
 func (s *Server) updateRules() error {
 	db := database.DB.Model(new(Rule))
+	defer s.rulesLock.Unlock()
 	s.rulesLock.Lock()
-	db.Order("rank desc").Find(&s.rules)
-	s.rulesLock.Unlock()
-	return nil
+	return db.Order("rank desc").Find(&s.rules).Error
 }
 
 func (s *Server) handleConnection(conn net.Conn) {
 	defer conn.Close()
 
 	if err := conn.SetDeadline(time.Now().Add(time.Second * 30)); err != nil {
-		log.Error("RMI set connection deadline error:%v", err.Error())
+		log.Error("RMI set connection deadline error:%v", err)
 	}
 
 	ip, port, _ := net.SplitHostPort(conn.RemoteAddr().String())
@@ -58,7 +57,7 @@ func (s *Server) handleConnection(conn net.Conn) {
 	buf := make([]byte, 1024)
 	_, err := conn.Read(buf)
 	if err != nil {
-		log.Error("RMI read connection error:%v", err.Error())
+		log.Error("RMI read connection error:%v", err)
 	}
 
 	if !bytes.Contains(buf, []byte{0x4a, 0x52, 0x4d, 0x49}) {
@@ -78,7 +77,7 @@ func (s *Server) handleConnection(conn net.Conn) {
 
 	_, err = conn.Write(send)
 	if err != nil {
-		log.Error("RMI write connection error: %v", err.Error())
+		log.Error("RMI write connection error: %v", err)
 	}
 
 	data := make([]byte, 512)
@@ -86,7 +85,7 @@ func (s *Server) handleConnection(conn net.Conn) {
 	for length := 0; length < 50; {
 		n, err := conn.Read(data)
 		if err != nil {
-			log.Error("RMI read connection error: %v", err.Error())
+			log.Error("RMI read connection error: %v", err)
 		}
 		length += n
 	}
@@ -105,7 +104,7 @@ func (s *Server) handleConnection(conn net.Conn) {
 		// create new record
 		r, err := NewRecord(_rule, flag, path, ip, area)
 		if err != nil {
-			log.Error("RMI record[rule_id:%d] created failed :%s", _rule.ID, err.Error())
+			log.Error("RMI record[rule_id:%d] created failed :%s", _rule.ID, err)
 			return
 		}
 		log.Info("RMI record[id:%d rule:%s remote_ip:%s] has been created", r.ID, _rule.Name, ip)
@@ -150,7 +149,7 @@ func (s *Server) Run() {
 	for {
 		tcpConn, err := listener.Accept()
 		if err != nil {
-			log.Error("RMI accept connection error: %v", err.Error())
+			log.Error("RMI accept connection error: %v", err)
 			continue
 		}
 		go s.handleConnection(tcpConn)

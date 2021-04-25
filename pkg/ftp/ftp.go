@@ -48,21 +48,20 @@ func (s *Server) getRules() []*Rule {
 
 func (s *Server) updateRules() error {
 	db := database.DB.Model(new(Rule))
+	defer s.rulesLock.Unlock()
 	s.rulesLock.Lock()
-	db.Order("rank desc").Find(&s.rules)
-	s.rulesLock.Unlock()
-	return nil
+	return db.Order("rank desc").Find(&s.rules).Error
 }
 
 func (s *Server) handleConnection(conn net.Conn) {
 	defer conn.Close()
 
 	if err := conn.SetDeadline(time.Now().Add(time.Second * 30)); err != nil {
-		log.Error("FTP set connection deadline error:%v", err.Error())
+		log.Error("FTP set connection deadline error:%v", err)
 	}
 
 	if _, err := conn.Write([]byte("220 (vsFTPd 3.0.2)\r\n")); err != nil {
-		log.Error("FTP write connection error:%v", err.Error())
+		log.Error("FTP write connection error:%v", err)
 	}
 
 	ip := strings.Split(conn.RemoteAddr().String(), ":")[0]
@@ -126,12 +125,12 @@ loop:
 					pasvAddress := rule.CompileTpl(matchedRule.PasvAddress, vars)
 					pasvIP, pasvPort, err := net.SplitHostPort(pasvAddress)
 					if err != nil {
-						log.Warn("FTP failed to split rule[id%d] pasv_address(%s) :%s", matchedRule.ID, pasvAddress, err.Error())
+						log.Warn("FTP failed to split rule[id%d] pasv_address(%s) :%s", matchedRule.ID, pasvAddress, err)
 						break
 					}
 					port, err := strconv.Atoi(pasvPort)
 					if err != nil {
-						log.Warn("FTP failed to convert rule[id%d] pasv_port(%s) :%s", matchedRule.ID, pasvPort, err.Error())
+						log.Warn("FTP failed to convert rule[id%d] pasv_port(%s) :%s", matchedRule.ID, pasvPort, err)
 						break
 					}
 					ret = fmt.Sprintf("227 Entering Passive Mode (%s,%v,%d)\r\n", strings.ReplaceAll(pasvIP, ".", ","), float64(port/256), port%256)
@@ -159,7 +158,7 @@ loop:
 		// create new record
 		r, err := NewRecord(_rule, flag, user, password, path, ip, area, status)
 		if err != nil {
-			log.Error("FTP record[rule_id:%d] created failed :%s", _rule.ID, err.Error())
+			log.Error("FTP record[rule_id:%d] created failed :%s", _rule.ID, err)
 			return
 		}
 		log.Info("FTP record[id:%d rule:%s remote_ip:%s] has been created", r.ID, _rule.Name, ip)

@@ -7,7 +7,7 @@
     <!--    rule form-->
     <a-drawer
         :title="formAction+ ' DNS rule'"
-        :width="460"
+        :width="490"
         :visible="formVisible"
         :body-style="{ paddingBottom: '80px' }"
         @close="closeDrawer"

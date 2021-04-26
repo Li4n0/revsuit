@@ -7,7 +7,7 @@
     <!--    rule form-->
     <a-drawer
         :title="formAction+ ' HTTP rule'"
-        :width="460"
+        :width="490"
         :visible="formVisible"
         :body-style="{ paddingBottom: '80px' }"
         @close="closeDrawer"
@@ -81,11 +81,28 @@
                     <a-icon type="question-circle-o"/>
                   </a-tooltip>
               </span>
+              <a-icon type="fullscreen" class="full-screen-icon" @click="fullScreenTextarea = true"/>
               <a-textarea v-model="form.response_body"
                           placeholder="Hello RevSuit!"
                           :readOnly="formReadOnly"
-                          rows="10"
+                          :auto-size="{ minRows: 10, maxRows: 30 }"
               />
+              <a-modal
+                  :dialog-style="{ top: '40px', bottom: '20px'}"
+                  width="80rem"
+                  :visible="fullScreenTextarea"
+                  title='Response Body'
+                  okText=''
+                  @ok="fullScreenTextarea=false"
+                  @cancel="fullScreenTextarea=false"
+              >
+                <a-textarea v-model="form.response_body"
+                            placeholder="Hello RevSuit!"
+                            :readOnly="formReadOnly"
+                            style="height:100%"
+                            :auto-size="{ minRows: fullScreenTextareaMinRows(), maxRows: fullScreenTextareaMinRows()*1.5 }"
+                />
+              </a-modal>
             </a-form-model-item>
           </a-col>
         </a-row>
@@ -186,11 +203,6 @@
     </a-table>
   </div>
 </template>
-<style scoped>
-#add-rule {
-  margin-bottom: 10px;
-}
-</style>
 <script>
 
 import {getHttpRule, upsertHttpRule, deleteHttpRule} from '@/api/rule'
@@ -258,7 +270,6 @@ const columns = [
 const rules = {
   response_status_code: [{
     validator: (rule, code, callback) => {
-      console.log(code)
       if (code === undefined || (!isNaN(code) && 100 < code && code < 600)) {
         return callback()
       } else if (/\${(query|body|header)\..+?}/.test(code)) {
@@ -331,6 +342,7 @@ export default {
         "Access-Control-Max-Age",
         "Access-Control-Allow-Methods",
         "Access-Control-Allow-Headers"],
+      fullScreenTextarea: false,
     };
   },
   methods: {
@@ -492,6 +504,9 @@ export default {
     handleCancel() {
       this.form = {}
       this.closeDrawer()
+    },
+    fullScreenTextareaMinRows() {
+      return (document.body.clientHeight / window.getComputedStyle(document.body)["fontSize"].slice(0, -2)) * 0.5
     }
   },
   mounted() {
@@ -507,3 +522,24 @@ export default {
   }
 }
 </script>
+
+<style scoped>
+#add-rule {
+  margin-bottom: 10px;
+}
+
+.full-screen-icon {
+  position: absolute;
+  z-index: 5;
+  color: #9e9e9e;
+  right: 1px;
+  font-size: 1rem;
+  cursor: pointer;
+  transition: font-size 0.1s;
+}
+
+.full-screen-icon:hover {
+  font-size: 1.1rem;
+  transition: font-size 0.1s;
+}
+</style>

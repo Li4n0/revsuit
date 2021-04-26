@@ -54,7 +54,9 @@ func (s *Server) Run() {
 	//create new dns zone with root domain
 	newZone := func(name string) *newdns.Zone {
 		defer func() {
-			recycler.Recycle(recover())
+			if err := recover(); err != nil {
+				recycler.Recycle(err)
+			}
 		}()
 
 		domain := strings.TrimSuffix(name, ".")

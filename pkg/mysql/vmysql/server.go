@@ -224,7 +224,9 @@ func (l *Listener) Addr() net.Addr {
 // Accept runs an accept loop until the listener is closed.
 func (l *Listener) Accept() {
 	defer func() {
-		recycler.Recycle(recover())
+		if err := recover(); err != nil {
+			recycler.Recycle(err)
+		}
 	}()
 	for {
 		conn, err := l.listener.Accept()

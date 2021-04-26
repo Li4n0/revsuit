@@ -57,7 +57,9 @@ func (s *Server) updateRules() error {
 func (s *Server) handleConnection(conn net.Conn) {
 	defer func() {
 		_ = conn.Close()
-		recycler.Recycle(recover())
+		if err := recover(); err != nil {
+			recycler.Recycle(err)
+		}
 	}()
 
 	if err := conn.SetDeadline(time.Now().Add(time.Second * 30)); err != nil {

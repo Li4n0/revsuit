@@ -35,7 +35,7 @@ func (br BaseRule) Match(s string) (flag, flagGroup string, vars map[string]stri
 			return
 		} else {
 			if catcher, err := regexp.Compile(br.FlagFormat); err != nil {
-				log.Error("%s[rule:%s]", err, br.Name)
+				log.Warn("%s[rule:%s]", err, br.Name)
 				return
 			} else {
 				br.flagCatcher = catcher

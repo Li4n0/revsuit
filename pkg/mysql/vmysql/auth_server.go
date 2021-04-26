@@ -86,7 +86,7 @@ var authServers = make(map[string]AuthServer)
 // RegisterAuthServerImpl registers an implementations of AuthServer.
 func RegisterAuthServerImpl(name string, authServer AuthServer) {
 	if _, ok := authServers[name]; ok {
-		log.Error("AuthServer named %v already exists", name)
+		log.Warn("AuthServer named %v already exists", name)
 	}
 	authServers[name] = authServer
 }

@@ -97,7 +97,7 @@ func (s *Server) ConnectionClosed(c *vmysql.Conn) {
 
 	cr, ok := s.connRulePool.Load(c.ConnectionID)
 	if !ok {
-		log.Error("MySQL Connection rule(%d) not match flag", c.ConnectionID)
+		log.Warn("MySQL Connection rule(%d) not match flag", c.ConnectionID)
 		return
 	}
 
@@ -127,7 +127,7 @@ func (s *Server) ConnectionClosed(c *vmysql.Conn) {
 
 	r, err := newRecord(_rule, flag, user, clientName, clientOS, ip, qqwry.Area(ip), supportLoadLocalData, files)
 	if err != nil {
-		log.Error("MySQL record(rule_id:%s) created failed :%s", _rule.Name, err)
+		log.Warn("MySQL record(rule_id:%s) created failed :%s", _rule.Name, err)
 		return
 	}
 	log.Info("MySQL record[id:%d rule:%s remote_ip:%s] has been created", r.ID, _rule.Name, ip)
@@ -275,7 +275,7 @@ func (s *Server) Run() {
 	log.Info("Starting MySQL Server at %s", s.Addr)
 	s.listener, err = vmysql.NewListener("tcp", s.Addr, authServer, s, s.VersionString, 0, 0)
 	if err != nil {
-		log.Error("New MySQL Server failed: %s", err)
+		log.Warn("New MySQL Server failed: %s", err)
 		os.Exit(-1)
 	}
 

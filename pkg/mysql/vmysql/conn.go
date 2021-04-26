@@ -344,7 +344,7 @@ func (c *Conn) readUploadFileEphemeralPacket() []byte {
 
 		_, err := io.ReadFull(r, data)
 		if err != nil {
-			log.Error("Error while reading data: %s", err)
+			log.Warn("Error while reading data: %s", err)
 			return nil
 		} else {
 			fileChunkData = append(fileChunkData, data)
@@ -718,7 +718,7 @@ func (c *Conn) handleNextCommand(handler Handler) error {
 		// case though, and very unlikely to happen,
 		// and the only downside is we log a bit more then.
 		if err != io.EOF {
-			log.Error("Error reading packet from %s: %v", c, err)
+			log.Warn("Error reading packet from %s: %v", c, err)
 		}
 		return err
 	}
@@ -732,7 +732,7 @@ func (c *Conn) handleNextCommand(handler Handler) error {
 		c.RecycleReadPacket()
 		c.SchemaName = db
 		if err := c.writeOKPacket(0, 0, c.StatusFlags, 0); err != nil {
-			log.Error("Error writing ComInitDB result to %s: %v", c, err)
+			log.Warn("Error writing ComInitDB result to %s: %v", c, err)
 			return err
 		}
 	case ComQuery:
@@ -749,10 +749,10 @@ func (c *Conn) handleNextCommand(handler Handler) error {
 		if c.Capabilities&CapabilityClientMultiStatements != 0 {
 			queries, err = sqlparser.SplitStatementToPieces(query)
 			if err != nil {
-				log.Error("Conn %v: Error splitting query: %v", c, err)
+				log.Warn("Conn %v: Error splitting query: %v", c, err)
 				if werr := c.writeErrorPacketFromError(err); werr != nil {
 					// If we can't even write the error, we're done.
-					log.Error("Conn %v: Error writing query error: %v", c, werr)
+					log.Warn("Conn %v: Error writing query error: %v", c, werr)
 					return werr
 				}
 			}
@@ -772,7 +772,7 @@ func (c *Conn) handleNextCommand(handler Handler) error {
 		timings.Record(queryTimingKey, queryStart)
 
 		if err := c.flush(); err != nil {
-			log.Error("Conn %v: Flush() failed: %v", c.ID(), err)
+			log.Warn("Conn %v: Flush() failed: %v", c.ID(), err)
 			return err
 		}
 
@@ -781,12 +781,12 @@ func (c *Conn) handleNextCommand(handler Handler) error {
 		// Return error if listener was shut down and OK otherwise
 		if c.listener.isShutdown() {
 			if err := c.writeErrorPacket(ERServerShutdown, SSServerShutdown, "Server shutdown in progress"); err != nil {
-				log.Error("Error writing ComPing error to %s: %v", c, err)
+				log.Warn("Error writing ComPing error to %s: %v", c, err)
 				return err
 			}
 		} else {
 			if err := c.writeOKPacket(0, 0, c.StatusFlags, 0); err != nil {
-				log.Error("Error writing ComPing result to %s: %v", c, err)
+				log.Warn("Error writing ComPing result to %s: %v", c, err)
 				return err
 			}
 		}
@@ -800,28 +800,28 @@ func (c *Conn) handleNextCommand(handler Handler) error {
 			case 1:
 				c.Capabilities &^= CapabilityClientMultiStatements
 			default:
-				log.Error("Got unhandled packet (ComSetOption default) from client %v, returning error: %v", c.ConnectionID, data)
+				log.Warn("Got unhandled packet (ComSetOption default) from client %v, returning error: %v", c.ConnectionID, data)
 				if err := c.writeErrorPacket(ERUnknownComError, SSUnknownComError, "error handling packet: %v", data); err != nil {
-					log.Error("Error writing error packet to client: %v", err)
+					log.Warn("Error writing error packet to client: %v", err)
 					return err
 				}
 			}
 			if err := c.writeEndResult(false, 0, 0, 0); err != nil {
-				log.Error("Error writeEndResult error %v ", err)
+				log.Warn("Error writeEndResult error %v ", err)
 				return err
 			}
 		} else {
-			log.Error("Got unhandled packet (ComSetOption else) from client %v, returning error: %v", c.ConnectionID, data)
+			log.Warn("Got unhandled packet (ComSetOption else) from client %v, returning error: %v", c.ConnectionID, data)
 			if err := c.writeErrorPacket(ERUnknownComError, SSUnknownComError, "error handling packet: %v", data); err != nil {
-				log.Error("Error writing error packet to client: %v", err)
+				log.Warn("Error writing error packet to client: %v", err)
 				return err
 			}
 		}
 	default:
-		log.Error("Got unhandled packet (default) from %s, returning error: %v", c, data)
+		log.Warn("Got unhandled packet (default) from %s, returning error: %v", c, data)
 		c.RecycleReadPacket()
 		if err := c.writeErrorPacket(ERUnknownComError, SSUnknownComError, "command handling not implemented yet: %v", data[0]); err != nil {
-			log.Error("Error writing error packet to %s: %s", c, err)
+			log.Warn("Error writing error packet to %s: %s", c, err)
 			return err
 		}
 	}
@@ -872,7 +872,7 @@ func (c *Conn) execQuery(query string, handler Handler, more bool) error {
 		// was a read operation.
 		if !sendFinished {
 			if err := c.writeEndResult(more, 0, 0, handler.WarningCount(c)); err != nil {
-				log.Error("Error writing result to %s: %v", c, err)
+				log.Warn("Error writing result to %s: %v", c, err)
 				return err
 			}
 		}

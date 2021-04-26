@@ -8,6 +8,7 @@ import (
 	"github.com/li4n0/revsuit/internal/database"
 	"github.com/li4n0/revsuit/internal/newdns"
 	"github.com/li4n0/revsuit/internal/qqwry"
+	"github.com/li4n0/revsuit/internal/recycler"
 	"github.com/li4n0/revsuit/internal/rule"
 	"github.com/patrickmn/go-cache"
 	log "unknwon.dev/clog/v2"
@@ -52,6 +53,12 @@ func (s *Server) Run() {
 
 	//create new dns zone with root domain
 	newZone := func(name string) *newdns.Zone {
+		defer func() {
+			if err := recover(); err != nil {
+				recycler.Recycle(err)
+			}
+		}()
+
 		domain := strings.TrimSuffix(name, ".")
 		frags := strings.Split(domain, ".")
 		zoneName := ""
@@ -79,7 +86,7 @@ func (s *Server) Run() {
 
 					r, err := newRecord(_rule, flag, domain, ip, qqwry.Area(ip))
 					if err != nil {
-						log.Error("DNS record(rule_id:%s) created failed :%s", _rule.Name, err)
+						log.Warn("DNS record(rule_id:%s) created failed :%s", _rule.Name, err)
 						return nil, nil
 					}
 					log.Info("DNS record[id:%d rule:%s remote_ip:%s] has been created", r.ID, _rule.Name, ip)

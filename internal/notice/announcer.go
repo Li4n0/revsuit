@@ -41,7 +41,7 @@ func (a *Announcer) AddBot(b Bot) *Announcer {
 func Notice(r record.Record) {
 	for _, bot := range announcer.Bots {
 		if err := bot.notice(r); err != nil {
-			log.Error(err.Error())
+			log.Warn(err.Error())
 		}
 	}
 }

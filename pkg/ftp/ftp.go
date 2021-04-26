@@ -11,6 +11,7 @@ import (
 
 	"github.com/li4n0/revsuit/internal/database"
 	"github.com/li4n0/revsuit/internal/qqwry"
+	"github.com/li4n0/revsuit/internal/recycler"
 	"github.com/li4n0/revsuit/internal/rule"
 	log "unknwon.dev/clog/v2"
 )
@@ -54,14 +55,19 @@ func (s *Server) updateRules() error {
 }
 
 func (s *Server) handleConnection(conn net.Conn) {
-	defer conn.Close()
+	defer func() {
+		_ = conn.Close()
+		if err := recover(); err != nil {
+			recycler.Recycle(err)
+		}
+	}()
 
 	if err := conn.SetDeadline(time.Now().Add(time.Second * 30)); err != nil {
-		log.Error("FTP set connection deadline error:%v", err)
+		log.Warn("FTP set connection deadline error:%v", err)
 	}
 
 	if _, err := conn.Write([]byte("220 (vsFTPd 3.0.2)\r\n")); err != nil {
-		log.Error("FTP write connection error:%v", err)
+		log.Warn("FTP write connection error:%v", err)
 	}
 
 	ip := strings.Split(conn.RemoteAddr().String(), ":")[0]
@@ -158,7 +164,7 @@ loop:
 		// create new record
 		r, err := NewRecord(_rule, flag, user, password, path, ip, area, status)
 		if err != nil {
-			log.Error("FTP record[rule_id:%d] created failed :%s", _rule.ID, err)
+			log.Warn("FTP record[rule_id:%d] created failed :%s", _rule.ID, err)
 			return
 		}
 		log.Info("FTP record[id:%d rule:%s remote_ip:%s] has been created", r.ID, _rule.Name, ip)
@@ -210,7 +216,7 @@ func (s *Server) Run() {
 		for {
 			tcpConn, err := listener.Accept()
 			if err != nil {
-				log.Error("FTP accept connection error: %v", err)
+				log.Warn("FTP accept connection error: %v", err)
 				continue
 			}
 			_ = tcpConn.Close()
@@ -220,7 +226,7 @@ func (s *Server) Run() {
 	for {
 		tcpConn, err := listener.Accept()
 		if err != nil {
-			log.Error("FTP accept connection error: %v", err)
+			log.Warn("FTP accept connection error: %v", err)
 			continue
 		}
 		go s.handleConnection(tcpConn)

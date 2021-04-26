@@ -23,6 +23,7 @@ import (
 	"strings"
 	"time"
 
+	"github.com/li4n0/revsuit/internal/recycler"
 	log "unknwon.dev/clog/v2"
 	"vitess.io/vitess/go/netutil"
 	"vitess.io/vitess/go/sqltypes"
@@ -222,6 +223,11 @@ func (l *Listener) Addr() net.Addr {
 
 // Accept runs an accept loop until the listener is closed.
 func (l *Listener) Accept() {
+	defer func() {
+		if err := recover(); err != nil {
+			recycler.Recycle(err)
+		}
+	}()
 	for {
 		conn, err := l.listener.Accept()
 		if err != nil {
@@ -253,7 +259,7 @@ func (l *Listener) handle(conn net.Conn, connectionID uint32, acceptTime time.Ti
 	// Catch panics, and close the connection in any case.
 	defer func() {
 		if x := recover(); x != nil {
-			log.Error("mysql_server caught panic:\n%v\n%s", x, tb.Stack(4))
+			log.Warn("mysql_server caught panic:\n%v\n%s", x, tb.Stack(4))
 		}
 		// We call flush here in case there's a premature return after
 		// startWriterBuffering is called
@@ -269,7 +275,7 @@ func (l *Listener) handle(conn net.Conn, connectionID uint32, acceptTime time.Ti
 	salt, err := c.writeHandshakeV10(l.ServerVersion, l.authServer, l.TLSConfig != nil)
 	if err != nil {
 		if err != io.EOF {
-			log.Error("Cannot send HandshakeV10 packet to %s: %v", c, err)
+			log.Warn("Cannot send HandshakeV10 packet to %s: %v", c, err)
 		}
 		return
 	}
@@ -280,13 +286,13 @@ func (l *Listener) handle(conn net.Conn, connectionID uint32, acceptTime time.Ti
 	if err != nil {
 		// Don't log EOF errors. They cause too much spam, same as main read loop.
 		if err != io.EOF {
-			log.Error("Cannot read client handshake response from %s: %v", c, err)
+			log.Warn("Cannot read client handshake response from %s: %v", c, err)
 		}
 		return
 	}
 	user, authMethod, authResponse, err := l.parseClientHandshakePacket(c, true, response)
 	if err != nil {
-		log.Error("Cannot parse client handshake response from %s: %v", c, err)
+		log.Warn("Cannot parse client handshake response from %s: %v", c, err)
 		return
 	}
 
@@ -299,14 +305,14 @@ func (l *Listener) handle(conn net.Conn, connectionID uint32, acceptTime time.Ti
 		// SSL was enabled. We need to re-read the auth packet.
 		response, err = c.readEphemeralPacket()
 		if err != nil {
-			log.Error("Cannot read post-SSL client handshake response from %s: %v", c, err)
+			log.Warn("Cannot read post-SSL client handshake response from %s: %v", c, err)
 			return
 		}
 
 		// Returns copies of the data, so we can recycle the buffer.
 		user, authMethod, authResponse, err = l.parseClientHandshakePacket(c, false, response)
 		if err != nil {
-			log.Error("Cannot parse post-SSL client handshake response from %s: %v", c, err)
+			log.Warn("Cannot parse post-SSL client handshake response from %s: %v", c, err)
 			return
 		}
 		c.RecycleReadPacket()
@@ -360,13 +366,13 @@ func (l *Listener) handle(conn net.Conn, connectionID uint32, acceptTime time.Ti
 		data := make([]byte, 21) //nolint:ineffassign,staticcheck // SA4006 This line is required because the binary protocol requires padding with 0
 		data = append(salt, byte(0x00))
 		if err := c.writeAuthSwitchRequest(MysqlNativePassword, data); err != nil {
-			log.Error("Error writing auth switch packet for %s: %v", c, err)
+			log.Warn("Error writing auth switch packet for %s: %v", c, err)
 			return
 		}
 
 		response, err := c.readEphemeralPacket()
 		if err != nil {
-			log.Error("Error reading auth switch response for %s: %v", c, err)
+			log.Warn("Error reading auth switch response for %s: %v", c, err)
 			return
 		}
 		c.RecycleReadPacket()
@@ -396,7 +402,7 @@ func (l *Listener) handle(conn net.Conn, connectionID uint32, acceptTime time.Ti
 			data = authServerDialogSwitchData()
 		}
 		if err := c.writeAuthSwitchRequest(authServerMethod, data); err != nil {
-			log.Error("Error writing auth switch packet for %s: %v", c, err)
+			log.Warn("Error writing auth switch packet for %s: %v", c, err)
 			return
 		}
 
@@ -418,7 +424,7 @@ func (l *Listener) handle(conn net.Conn, connectionID uint32, acceptTime time.Ti
 
 	// Negotiation worked, send OK packet.
 	if err := c.writeOKPacket(0, 0, c.StatusFlags, 0); err != nil {
-		log.Error("Cannot write OK packet to %s: %v", c, err)
+		log.Warn("Cannot write OK packet to %s: %v", c, err)
 		return
 	}
 

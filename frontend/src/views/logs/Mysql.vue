@@ -50,7 +50,7 @@
     <span slot="loadData" slot-scope="loadData">
        <a-tag v-if="loadData"
               color="#eb2f96"
-       >True</a-tag><a-tag v-else color="#f5222d">False</a-tag>
+       >TRUE</a-tag><a-tag v-else color="#f5222d">FALSE</a-tag>
     </span>
     <span slot="fileNum" slot-scope="files">
        <a-tag v-if="files.length>=3"

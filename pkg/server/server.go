@@ -3,6 +3,7 @@ package server
 import (
 	"github.com/gin-gonic/gin"
 	"github.com/li4n0/revsuit/internal/database"
+	"github.com/li4n0/revsuit/internal/file"
 	"github.com/li4n0/revsuit/internal/notice"
 	"github.com/li4n0/revsuit/pkg/dns"
 	"github.com/li4n0/revsuit/pkg/ftp"
@@ -53,7 +54,7 @@ func initDatabase(dsn string) {
 	if err != nil {
 		log.Fatal(err.Error())
 	}
-	err = database.DB.AutoMigrate(&mysql.File{})
+	err = database.DB.AutoMigrate(&file.MySQLFile{})
 	if err != nil {
 		log.Fatal(err.Error())
 	}
@@ -73,13 +74,17 @@ func initDatabase(dsn string) {
 	if err != nil {
 		log.Fatal(err.Error())
 	}
+	err = database.DB.AutoMigrate(&file.FTPFile{})
+	if err != nil {
+		log.Fatal(err.Error())
+	}
 
 }
 
 func initLog(level string) (logLevel log.Level) {
 
 	switch level {
-	case "debug":
+	case "debug", "trace":
 		gin.SetMode(gin.DebugMode)
 		database.DB.Logger.LogMode(logger.Info)
 		logLevel = log.LevelTrace
@@ -87,7 +92,7 @@ func initLog(level string) (logLevel log.Level) {
 		gin.SetMode(gin.DebugMode)
 		database.DB.Logger.LogMode(logger.Info)
 		logLevel = log.LevelInfo
-	case "warning":
+	case "warning", "warn":
 		gin.SetMode(gin.ReleaseMode)
 		database.DB.Logger.LogMode(logger.Warn)
 		logLevel = log.LevelWarn
@@ -133,8 +138,8 @@ func initNotice(nc noticeConfig) {
 
 func New(c *Config) *Revsuit {
 
-	initDatabase(c.Database)
 	logLevel := initLog(c.LogLevel)
+	initDatabase(c.Database)
 	initNotice(c.Notice)
 
 	s := &Revsuit{

@@ -20,7 +20,8 @@
               <span slot="label">
                   Pasv Address
                   <a-tooltip
-                      title="Support template such as ${user}/${password}/${varname}">
+                      title="1. Support template such as ${user}/${password}/${varname}.
+2.For setting the rebind mode, please use ',' to separate addresses.">
                     <a-icon type="question-circle-o"/>
                   </a-tooltip>
               </span>
@@ -29,6 +30,26 @@
                   style="width: 100%"
                   placeholder="use default value in the config"
                   :readOnly="formReadOnly"
+              />
+            </a-form-model-item>
+          </a-col>
+        </a-row>
+        <a-row :gutter="24">
+          <a-col :span="24">
+            <a-form-model-item>
+              <span slot="label">
+                  Data
+                  <a-tooltip
+                      title="1. The data to be returned when the client executes the download request.
+                      2. Please use base64 encoding.
+                      3. Support template such as ${user}/${password}/${varname}">
+                    <a-icon type="question-circle-o"/>
+                  </a-tooltip>
+              </span>
+              <a-textarea v-model="form.data"
+                          placeholder="The data to be returned when the client executes the download request. Please use base64 encoding."
+                          :readOnly="formReadOnly"
+                          :auto-size="{ minRows: 10, maxRows: 30 }"
               />
             </a-form-model-item>
           </a-col>
@@ -132,11 +153,6 @@
     </a-table>
   </div>
 </template>
-<style scoped>
-#add-rule {
-  margin-bottom: 10px;
-}
-</style>
 <script>
 
 import {getFtpRule, upsertFtpRule, deleteFtpRule} from '@/api/rule'
@@ -344,7 +360,7 @@ export default {
     handleCancel() {
       this.form = {}
       this.closeDrawer()
-    }
+    },
   },
   mounted() {
     this.fetch({page: "1"});
@@ -359,3 +375,8 @@ export default {
   }
 }
 </script>
+<style scoped>
+#add-rule {
+  margin-bottom: 10px;
+}
+</style>

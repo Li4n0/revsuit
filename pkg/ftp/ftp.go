@@ -3,6 +3,8 @@ package ftp
 import (
 	"bytes"
 	"fmt"
+	"go/types"
+	"io/ioutil"
 	"net"
 	"strconv"
 	"strings"
@@ -10,16 +12,19 @@ import (
 	"time"
 
 	"github.com/li4n0/revsuit/internal/database"
+	"github.com/li4n0/revsuit/internal/file"
 	"github.com/li4n0/revsuit/internal/qqwry"
 	"github.com/li4n0/revsuit/internal/recycler"
 	"github.com/li4n0/revsuit/internal/rule"
+	"github.com/patrickmn/go-cache"
 	log "unknwon.dev/clog/v2"
 )
 
 type Server struct {
 	Config
-	rules     []*Rule
-	rulesLock sync.RWMutex
+	rules       []*Rule
+	rulesLock   sync.RWMutex
+	dataChannel chan map[string]interface{}
 }
 
 type Status string
@@ -29,14 +34,22 @@ const (
 	FINISHED Status = "FINISHED"
 )
 
+type Method = string
+
+const (
+	DOWNLOAD Method = "DOWNLOAD"
+	UPLOAD   Method = "UPLOAD"
+)
+
 var (
-	server *Server
-	once   sync.Once
+	server         *Server
+	once           sync.Once
+	rebindingCache = cache.New(5*time.Second, 10*time.Second)
 )
 
 func GetServer() *Server {
 	once.Do(func() {
-		server = &Server{rulesLock: sync.RWMutex{}}
+		server = &Server{rulesLock: sync.RWMutex{}, dataChannel: make(chan map[string]interface{}, 10)}
 	})
 	return server
 }
@@ -55,6 +68,7 @@ func (s *Server) updateRules() error {
 }
 
 func (s *Server) handleConnection(conn net.Conn) {
+	log.Trace("New FTP connection from addr [%s]", conn.RemoteAddr())
 	defer func() {
 		_ = conn.Close()
 		if err := recover(); err != nil {
@@ -70,13 +84,16 @@ func (s *Server) handleConnection(conn net.Conn) {
 		log.Warn("FTP write connection error:%v", err)
 	}
 
-	ip := strings.Split(conn.RemoteAddr().String(), ":")[0]
+	ip, port, _ := net.SplitHostPort(conn.RemoteAddr().String())
 	buf := &bytes.Buffer{}
 
-	var user, password, path, flag, flagGroup string
+	var user, password, method, flag, flagGroup, pasvAddress, filename string
 	status := CRASHED
+	path := "/"
+	uploadData := make([]byte, 0)
 	var matchedRule *Rule
 	var vars map[string]string
+	var isRedirect bool
 
 loop:
 	for {
@@ -89,20 +106,23 @@ loop:
 
 		if buf.Len() > 4 {
 			cmd := string(buf.Bytes()[:4])
+			log.Trace("FTP connection[%s] exec command: %s", conn.RemoteAddr(), strings.TrimRight(buf.String(), "\r\n"))
 			switch cmd {
 			case "USER":
 				user = strings.TrimRight(string(buf.Bytes()[5:]), "\r\n")
 				_, _ = conn.Write([]byte("331 password please - version check\r\n"))
 			case "PASS":
 				password = strings.TrimRight(string(buf.Bytes()[5:]), "\r\n")
-				_, _ = conn.Write([]byte("230 User logged in\r\n"))
-
 				for _, _rule := range s.getRules() {
 					for _, s := range []string{user, password} {
 						flag, flagGroup, vars = _rule.Match(s)
 						if flag != "" {
 							vars["user"] = user
 							vars["password"] = password
+							log.Trace(
+								"FTP connection[%s] matched rule[rule_name: %s, flag: %s]",
+								conn.RemoteAddr(), _rule.Name, flag,
+							)
 							break
 						}
 					}
@@ -110,25 +130,50 @@ loop:
 						continue
 					}
 					matchedRule = _rule
+					pasvAddress = _rule.PasvAddress
 				}
 
-			case "QUIT":
-				_, _ = conn.Write([]byte("221 Goodbye.\r\n"))
-			case "RETR":
-				path += "/" + strings.TrimRight(string(buf.Bytes()[5:]), "\r\n")
-				_, _ = conn.Write([]byte("451 Nope\r\n"))
-				_, _ = conn.Write([]byte("221 Goodbye.\r\n"))
-				status = FINISHED
-				break loop
+				if flag == "" {
+					_, _ = conn.Write([]byte("331 please specify the password\r\n"))
+					break loop
+				}
+
+				_, _ = conn.Write([]byte("230 User logged in\r\n"))
+				if strings.Contains(pasvAddress, ",") {
+					values, ok := rebindingCache.Get(ip)
+					if !ok {
+						rebindingCache.Set(ip, strings.Split(pasvAddress, ","), cache.DefaultExpiration)
+						values = strings.Split(pasvAddress, ",")
+					}
+					//Choose and delete first address
+					pasvAddress = values.([]string)[0]
+					if len(values.([]string)) > 1 {
+						rebindingCache.Set(ip, values.([]string)[1:len(values.([]string))], cache.DefaultExpiration)
+					} else {
+						rebindingCache.Delete(ip)
+					}
+				}
+				if pasvAddress == "" {
+					pasvAddress = fmt.Sprintf("%s:%d", s.PasvIP, s.PasvPort)
+				}
+				isRedirect = rule.CompileTpl(pasvAddress, vars) != fmt.Sprintf("%s:%d", s.PasvIP, s.PasvPort)
+				if isRedirect {
+					log.Trace("FTP connection[%s] will be redirect[pasv_address: %s]", conn.RemoteAddr(), pasvAddress)
+				}
+			case "SIZE":
+				path += strings.TrimLeft(strings.TrimRight(string(buf.Bytes()[5:]), "\r\n"), "/")
+				if matchedRule == nil || isRedirect || len(matchedRule.Data) == 0 {
+					_, _ = conn.Write([]byte(fmt.Sprintf("550 %s: No such file or directory.\r\n", strings.TrimRight(string(buf.Bytes()[5:]), "\r\n"))))
+					break
+				}
+				_, _ = conn.Write([]byte(fmt.Sprintf("213 %d\r\n", len(matchedRule.Data))))
 			case "EPSV", "EPRT", "PORT":
 				// refuse to use EPSV/EPRT/PORT in order to make the client to use PASV mode.
 				_, _ = conn.Write([]byte(fmt.Sprintf("500 '%s': command not understood.\r\n", cmd)))
 			case "PASV":
 				// return rule's pasv_address or default pasv address
-				ret := fmt.Sprintf("227 Entering Passive Mode (%s,%v,%d)\r\n", strings.ReplaceAll(s.PasvIP, ".", ","), float64(s.PasvPort/256), s.PasvPort%256)
-
-				if matchedRule != nil && matchedRule.PasvAddress != "" {
-					pasvAddress := rule.CompileTpl(matchedRule.PasvAddress, vars)
+				if matchedRule != nil {
+					pasvAddress := rule.CompileTpl(pasvAddress, vars)
 					pasvIP, pasvPort, err := net.SplitHostPort(pasvAddress)
 					if err != nil {
 						log.Warn("FTP failed to split rule[id%d] pasv_address(%s) :%s", matchedRule.ID, pasvAddress, err)
@@ -139,16 +184,49 @@ loop:
 						log.Warn("FTP failed to convert rule[id%d] pasv_port(%s) :%s", matchedRule.ID, pasvPort, err)
 						break
 					}
-					ret = fmt.Sprintf("227 Entering Passive Mode (%s,%v,%d)\r\n", strings.ReplaceAll(pasvIP, ".", ","), float64(port/256), port%256)
+					ret := fmt.Sprintf("227 Entering Passive Mode (%s,%v,%d)\r\n", strings.ReplaceAll(pasvIP, ".", ","), float64(port/256), port%256)
+					_, _ = conn.Write([]byte(ret))
 				}
-				_, _ = conn.Write([]byte(ret))
+			case "RETR":
+				method = DOWNLOAD
+				filename := strings.TrimRight(string(buf.Bytes()[5:]), "\r\n")
+				if matchedRule == nil {
+					_, _ = conn.Write([]byte("451 Nope\r\n"))
+					_, _ = conn.Write([]byte("221 Goodbye.\r\n"))
+					break
+				}
+
+				_, _ = conn.Write([]byte(
+					fmt.Sprintf("150 Opening BINARY mode data connection for '%s' (%d bytes).\r\n", filename, len(matchedRule.Data))))
+				dataPort, _ := strconv.Atoi(port)
+				s.dataChannel <- map[string]interface{}{fmt.Sprintf("%s:%d", ip, dataPort+1): []byte(rule.CompileTpl(matchedRule.Data, vars))}
+				_, _ = conn.Write([]byte("226 Transfer complete.\r\n"))
+			case "STOR":
+				method = UPLOAD
+				filename = strings.TrimRight(string(buf.Bytes()[5:]), "\r\n")
+				_, _ = conn.Write([]byte(fmt.Sprintf("150 Opening BINARY mode data connection for '%s'.\r\n", filename)))
+				if !isRedirect {
+					dataChannel := make(chan []byte)
+					dataPort, _ := strconv.Atoi(port)
+					s.dataChannel <- map[string]interface{}{fmt.Sprintf("%s:%d", ip, dataPort+1): dataChannel}
+					uploadData = <-dataChannel
+					log.Trace(
+						"FTP connection[%s] uploaded %d bytes",
+						conn.RemoteAddr(), len(uploadData),
+					)
+				}
+				_, _ = conn.Write([]byte("226 Transfer complete.\r\n"))
+			case "QUIT":
+				_, _ = conn.Write([]byte("221 Goodbye.\r\n"))
+				status = FINISHED
+				break loop
 			default:
 				cmd = string(buf.Bytes()[:3])
 				if cmd == "CWD" {
 					_, _ = conn.Write([]byte("250 Directory successfully changed.\r\n"))
-					path += "/" + strings.TrimRight(string(buf.Bytes()[4:]), "\r\n")
+					path += strings.TrimRight(string(buf.Bytes()[4:]), "\r\n") + "/"
 				} else if cmd == "PWD" {
-					_, _ = conn.Write([]byte("257 \"/\" is the current directory\r\n"))
+					_, _ = conn.Write([]byte(fmt.Sprintf("257 \"%s\" is the current directory\r\n", path)))
 				} else {
 					_, _ = conn.Write([]byte("230 more data please!\r\n"))
 				}
@@ -160,9 +238,14 @@ loop:
 	if matchedRule != nil {
 		_rule := matchedRule
 		area := qqwry.Area(ip)
-
+		var r *Record
+		var err error
 		// create new record
-		r, err := NewRecord(_rule, flag, user, password, path, ip, area, status)
+		if len(uploadData) != 0 {
+			r, err = NewRecord(_rule, flag, user, password, method, path, ip, area, file.FTPFile{Name: filename, Content: uploadData}, status)
+		} else {
+			r, err = NewRecord(_rule, flag, user, password, method, path, ip, area, file.FTPFile{}, status)
+		}
 		if err != nil {
 			log.Warn("FTP record[rule_id:%d] created failed :%s", _rule.ID, err)
 			return
@@ -193,6 +276,30 @@ loop:
 	}
 }
 
+func (s *Server) handlePasvConnection(conn net.Conn, data map[string]interface{}) {
+	remoteAddress := conn.RemoteAddr().String()
+	switch v := data[remoteAddress].(type) {
+	case types.Nil:
+		s.dataChannel <- data
+		return
+	case []byte:
+		_, err := conn.Write(v)
+		if err != nil {
+			log.Warn("FTP PASV server sent data to connection[%s] failed with error: %s", remoteAddress, err)
+		}
+		log.Trace("FTP PASV server has sent data to connection[%s]", remoteAddress)
+	case chan []byte:
+		buf, err := ioutil.ReadAll(conn)
+		if err != nil {
+			log.Warn("FTP PASV server received data from connection[%s] failed with error: %s", remoteAddress, err)
+		}
+		v <- buf
+		log.Trace("FTP PASV server has received data from connection[%s]", remoteAddress)
+	}
+
+	_ = conn.Close()
+}
+
 func (s *Server) Run() {
 	if err := s.updateRules(); err != nil {
 		log.Fatal(err.Error())
@@ -213,13 +320,13 @@ func (s *Server) Run() {
 		if err != nil {
 			log.Fatal("FTP failed to listen on pasv port : %v", err)
 		}
-		for {
+		for data := range s.dataChannel {
 			tcpConn, err := listener.Accept()
 			if err != nil {
 				log.Warn("FTP accept connection error: %v", err)
 				continue
 			}
-			_ = tcpConn.Close()
+			s.handlePasvConnection(tcpConn, data)
 		}
 	}()
 

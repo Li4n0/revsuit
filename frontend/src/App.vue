@@ -55,7 +55,7 @@
             @click="() => (collapsed = !collapsed)"
         />
         <!--        <transition name="list1">-->
-        <div v-if="$route.path.includes('logs')" style="float: right; width:45% ;padding: 12px 0;line-height: 24px;">
+        <div v-if="isLogMode" style="float: right; width:45% ;padding: 12px 0;line-height: 24px;">
           <a-row :gutter="24" type="flex">
             <a-col :span="21">
               <a-form-model v-show="showSettings" ref="settings" layout="inline">
@@ -111,6 +111,11 @@ export default {
       openKeys: ['logs', "rules"],
     };
   },
+  computed: {
+    isLogMode() {
+      return this.$route.path.includes('logs')
+    }
+  },
   methods: {
     timing() {
       if (this.timer !== null) {
@@ -122,7 +127,7 @@ export default {
     }
   },
   mounted() {
-    if (this.autoRefresh) {
+    if (this.autoRefresh && this.isLogMode) {
       this.timing()
     }
   },
@@ -131,6 +136,14 @@ export default {
   },
   watch: {
     autoRefresh(val) {
+      if (!val) {
+        clearInterval(this.timer)
+      } else {
+        this.timing()
+      }
+      localStorage.setItem('autoRefresh', val)
+    },
+    isLogMode(val) {
       if (!val) {
         clearInterval(this.timer)
       } else {

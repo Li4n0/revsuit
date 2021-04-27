@@ -39,6 +39,18 @@
         type="search"
         :style="{ color: filtered ? '#108ee9' : undefined }"
     />
+    <span slot="method" slot-scope="method">
+     <a-tag v-if="method" :color="method==='UPLOAD'?'#eb2f96':'#02a7ff'">{{ method }}</a-tag>
+    </span>
+    <span slot="file" slot-scope="file">
+     <a-tag
+         v-if="file.id"
+         color="#f5222d"
+     ><a target="_blank" :href="'/revsuit/api/file/ftp/'+file.id">TRUE</a> </a-tag>
+     <a-tag v-else color="#722ed1">
+      FALSE
+      </a-tag>
+    </span>
 
     <span slot="time" slot-scope="time">
         {{ new Date(time).format("yyyy-MM-dd hh:mm:ss") }}
@@ -65,7 +77,7 @@ import FilterDropdown from '@/components/FilterDropdown'
 
 const colors = {
   "CRASHED": "#f50",
-  "FINISHED": "#87d068"
+  "FINISHED": "#52c41a"
 }
 
 const columns = [
@@ -129,6 +141,24 @@ const columns = [
     },
   },
   {
+    title: 'METHOD',
+    dataIndex: 'method',
+    key: 'method',
+    scopedSlots: {
+      customRender: 'method',
+      filterDropdown: 'selectDropdown',
+      filterIcon: 'filterIcon',
+    },
+  },
+  {
+    title: 'FILE',
+    dataIndex: 'file',
+    key: 'file',
+    scopedSlots: {
+      customRender: 'file'
+    },
+  },
+  {
     title: 'STATUS',
     dataIndex: 'status',
     key: 'status',
@@ -169,6 +199,9 @@ export default {
     };
   },
   methods: {
+    aa(file) {
+      console.log(file)
+    },
     handleTableChange(pagination, filters, sorter) {
       const pager = {...this.pagination};
       pager.current = pagination.current;

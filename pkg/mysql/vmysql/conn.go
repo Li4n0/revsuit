@@ -73,7 +73,7 @@ type Conn struct {
 	// conn is the underlying network connection.
 	// Calling Close() on the Conn will close this connection.
 	// If there are any ongoing reads or writes, they may get interrupted.
-	conn net.Conn
+	Conn net.Conn
 
 	// For server-side connections, listener points to the server object.
 	listener *Listener
@@ -167,7 +167,7 @@ var writersPool = sync.Pool{New: func() interface{} { return bufio.NewWriterSize
 // size for reads.
 func newServerConn(conn net.Conn, listener *Listener) *Conn {
 	c := &Conn{
-		conn:     conn,
+		Conn:     conn,
 		listener: listener,
 		closed:   sync2.NewAtomicBool(false),
 	}
@@ -181,7 +181,7 @@ func newServerConn(conn net.Conn, listener *Listener) *Conn {
 // be terminated by a call to flush.
 func (c *Conn) startWriterBuffering() {
 	c.bufferedWriter = writersPool.Get().(*bufio.Writer)
-	c.bufferedWriter.Reset(c.conn)
+	c.bufferedWriter.Reset(c.Conn)
 }
 
 // flush flushes the written data to the socket.
@@ -206,7 +206,7 @@ func (c *Conn) getWriter() io.Writer {
 	if c.bufferedWriter != nil {
 		return c.bufferedWriter
 	}
-	return c.conn
+	return c.Conn
 }
 
 // getReader returns reader for connection. It can be *bufio.Reader or net.Conn
@@ -215,7 +215,7 @@ func (c *Conn) getReader() io.Reader {
 	if c.bufferedReader != nil {
 		return c.bufferedReader
 	}
-	return c.conn
+	return c.Conn
 }
 
 func (c *Conn) readHeaderFrom(r io.Reader) (int, error) {
@@ -362,7 +362,7 @@ func (c *Conn) readEphemeralPacketDirect() ([]byte, error) {
 		panic(vterrors.Errorf(vtrpc.Code_INTERNAL, "readEphemeralPacketDirect: unexpected currentEphemeralPolicy: %v", c.currentEphemeralPolicy))
 	}
 
-	var r io.Reader = c.conn
+	var r io.Reader = c.Conn
 
 	length, err := c.readHeaderFrom(r)
 	if err != nil {
@@ -577,7 +577,7 @@ func (c *Conn) recycleWritePacket() {
 
 // RemoteAddr returns the underlying socket RemoteAddr().
 func (c *Conn) RemoteAddr() net.Addr {
-	return c.conn.RemoteAddr()
+	return c.Conn.RemoteAddr()
 }
 
 // ID returns the MySQL connection ID for this connection.
@@ -594,7 +594,7 @@ func (c *Conn) String() string {
 // routine to interrupt the current connection.
 func (c *Conn) Close() {
 	if c.closed.CompareAndSwap(false, true) {
-		c.conn.Close()
+		c.Conn.Close()
 	}
 }
 

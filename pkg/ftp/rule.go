@@ -14,6 +14,7 @@ import (
 type Rule struct {
 	rule.BaseRule
 	PasvAddress string `gorm:"pasv_address" json:"pasv_address" form:"pasv_address"`
+	Data        []byte `json:"data" form:"data"`
 }
 
 func (Rule) TableName() string {
@@ -44,6 +45,7 @@ func (r *Rule) CreateOrUpdate() (err error) {
 				"flag_format",
 				"rank",
 				"pasv_address",
+				"data",
 				"push_to_client",
 				"notice",
 			}),

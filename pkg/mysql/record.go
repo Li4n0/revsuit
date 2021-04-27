@@ -6,6 +6,7 @@ import (
 
 	"github.com/gin-gonic/gin"
 	"github.com/li4n0/revsuit/internal/database"
+	"github.com/li4n0/revsuit/internal/file"
 	"github.com/li4n0/revsuit/internal/notice"
 	"github.com/li4n0/revsuit/internal/record"
 )
@@ -14,12 +15,12 @@ var _ record.Record = (*Record)(nil)
 
 type Record struct {
 	record.BaseRecord
-	Username      string `gorm:"index" form:"username" json:"username" notice:"username"`
-	ClientName    string `gorm:"index" form:"client_name" json:"client_name" notice:"client_name"`
-	ClientOS      string `gorm:"index" form:"client_os" json:"client_os" notice:"client_os"`
-	LoadLocalData bool   `gorm:"index" form:"load_local_data" json:"load_local_data" notice:"load_local_data"`
-	Files         []File `form:"-" json:"files" notice:"-"`
-	Rule          Rule   `gorm:"foreignKey:RuleName;references:Name;constraint:OnUpdate:CASCADE,OnDelete:SET NULL;" form:"-" json:"-" notice:"-"`
+	Username      string           `gorm:"index" form:"username" json:"username" notice:"username"`
+	ClientName    string           `gorm:"index" form:"client_name" json:"client_name" notice:"client_name"`
+	ClientOS      string           `gorm:"index" form:"client_os" json:"client_os" notice:"client_os"`
+	LoadLocalData bool             `gorm:"index" form:"load_local_data" json:"load_local_data" notice:"load_local_data"`
+	Files         []file.MySQLFile `form:"-" json:"files" notice:"-"`
+	Rule          Rule             `gorm:"foreignKey:RuleName;references:Name;constraint:OnUpdate:CASCADE,OnDelete:SET NULL;" form:"-" json:"-" notice:"-"`
 }
 
 func (Record) TableName() string {
@@ -30,7 +31,7 @@ func (r Record) Notice() {
 	notice.Notice(r)
 }
 
-func newRecord(rule *Rule, flag, username, clientName, clientOS, remoteIp, ipArea string, supportLoadLocalData bool, files []File) (r *Record, err error) {
+func newRecord(rule *Rule, flag, username, clientName, clientOS, remoteIp, ipArea string, supportLoadLocalData bool, files []file.MySQLFile) (r *Record, err error) {
 	r = &Record{
 		BaseRecord: record.BaseRecord{
 			Flag:        flag,

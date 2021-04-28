@@ -248,12 +248,6 @@ func (s *Server) ComQuery(c *vmysql.Conn, query string, callback func(*sqltypes.
 			} else {
 				c.Files[filename] = data
 			}
-			c.WriteErrorResponse(fmt.Sprintf(
-				"You have an error in your SQL syntax; check the manual that corresponds to your MariaDB server version for the right syntax to use near '%s' at line 1",
-				strings.ReplaceAll(
-					strings.ReplaceAll(query, "%", "%%"),
-					"'", "\\'"),
-			))
 		}
 	}
 

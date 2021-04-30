@@ -15,13 +15,13 @@ var _ record.Record = (*Record)(nil)
 
 type Record struct {
 	record.BaseRecord
-	User     string       `form:"user" json:"user"`
-	Password string       `form:"password" json:"password"`
-	Path     string       `form:"path" json:"path"`
-	Method   Method       `form:"method" json:"method"`
-	Status   Status       `form:"status" json:"status"`
-	File     file.FTPFile `form:"file" json:"file" notice:"-"`
-	Rule     Rule         `gorm:"foreignKey:RuleName;references:Name;constraint:OnUpdate:CASCADE,OnDelete:SET NULL;" form:"-" json:"-" notice:"-"`
+	User     string        `form:"user" json:"user"`
+	Password string        `form:"password" json:"password"`
+	Path     string        `form:"path" json:"path"`
+	Method   Method        `form:"method" json:"method"`
+	Status   Status        `form:"status" json:"status"`
+	File     *file.FTPFile `form:"file" json:"file" notice:"-"`
+	Rule     Rule          `gorm:"foreignKey:RuleName;references:Name;constraint:OnUpdate:CASCADE,OnDelete:SET NULL;" form:"-" json:"-" notice:"-"`
 }
 
 func (Record) TableName() string {
@@ -32,7 +32,7 @@ func (r Record) Notice() {
 	notice.Notice(r)
 }
 
-func NewRecord(rule *Rule, flag, user, password, method, path, ip, area string, file file.FTPFile, status Status) (r *Record, err error) {
+func NewRecord(rule *Rule, flag, user, password, method, path, ip, area string, file *file.FTPFile, status Status) (r *Record, err error) {
 	r = &Record{
 		BaseRecord: record.BaseRecord{
 			Flag:        flag,

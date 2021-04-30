@@ -182,23 +182,26 @@ loop:
 				// refuse to use EPSV/EPRT/PORT in order to make the client to use PASV mode.
 				_, _ = conn.Write([]byte(fmt.Sprintf("500 '%s': command not understood.\r\n", cmd)))
 			case "PASV":
-				// return rule's pasv_address or default pasv address
-				pasvAddress := rule.CompileTpl(pasvAddress, vars)
-				pasvIP, pasvPort, err := net.SplitHostPort(pasvAddress)
-				if err != nil {
-					log.Warn("FTP failed to split rule[id%d] pasv_address(%s) :%s", _rule.ID, pasvAddress, err)
-					break
-				}
+				//Just so that ide does not prompt that there may be a nil value
+				if _rule != nil {
+					// return rule's pasv_address or default pasv address
+					pasvAddress := rule.CompileTpl(pasvAddress, vars)
+					pasvIP, pasvPort, err := net.SplitHostPort(pasvAddress)
+					if err != nil {
+						log.Warn("FTP failed to split rule[id%d] pasv_address(%s) :%s", _rule.ID, pasvAddress, err)
+						break
+					}
 
-				port, err := strconv.Atoi(pasvPort)
-				if err != nil {
-					log.Warn("FTP failed to convert rule[id%d] pasv_port(%s) :%s", _rule.ID, pasvPort, err)
-					break
-				}
-				ret := fmt.Sprintf("227 Entering Passive Mode (%s,%v,%d)\r\n", strings.ReplaceAll(pasvIP, ".", ","), float64(port/256), port%256)
-				_, _ = conn.Write([]byte(ret))
-				if isRedirect {
-					log.Trace("FTP connection[%s] will be redirect[pasv_address: %s]", conn.RemoteAddr(), pasvAddress)
+					port, err := strconv.Atoi(pasvPort)
+					if err != nil {
+						log.Warn("FTP failed to convert rule[id%d] pasv_port(%s) :%s", _rule.ID, pasvPort, err)
+						break
+					}
+					ret := fmt.Sprintf("227 Entering Passive Mode (%s,%v,%d)\r\n", strings.ReplaceAll(pasvIP, ".", ","), float64(port/256), port%256)
+					_, _ = conn.Write([]byte(ret))
+					if isRedirect {
+						log.Trace("FTP connection[%s] will be redirect[pasv_address: %s]", conn.RemoteAddr(), pasvAddress)
+					}
 				}
 			case "RETR":
 				//Just so that ide does not prompt that there may be a nil value
@@ -231,7 +234,7 @@ loop:
 				break loop
 			case "CWD":
 				_, _ = conn.Write([]byte("250 Directory successfully changed.\r\n"))
-				path += strings.TrimRight(string(buf.Bytes()[4:]), "\r\n") + "/"
+				path += strings.TrimRight(args, "\r\n") + "/"
 			case "PWD":
 				_, _ = conn.Write([]byte(fmt.Sprintf("257 \"%s\" is the current directory\r\n", path)))
 			default:

@@ -252,7 +252,7 @@ loop:
 		ftpFile := &file.FTPFile{}
 		if len(uploadData) != 0 {
 			ftpFile = &file.FTPFile{
-				Name: filename,
+				Name:    filename,
 				Content: uploadData,
 			}
 		}

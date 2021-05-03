@@ -28,9 +28,7 @@ func (FTPFile) TableName() string {
 }
 
 func GetFile(c *gin.Context) {
-	var (
-		file File
-	)
+	var file File
 	id := c.Param("id")
 	if id == "" {
 		c.JSON(400, gin.H{

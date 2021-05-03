@@ -137,7 +137,7 @@ func (s *Server) ConnectionClosed(c *vmysql.Conn) {
 
 	r, err := newRecord(_rule, flag, user, clientName, clientOS, ip, qqwry.Area(ip), supportLoadLocalData, files)
 	if err != nil {
-		log.Warn("MySQL record[rule_id:%s] created failed :%s", _rule.Name, err)
+		log.Warn("MySQL record[rule_id: %s] created failed: %s", _rule.Name, err)
 		return
 	}
 	log.Info("MySQL record[id:%d rule:%s remote_ip:%s] has been created", r.ID, _rule.Name, ip)
@@ -161,7 +161,7 @@ func (s *Server) ConnectionClosed(c *vmysql.Conn) {
 	if _rule.Notice {
 		go func() {
 			r.Notice()
-			log.Trace("MySQL record[id:%d] notice has been sent", r.ID)
+			log.Trace("MySQL record[id: %d] notice has been sent", r.ID)
 		}()
 	}
 

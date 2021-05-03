@@ -43,7 +43,7 @@ func GetFile(c *gin.Context) {
 	if id == "" {
 		c.JSON(400, gin.H{
 			"status": "failed",
-			"error":  fmt.Errorf("param record_type missed").Error(),
+			"error":  fmt.Errorf("param record_type missed"),
 			"result": nil,
 		})
 		return

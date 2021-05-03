@@ -249,11 +249,15 @@ loop:
 		var r *Record
 		var err error
 		// create new record
+		ftpFile := &file.FTPFile{}
 		if len(uploadData) != 0 {
-			r, err = NewRecord(_rule, flag, user, password, method, path, ip, area, &file.FTPFile{Name: filename, Content: uploadData}, status)
-		} else {
-			r, err = NewRecord(_rule, flag, user, password, method, path, ip, area, &file.FTPFile{}, status)
+			ftpFile = &file.FTPFile{
+				Name: filename,
+				Content: uploadData,
+			}
 		}
+
+		r, err := NewRecord(_rule, flag, user, password, method, path, ip, area, ftpFile, status)
 		if err != nil {
 			log.Warn("FTP record[rule_id:%d] created failed :%s", _rule.ID, err)
 			return
@@ -297,7 +301,7 @@ func (s *Server) handlePasvConnection(conn net.Conn, data map[string]interface{}
 		}
 		log.Trace("FTP PASV server has sent data to connection[%s]", remoteAddress)
 	case chan []byte:
-		buf, err := ioutil.ReadAll(conn)
+		buf, err := os.ReadAll(conn)
 		if err != nil {
 			log.Warn("FTP PASV server received data from connection[%s] failed with error: %s", remoteAddress, err)
 		}

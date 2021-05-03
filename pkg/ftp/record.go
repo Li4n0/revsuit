@@ -108,7 +108,7 @@ func ListRecords(c *gin.Context) {
 		order = "desc"
 	}
 
-	if err := db.Preload("File").Order("id" + " " + order).Count(&count).Offset((page - 1) * 10).Limit(10).Find(&res).Error; err != nil {
+	if err := db.Preload("File").Order("id " + order).Count(&count).Offset((page - 1) * 10).Limit(10).Find(&res).Error; err != nil {
 		c.JSON(400, gin.H{
 			"status": "failed",
 			"error":  err,

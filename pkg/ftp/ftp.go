@@ -257,7 +257,7 @@ loop:
 			}
 		}
 
-		r, err := NewRecord(_rule, flag, user, password, method, path, ip, area, ftpFile, status)
+		r, err = NewRecord(_rule, flag, user, password, method, path, ip, area, ftpFile, status)
 		if err != nil {
 			log.Warn("FTP record[rule_id:%d] created failed :%s", _rule.ID, err)
 			return

@@ -49,9 +49,9 @@ func GetFile(c *gin.Context) {
 		return
 	}
 	if recordType == "mysql" {
-		database.DB.Table("mysql_files").Model(&file).Where("id = ?", id).Find(&file)
+		database.DB.Table("mysql_files").Where("id = ?", id).Find(&file)
 	} else if recordType == "ftp" {
-		database.DB.Table("ftp_files").Model(&file).Where("id = ?", id).Find(&file)
+		database.DB.Table("ftp_files").Where("id = ?", id).Find(&file)
 	}
 
 	if file.Content == nil || len(file.Content) == 0 {

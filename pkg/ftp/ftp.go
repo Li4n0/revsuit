@@ -4,7 +4,7 @@ import (
 	"bytes"
 	"fmt"
 	"go/types"
-	"io/ioutil"
+	"io"
 	"net"
 	"strconv"
 	"strings"
@@ -301,7 +301,7 @@ func (s *Server) handlePasvConnection(conn net.Conn, data map[string]interface{}
 		}
 		log.Trace("FTP PASV server has sent data to connection[%s]", remoteAddress)
 	case chan []byte:
-		buf, err := os.ReadAll(conn)
+		buf, err := io.ReadAll(conn)
 		if err != nil {
 			log.Warn("FTP PASV server received data from connection[%s] failed with error: %s", remoteAddress, err)
 		}

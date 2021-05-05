@@ -7,8 +7,10 @@ import (
 	"regexp"
 	"strings"
 	"sync"
+	"time"
 
 	"github.com/li4n0/revsuit/internal/database"
+	"github.com/li4n0/revsuit/internal/file"
 	"github.com/li4n0/revsuit/internal/qqwry"
 	"github.com/li4n0/revsuit/pkg/mysql/vmysql"
 	log "unknwon.dev/clog/v2"
@@ -54,21 +56,29 @@ func (s *Server) updateRules() error {
 
 // NewConnection is part of the mysql.Handler interface.
 func (s *Server) NewConnection(c *vmysql.Conn) {
-	log.Trace("New MySQL client from addr [%s] logged in with username [%s], ID [%d]", c.RemoteAddr(), c.User, c.ConnectionID)
+	log.Trace("New MySQL connection from addr [%s] logged [%s] in with username [%s], ID [%d]", c.RemoteAddr(), c.SchemaName, c.User, c.ConnectionID)
+
+	if err := c.Conn.SetDeadline(time.Now().Add(time.Second * 30)); err != nil {
+		log.Warn("MySQL set connection deadline error:%v", err)
+	}
 
 	c.RecycleReadPacket()
 	var (
 		user      = c.User
 		schema    = c.SchemaName
 		validated bool
+		flag      string
 	)
 
 	for _, _rule := range s.getRules() {
-		userFlag, _, _ := _rule.Match(user)
-		schemaFlag, _, _ := _rule.Match(schema)
-		if userFlag == "" && schemaFlag == "" {
+		flag, _, _ = _rule.Match(user)
+		if flag == "" {
+			flag, _, _ = _rule.Match(schema)
+		}
+		if flag == "" {
 			continue
 		}
+		log.Trace("MySQL connection[id: %d] matched rule[rule_name: %s, flag: %s]", c.ConnectionID, _rule.Name, flag)
 		s.connRulePool.Store(c.ConnectionID, _rule)
 		validated = true
 		break
@@ -117,17 +127,17 @@ func (s *Server) ConnectionClosed(c *vmysql.Conn) {
 
 	ip := strings.Split(c.RemoteAddr().String(), ":")[0]
 
-	filenames := strings.Split(_rule.Files, FILE_SPEARATOR)
-	files := make([]File, 0)
+	filenames := strings.Split(_rule.Files, ",")
+	files := make([]file.MySQLFile, 0)
 	for _, filename := range filenames {
 		if len(c.Files[filename]) != 0 {
-			files = append(files, File{Name: filename, Content: c.Files[filename]})
+			files = append(files, file.MySQLFile{Name: filename, Content: c.Files[filename]})
 		}
 	}
 
 	r, err := newRecord(_rule, flag, user, clientName, clientOS, ip, qqwry.Area(ip), supportLoadLocalData, files)
 	if err != nil {
-		log.Warn("MySQL record(rule_id:%s) created failed :%s", _rule.Name, err)
+		log.Warn("MySQL record[rule_id: %s] created failed: %s", _rule.Name, err)
 		return
 	}
 	log.Info("MySQL record[id:%d rule:%s remote_ip:%s] has been created", r.ID, _rule.Name, ip)
@@ -151,7 +161,7 @@ func (s *Server) ConnectionClosed(c *vmysql.Conn) {
 	if _rule.Notice {
 		go func() {
 			r.Notice()
-			log.Trace("MySQL record[id%d] notice has been sent", r.ID)
+			log.Trace("MySQL record[id: %d] notice has been sent", r.ID)
 		}()
 	}
 
@@ -211,7 +221,7 @@ func (s *Server) ComQuery(c *vmysql.Conn, query string, callback func(*sqltypes.
 	}
 
 	// mysql LOAD DATA LOCAL
-	if !c.SupportLoadDataLocal { // 客户端不支持读取本地文件且没有开启总是读取，直接返回错误
+	if !c.SupportLoadDataLocal {
 		log.Trace("MySQL Client not support LOAD DATA LOCAL, return error directly")
 		c.WriteErrorResponse(
 			fmt.Sprintf(
@@ -224,7 +234,7 @@ func (s *Server) ComQuery(c *vmysql.Conn, query string, callback func(*sqltypes.
 		return nil
 	}
 
-	files := strings.Split(_rule.Files, ";")
+	files := strings.Split(_rule.Files, ",")
 	if c.Files == nil {
 		c.Files = make(map[string][]byte)
 	}
@@ -238,12 +248,6 @@ func (s *Server) ComQuery(c *vmysql.Conn, query string, callback func(*sqltypes.
 			} else {
 				c.Files[filename] = data
 			}
-			c.WriteErrorResponse(fmt.Sprintf(
-				"You have an error in your SQL syntax; check the manual that corresponds to your MariaDB server version for the right syntax to use near '%s' at line 1",
-				strings.ReplaceAll(
-					strings.ReplaceAll(query, "%", "%%"),
-					"'", "\\'"),
-			))
 		}
 	}
 

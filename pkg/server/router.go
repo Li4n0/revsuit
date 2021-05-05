@@ -6,6 +6,7 @@ import (
 
 	"github.com/gin-gonic/gin"
 	"github.com/li4n0/revsuit/frontend"
+	"github.com/li4n0/revsuit/internal/file"
 	"github.com/li4n0/revsuit/pkg/dns"
 	"github.com/li4n0/revsuit/pkg/ftp"
 	"github.com/li4n0/revsuit/pkg/mysql"
@@ -101,6 +102,6 @@ func (revsuit *Revsuit) registerHttpRouter() {
 
 	// init file router group
 	fileGroup := revsuit.http.ApiGroup.Group("/file")
-	fileGroup.GET("/mysql/:id", mysql.GetFile)
+	fileGroup.GET("/:record_type/:id", file.GetFile)
 
 }

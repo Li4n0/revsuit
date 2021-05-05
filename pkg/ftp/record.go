@@ -6,6 +6,7 @@ import (
 
 	"github.com/gin-gonic/gin"
 	"github.com/li4n0/revsuit/internal/database"
+	"github.com/li4n0/revsuit/internal/file"
 	"github.com/li4n0/revsuit/internal/notice"
 	"github.com/li4n0/revsuit/internal/record"
 )
@@ -13,12 +14,14 @@ import (
 var _ record.Record = (*Record)(nil)
 
 type Record struct {
-	User     string `form:"user" json:"user"`
-	Password string `form:"password" json:"password"`
-	Path     string `form:"path" json:"path"`
-	Status   Status `form:"status" json:"status"`
 	record.BaseRecord
-	Rule Rule `gorm:"foreignKey:RuleName;references:Name;constraint:OnUpdate:CASCADE,OnDelete:SET NULL;" form:"-" json:"-" notice:"-"`
+	User     string        `form:"user" json:"user"`
+	Password string        `form:"password" json:"password"`
+	Path     string        `form:"path" json:"path"`
+	Method   Method        `form:"method" json:"method"`
+	Status   Status        `form:"status" json:"status"`
+	File     *file.FTPFile `form:"file" json:"file" notice:"-"`
+	Rule     Rule          `gorm:"foreignKey:RuleName;references:Name;constraint:OnUpdate:CASCADE,OnDelete:SET NULL;" form:"-" json:"-" notice:"-"`
 }
 
 func (Record) TableName() string {
@@ -29,7 +32,7 @@ func (r Record) Notice() {
 	notice.Notice(r)
 }
 
-func NewRecord(rule *Rule, flag, user, password, path, ip, area string, status Status) (r *Record, err error) {
+func NewRecord(rule *Rule, flag, user, password, method, path, ip, area string, file *file.FTPFile, status Status) (r *Record, err error) {
 	r = &Record{
 		BaseRecord: record.BaseRecord{
 			Flag:        flag,
@@ -38,9 +41,11 @@ func NewRecord(rule *Rule, flag, user, password, path, ip, area string, status S
 			RequestTime: time.Now(),
 		},
 		Path:     path,
+		Method:   method,
 		User:     user,
 		Password: password,
 		Status:   status,
+		File:     file,
 		Rule:     *rule,
 	}
 	return r, database.DB.Create(r).Error
@@ -76,6 +81,9 @@ func ListRecords(c *gin.Context) {
 	if ftpRecord.Path != "" {
 		db.Where("path like ?", "%"+ftpRecord.Path+"%")
 	}
+	if ftpRecord.Method != "" {
+		db.Where("method = ?", ftpRecord.Method)
+	}
 	if ftpRecord.Status != "" {
 		db.Where("status = ?", ftpRecord.Status)
 	}
@@ -100,7 +108,7 @@ func ListRecords(c *gin.Context) {
 		order = "desc"
 	}
 
-	if err := db.Order("id" + " " + order).Count(&count).Offset((page - 1) * 10).Limit(10).Find(&res).Error; err != nil {
+	if err := db.Preload("File").Order("id " + order).Count(&count).Offset((page - 1) * 10).Limit(10).Find(&res).Error; err != nil {
 		c.JSON(400, gin.H{
 			"status": "failed",
 			"error":  err,

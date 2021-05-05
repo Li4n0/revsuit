@@ -1,15 +1,12 @@
-package mysql
+package file
 
 import (
 	"fmt"
-	"strings"
 
 	"github.com/gabriel-vasile/mimetype"
 	"github.com/gin-gonic/gin"
 	"github.com/li4n0/revsuit/internal/database"
 )
-
-const FILE_SPEARATOR = ";"
 
 type File struct {
 	ID       uint   `gorm:"primarykey" form:"id" json:"id"`
@@ -18,15 +15,20 @@ type File struct {
 	Content  []byte `json:"-"`
 }
 
-//func (File) TableName() string {
-//	return "mysql_files"
-//}
+type MySQLFile File
+
+func (MySQLFile) TableName() string {
+	return "mysql_files"
+}
+
+type FTPFile File
+
+func (FTPFile) TableName() string {
+	return "ftp_files"
+}
 
 func GetFile(c *gin.Context) {
-	var (
-		file        File
-		mysqlRecord Record
-	)
+	var file File
 	id := c.Param("id")
 	if id == "" {
 		c.JSON(400, gin.H{
@@ -37,8 +39,21 @@ func GetFile(c *gin.Context) {
 		return
 	}
 
-	database.DB.Model(&file).Where("id = ?", id).Find(&file)
-	database.DB.Model(&mysqlRecord).Where("id = ?", file.RecordID).Find(&mysqlRecord)
+	recordType := c.Param("record_type")
+	if id == "" {
+		c.JSON(400, gin.H{
+			"status": "failed",
+			"error":  fmt.Errorf("param record_type missed"),
+			"result": nil,
+		})
+		return
+	}
+	if recordType == "mysql" {
+		database.DB.Table("mysql_files").Where("id = ?", id).Find(&file)
+	} else if recordType == "ftp" {
+		database.DB.Table("ftp_files").Where("id = ?", id).Find(&file)
+	}
+
 	if file.Content == nil || len(file.Content) == 0 {
 		c.JSON(400, gin.H{
 			"status": "failed",
@@ -51,8 +66,7 @@ func GetFile(c *gin.Context) {
 		c.Header("Content-Type", mime.String())
 		c.Header("Content-Disposition",
 			fmt.Sprintf(
-				"filename=%s_%s_%d",
-				strings.Replace(mysqlRecord.RemoteIP, ".", "_", -1),
+				"filename=%s_%d",
 				file.Name,
 				file.ID,
 			),

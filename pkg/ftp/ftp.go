@@ -312,7 +312,7 @@ func (s *Server) handlePasvConnection(conn net.Conn, data map[string]interface{}
 // run pasv server
 func (s *Server) runPasvServer() (net.Listener, error) {
 	pasvAddress := fmt.Sprintf("%s:%d", strings.Split(s.Addr, ":")[0], s.PasvPort)
-	log.Info("Start to listen FTP PASV port at %v", pasvAddress)
+	log.Info("Start to listen FTP PASV port at %v, PasvIP is %v", pasvAddress, s.PasvIP)
 	listener, err := net.Listen("tcp", pasvAddress)
 
 	if err != nil {
@@ -369,7 +369,9 @@ func (s *Server) Run() {
 		log.Error(err.Error())
 	}
 	defer func() {
-		_ = pasvListener.Close()
+		if pasvListener != nil {
+			_ = pasvListener.Close()
+		}
 	}()
 
 	// run ftp server
@@ -377,7 +379,7 @@ func (s *Server) Run() {
 
 	listener, err := net.Listen("tcp", s.Addr)
 	if err != nil {
-		log.Error(errors.Wrap(err, "FTP failed to start: %v").Error())
+		log.Error(errors.Wrap(err, "FTP failed to start").Error())
 		return
 	}
 

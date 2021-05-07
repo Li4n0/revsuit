@@ -110,6 +110,10 @@ func initLog(level string) (logLevel log.Level) {
 		gin.SetMode(gin.ReleaseMode)
 		database.DB.Logger.LogMode(logger.Error)
 		logLevel = log.LevelFatal
+	default:
+		gin.SetMode(gin.DebugMode)
+		database.DB.Logger.LogMode(logger.Info)
+		logLevel = log.LevelInfo
 	}
 	_ = log.NewConsole(100,
 		log.ConsoleConfig{

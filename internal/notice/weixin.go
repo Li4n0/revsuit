@@ -27,6 +27,10 @@ type weixinPayload struct {
 	Markdown weixinMarkdown `json:"markdown"`
 }
 
+func (w *Weixin) name() string {
+	return "Weixin"
+}
+
 func (w *Weixin) buildPayload(r record.Record) string {
 	payload := weixinPayload{
 		ToUser:  "@all",

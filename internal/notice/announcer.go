@@ -4,6 +4,7 @@ import (
 	"sync"
 
 	"github.com/li4n0/revsuit/internal/record"
+	"github.com/pkg/errors"
 	log "unknwon.dev/clog/v2"
 )
 
@@ -14,6 +15,7 @@ var (
 
 // Bot is used to send notice
 type Bot interface {
+	name() string
 	notice(record.Record) error
 	buildPayload(record.Record) string
 }
@@ -41,7 +43,7 @@ func (a *Announcer) AddBot(b Bot) *Announcer {
 func Notice(r record.Record) {
 	for _, bot := range announcer.Bots {
 		if err := bot.notice(r); err != nil {
-			log.Warn(err.Error())
+			log.Warn(errors.Wrap(err, "%s notice failed").Error(), bot.name())
 		}
 	}
 }

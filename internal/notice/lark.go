@@ -41,7 +41,11 @@ type larkPayload struct {
 	Card    larkCard `json:"card"`
 }
 
-func (d *Lark) buildPayload(r record.Record) string {
+func (l *Lark) name() string {
+	return "Lark"
+}
+
+func (l *Lark) buildPayload(r record.Record) string {
 	payload := larkPayload{
 		MsgType: "interactive",
 		Card: larkCard{
@@ -69,8 +73,8 @@ func (d *Lark) buildPayload(r record.Record) string {
 	return string(p)
 }
 
-func (d *Lark) notice(r record.Record) error {
-	resp, err := http.Post(d.URL, "application/json", strings.NewReader(d.buildPayload(r)))
+func (l *Lark) notice(r record.Record) error {
+	resp, err := http.Post(l.URL, "application/json", strings.NewReader(l.buildPayload(r)))
 	if err != nil {
 		return errors.Wrap(err, "HTTP request")
 	}

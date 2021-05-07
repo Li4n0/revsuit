@@ -1,6 +1,7 @@
 package cli
 
 import (
+	"fmt"
 	"os"
 	"sort"
 
@@ -56,6 +57,8 @@ func Start() {
 	}
 	sort.Sort(cli.FlagsByName(app.Flags))
 	sort.Sort(cli.CommandsByName(app.Commands))
+
+	fmt.Println(banner)
 
 	err := app.Run(os.Args)
 	if err != nil {

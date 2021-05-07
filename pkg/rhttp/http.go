@@ -1,6 +1,7 @@
 package rhttp
 
 import (
+	"context"
 	"math/rand"
 	"net/http"
 	"net/http/httputil"
@@ -8,6 +9,7 @@ import (
 	"strconv"
 	"strings"
 	"sync"
+	"time"
 
 	"github.com/gin-gonic/gin"
 	"github.com/li4n0/revsuit/internal/database"
@@ -23,6 +25,8 @@ type Server struct {
 	ApiGroup  *gin.RouterGroup
 	rules     []*Rule
 	rulesLock sync.RWMutex
+
+	httpServer http.Server
 }
 
 const (
@@ -86,14 +90,38 @@ func (s *Server) updateRules() error {
 	return db.Order("rank desc").Find(&s.rules).Error
 }
 
+func (s *Server) startHttpServer() {
+	log.Info("Starting HTTP Server at %s, token:%s", s.Addr, s.Token)
+	s.httpServer = http.Server{
+		Addr:    s.Addr,
+		Handler: s.Router,
+	}
+	err := s.httpServer.ListenAndServe()
+	if err != nil && err != http.ErrServerClosed {
+		log.Fatal(err.Error())
+	}
+}
+
+func (s *Server) stopHttpServer() {
+	log.Info("HTTP Server is stopping...")
+	err := s.httpServer.Shutdown(context.TODO())
+	if err != nil {
+		log.Fatal(err.Error())
+	}
+}
+
+func (s *Server) Restart() {
+	//only need to stop http server, because it will start in a loop
+	s.stopHttpServer()
+}
+
 func (s *Server) Run() {
 	if err := s.updateRules(); err != nil {
 		log.Warn(err.Error())
 	}
-	log.Info("Starting HTTP Server at %s, token:%s", s.Addr, s.Token)
-	err := s.Router.Run(s.Addr)
-	if err != nil {
-		log.Fatal(err.Error())
+	for {
+		s.startHttpServer()
+		time.Sleep(2 * time.Second)
 	}
 }
 

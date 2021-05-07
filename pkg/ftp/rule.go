@@ -10,11 +10,11 @@ import (
 	log "unknwon.dev/clog/v2"
 )
 
-// FTP rule struct
+// Rule FTP rule struct
 type Rule struct {
-	rule.BaseRule
-	PasvAddress string `gorm:"pasv_address" json:"pasv_address" form:"pasv_address"`
-	Data        []byte `json:"data" form:"data"`
+	rule.BaseRule `yaml:",inline"`
+	PasvAddress   string `gorm:"pasv_address" json:"pasv_address" form:"pasv_address" yaml:"pasv_address"`
+	Data          []byte `json:"data" form:"data"`
 }
 
 func (Rule) TableName() string {
@@ -80,7 +80,7 @@ func ListRules(c *gin.Context) {
 	if err := c.ShouldBind(&ftpRule); err != nil {
 		c.JSON(400, gin.H{
 			"status": "failed",
-			"error":  err,
+			"error":  err.Error(),
 			"result": nil,
 		})
 		return
@@ -96,7 +96,7 @@ func ListRules(c *gin.Context) {
 	if err != nil {
 		c.JSON(400, gin.H{
 			"status": "failed",
-			"error":  err,
+			"error":  err.Error(),
 			"result": nil,
 		})
 		return
@@ -109,7 +109,7 @@ func ListRules(c *gin.Context) {
 	if err := db.Order("rank desc").Order("id" + " " + order).Count(&count).Offset((page - 1) * 10).Limit(10).Find(&res).Error; err != nil {
 		c.JSON(400, gin.H{
 			"status": "failed",
-			"error":  err,
+			"error":  err.Error(),
 			"data":   nil,
 		})
 		return
@@ -132,7 +132,7 @@ func UpsertRules(c *gin.Context) {
 	if err := c.ShouldBind(&ftpRule); err != nil {
 		c.JSON(400, gin.H{
 			"status": "failed",
-			"error":  err,
+			"error":  err.Error(),
 			"data":   nil,
 		})
 		return
@@ -145,7 +145,7 @@ func UpsertRules(c *gin.Context) {
 	if err := ftpRule.CreateOrUpdate(); err != nil {
 		c.JSON(400, gin.H{
 			"status": "failed",
-			"error":  err,
+			"error":  err.Error(),
 			"result": nil,
 		})
 		return
@@ -171,7 +171,7 @@ func DeleteRules(c *gin.Context) {
 	if err := c.ShouldBind(&ftpRule); err != nil {
 		c.JSON(400, gin.H{
 			"status": "failed",
-			"error":  err,
+			"error":  err.Error(),
 			"data":   nil,
 		})
 		return
@@ -180,7 +180,7 @@ func DeleteRules(c *gin.Context) {
 	if err := ftpRule.Delete(); err != nil {
 		c.JSON(400, gin.H{
 			"status": "failed",
-			"error":  err,
+			"error":  err.Error(),
 			"data":   nil,
 		})
 		return

@@ -12,11 +12,10 @@ import (
 	"time"
 
 	"github.com/li4n0/revsuit/internal/database"
-	"github.com/li4n0/revsuit/internal/file"
-	"github.com/li4n0/revsuit/internal/qqwry"
 	"github.com/li4n0/revsuit/internal/recycler"
 	"github.com/li4n0/revsuit/internal/rule"
 	"github.com/patrickmn/go-cache"
+	"github.com/pkg/errors"
 	log "unknwon.dev/clog/v2"
 )
 
@@ -24,6 +23,7 @@ type Server struct {
 	Config
 	rules       []*Rule
 	rulesLock   sync.RWMutex
+	livingLock  sync.Mutex
 	dataChannel chan map[string]interface{}
 }
 
@@ -64,7 +64,12 @@ func (s *Server) updateRules() error {
 	db := database.DB.Model(new(Rule))
 	defer s.rulesLock.Unlock()
 	s.rulesLock.Lock()
-	return db.Order("rank desc").Find(&s.rules).Error
+	return errors.Wrap(db.Order("rank desc").Find(&s.rules).Error, "FTP update rules error")
+}
+
+func getClientPasvConnAddress(ip, port string) string {
+	dataPort, _ := strconv.Atoi(port)
+	return fmt.Sprintf("%s:%d", ip, dataPort+1)
 }
 
 func (s *Server) authenticate(user, password string) (_rule *Rule, flag, flagGroup string, vars map[string]string) {
@@ -100,6 +105,11 @@ func (s *Server) getPasvAddressFromCache(ip, pasvAddressTpl string) (pasvAddress
 }
 
 func (s *Server) handleConnection(conn net.Conn) {
+	defer func() {
+		if err := recover(); err != nil {
+			recycler.Recycle(err)
+		}
+	}()
 	log.Trace("New FTP connection from addr [%s]", conn.RemoteAddr())
 	defer func() {
 		_ = conn.Close()
@@ -117,8 +127,7 @@ func (s *Server) handleConnection(conn net.Conn) {
 	}
 
 	ip, port, _ := net.SplitHostPort(conn.RemoteAddr().String())
-	dataPort, _ := strconv.Atoi(port)
-	clientPasvConnAddress := fmt.Sprintf("%s:%d", ip, dataPort+1)
+	clientPasvConnAddress := getClientPasvConnAddress(ip, port)
 	buf := &bytes.Buffer{}
 
 	var user, password, method, flag, flagGroup, pasvAddress, filename string
@@ -245,50 +254,17 @@ loop:
 	}
 
 	if _rule != nil {
-		area := qqwry.Area(ip)
-		var r *Record
-		var err error
-		// create new record
-		ftpFile := &file.FTPFile{}
-		if len(uploadData) != 0 {
-			ftpFile = &file.FTPFile{
-				Name:    filename,
-				Content: uploadData,
-			}
-		}
-
-		r, err = NewRecord(_rule, flag, user, password, method, path, ip, area, ftpFile, status)
-		if err != nil {
-			log.Warn("FTP record[rule_id:%d] created failed :%s", _rule.ID, err)
-			return
-		}
-		log.Info("FTP record[id:%d rule:%s remote_ip:%s] has been created", r.ID, _rule.Name, ip)
-
-		//only send to client when this connection recorded first time.
-		if _rule.PushToClient {
-			if flagGroup != "" {
-				var count int64
-				database.DB.Where("rule_name=? and raw like ?", _rule.Name, "%"+flagGroup+"%").Model(&Record{}).Count(&count)
-				if count <= 1 {
-					r.PushToClient()
-					log.Trace("FTP record[id%d] has been put to client message queue", r.ID)
-				}
-			}
-			r.PushToClient()
-			log.Trace("FTP record[id%d] has been put to client message queue", r.ID)
-		}
-
-		//send notice
-		if _rule.Notice {
-			go func() {
-				r.Notice()
-				log.Trace("FTP record[id%d] notice has been sent", r.ID)
-			}()
-		}
+		createRecord(_rule, flag, flagGroup, user, password, method, path, filename, ip, uploadData, status)
 	}
 }
 
 func (s *Server) handlePasvConnection(conn net.Conn, data map[string]interface{}) {
+	defer func() {
+		if err := recover(); err != nil {
+			recycler.Recycle(err)
+		}
+	}()
+
 	remoteAddress := conn.RemoteAddr().String()
 	switch v := data[remoteAddress].(type) {
 	case types.Nil:
@@ -312,26 +288,67 @@ func (s *Server) handlePasvConnection(conn net.Conn, data map[string]interface{}
 	_ = conn.Close()
 }
 
-func (s *Server) Run() {
-	if err := s.updateRules(); err != nil {
-		log.Fatal(err.Error())
+// run pasv server
+func (s *Server) runPasvServer() (net.Listener, error) {
+	pasvAddress := fmt.Sprintf("%s:%d", strings.Split(s.Addr, ":")[0], s.PasvPort)
+	log.Info("Start to listen FTP PASV port at %v", pasvAddress)
+	listener, err := net.Listen("tcp", pasvAddress)
+
+	if err != nil {
+		return nil, errors.Wrap(err, "FTP failed to listen on pasv port")
 	}
-	// run pasv server
+
 	go func() {
-		pasvAddress := fmt.Sprintf("%s:%d", strings.Split(s.Addr, ":")[0], s.PasvPort)
-		log.Info("Start to listen FTP PASV port at %v", pasvAddress)
-		listener, err := net.Listen("tcp", pasvAddress)
-		if err != nil {
-			log.Fatal("FTP failed to listen on pasv port : %v", err)
-		}
 		for data := range s.dataChannel {
 			tcpConn, err := listener.Accept()
 			if err != nil {
-				log.Warn("FTP accept connection error: %v", err)
+				if !strings.Contains(err.Error(), net.ErrClosed.Error()) {
+					log.Warn("FTP accept connection error: %v", err)
+				} else {
+					break
+				}
 				continue
 			}
 			s.handlePasvConnection(tcpConn, data)
 		}
+	}()
+	return listener, nil
+}
+
+func (s *Server) Stop() {
+	log.Info("FTP Server is stopping...")
+	s.Enable = false
+	s.livingLock.Unlock()
+}
+
+func (s *Server) Restart() {
+	s.Stop()
+	time.Sleep(time.Second * 2)
+	go s.Run()
+}
+
+func (s *Server) Run() {
+	s.Enable = true
+	s.livingLock.Lock()
+	defer func() {
+		if s.Enable {
+			log.Error("FTP Server exited unexpectedly")
+		}
+		s.Enable = false
+		s.livingLock.Unlock()
+	}()
+
+	if err := s.updateRules(); err != nil {
+		log.Error(err.Error())
+		return
+	}
+
+	pasvListener, err := s.runPasvServer()
+	if err != nil {
+		log.Error(err.Error())
+	}
+	defer func() {
+		_ = pasvListener.Close()
 	}()
 
 	// run ftp server
@@ -339,15 +356,27 @@ func (s *Server) Run() {
 
 	listener, err := net.Listen("tcp", s.Addr)
 	if err != nil {
-		log.Fatal(err.Error())
+		log.Error(errors.Wrap(err, "FTP failed to start: %v").Error())
+		return
 	}
-	for {
+
+	go func() {
+		s.livingLock.Lock()
+		if !s.Enable {
+			_ = listener.Close()
+		}
+	}()
+
+	for s.Enable {
 		tcpConn, err := listener.Accept()
 		if err != nil {
-			log.Warn("FTP accept connection error: %v", err)
+			if !strings.Contains(err.Error(), net.ErrClosed.Error()) {
+				log.Warn("FTP accept connection error: %v", err)
+			} else {
+				break
+			}
 			continue
 		}
 		go s.handleConnection(tcpConn)
 	}
-
 }

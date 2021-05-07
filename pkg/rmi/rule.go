@@ -10,16 +10,16 @@ import (
 	log "unknwon.dev/clog/v2"
 )
 
-// RMI rule struct
+// Rule RMI rule struct
 type Rule struct {
-	rule.BaseRule
+	rule.BaseRule `yaml:",inline"`
 }
 
 func (Rule) TableName() string {
 	return "rmi_rules"
 }
 
-// New rmi rule struct
+// NewRule New rmi rule struct
 func NewRule(name, flagFormat string, pushToClient, notice bool) *Rule {
 	return &Rule{
 		BaseRule: rule.BaseRule{
@@ -31,7 +31,7 @@ func NewRule(name, flagFormat string, pushToClient, notice bool) *Rule {
 	}
 }
 
-// Create or update the rmi rule in database and ruleSet
+// CreateOrUpdate Create or update the rmi rule in database and ruleSet
 func (r *Rule) CreateOrUpdate() (err error) {
 	db := database.DB.Model(r)
 	err = db.Clauses(clause.OnConflict{
@@ -65,7 +65,7 @@ func (r *Rule) Delete() (err error) {
 	return err
 }
 
-// List all rmi rules those satisfy the filter
+// ListRules List all rmi rules those satisfy the filter
 func ListRules(c *gin.Context) {
 	var (
 		rmiRule Rule
@@ -77,7 +77,7 @@ func ListRules(c *gin.Context) {
 	if err := c.ShouldBind(&rmiRule); err != nil {
 		c.JSON(400, gin.H{
 			"status": "failed",
-			"error":  err,
+			"error":  err.Error(),
 			"result": nil,
 		})
 		return
@@ -93,7 +93,7 @@ func ListRules(c *gin.Context) {
 	if err != nil {
 		c.JSON(400, gin.H{
 			"status": "failed",
-			"error":  err,
+			"error":  err.Error(),
 			"result": nil,
 		})
 		return
@@ -106,7 +106,7 @@ func ListRules(c *gin.Context) {
 	if err := db.Order("rank desc").Order("id" + " " + order).Count(&count).Offset((page - 1) * 10).Limit(10).Find(&res).Error; err != nil {
 		c.JSON(400, gin.H{
 			"status": "failed",
-			"error":  err,
+			"error":  err.Error(),
 			"data":   nil,
 		})
 		return
@@ -119,7 +119,7 @@ func ListRules(c *gin.Context) {
 	})
 }
 
-// Create or update rmi rule from user submit
+// UpsertRules Create or update rmi rule from user submit
 func UpsertRules(c *gin.Context) {
 	var (
 		rmiRule Rule
@@ -129,7 +129,7 @@ func UpsertRules(c *gin.Context) {
 	if err := c.ShouldBind(&rmiRule); err != nil {
 		c.JSON(400, gin.H{
 			"status": "failed",
-			"error":  err,
+			"error":  err.Error(),
 			"data":   nil,
 		})
 		return
@@ -142,7 +142,7 @@ func UpsertRules(c *gin.Context) {
 	if err := rmiRule.CreateOrUpdate(); err != nil {
 		c.JSON(400, gin.H{
 			"status": "failed",
-			"error":  err,
+			"error":  err.Error(),
 			"result": nil,
 		})
 		return
@@ -161,14 +161,14 @@ func UpsertRules(c *gin.Context) {
 	})
 }
 
-// Delete rmi rule from user submit
+// DeleteRules Delete rmi rule from user submit
 func DeleteRules(c *gin.Context) {
 	var rmiRule Rule
 
 	if err := c.ShouldBind(&rmiRule); err != nil {
 		c.JSON(400, gin.H{
 			"status": "failed",
-			"error":  err,
+			"error":  err.Error(),
 			"data":   nil,
 		})
 		return
@@ -177,7 +177,7 @@ func DeleteRules(c *gin.Context) {
 	if err := rmiRule.Delete(); err != nil {
 		c.JSON(400, gin.H{
 			"status": "failed",
-			"error":  err,
+			"error":  err.Error(),
 			"data":   nil,
 		})
 		return

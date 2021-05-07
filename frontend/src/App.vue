@@ -45,6 +45,12 @@
             <router-link to="/rules/ftp">FTP Rules</router-link>
           </a-menu-item>
         </a-sub-menu>
+        <a-menu-item  key="/settings">
+          <router-link to="/settings">
+            <a-icon type="setting"/>
+            Settings
+          </router-link>
+        </a-menu-item>
       </a-menu>
     </a-layout-sider>
     <a-layout>

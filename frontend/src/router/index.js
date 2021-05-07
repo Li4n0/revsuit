@@ -10,6 +10,7 @@ const routes = [
         name: 'Home',
         component: Home
     },
+    // logs router
     {
         path: '/logs/http',
         name: 'HttpLogs',
@@ -35,6 +36,7 @@ const routes = [
         name: 'FtpLogs',
         component: () => import( '../views/logs/Ftp')
     },
+    // rules router
     {
         path: '/rules/http',
         name: 'HttpRules',
@@ -59,6 +61,12 @@ const routes = [
         path: '/rules/ftp',
         name: 'FtpRules',
         component: () => import( '../views/rules/Ftp')
+    },
+    //Settings router
+    {
+        path: '/settings',
+        name: 'Settings',
+        component: () => import( '../views/settings/Settings')
     }
 ]
 

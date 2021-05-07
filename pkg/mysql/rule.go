@@ -11,9 +11,9 @@ import (
 )
 
 type Rule struct {
-	rule.BaseRule
+	rule.BaseRule     `yaml:",inline"`
 	Files             string            `form:"files" json:"files"`
-	ExploitJdbcClient bool              `gorm:"exploit_jdbc_client" form:"exploit_jdbc_client" json:"exploit_jdbc_client"`
+	ExploitJdbcClient bool              `gorm:"exploit_jdbc_client" form:"exploit_jdbc_client" json:"exploit_jdbc_client" yaml:"exploit_jdbc_client"`
 	Payloads          database.MapField `json:"payloads" form:"payloads"`
 }
 
@@ -21,7 +21,7 @@ func (Rule) TableName() string {
 	return "mysql_rules"
 }
 
-// Create or update the mysql rule in database and ruleSet
+// CreateOrUpdate Create or update the mysql rule in database and ruleSet
 func (r *Rule) CreateOrUpdate() (err error) {
 	db := database.DB.Model(r)
 	err = db.Clauses(clause.OnConflict{
@@ -56,7 +56,7 @@ func (r *Rule) Delete() (err error) {
 	return err
 }
 
-// List all mysql rules those satisfy the filter
+// ListRules List all mysql rules those satisfy the filter
 func ListRules(c *gin.Context) {
 	var (
 		mysqlRule Rule
@@ -68,7 +68,7 @@ func ListRules(c *gin.Context) {
 	if err := c.ShouldBind(&mysqlRule); err != nil {
 		c.JSON(400, gin.H{
 			"status": "failed",
-			"error":  err,
+			"error":  err.Error(),
 			"result": nil,
 		})
 		return
@@ -84,7 +84,7 @@ func ListRules(c *gin.Context) {
 	if err != nil {
 		c.JSON(400, gin.H{
 			"status": "failed",
-			"error":  err,
+			"error":  err.Error(),
 			"result": nil,
 		})
 		return
@@ -97,7 +97,7 @@ func ListRules(c *gin.Context) {
 	if err := db.Order("rank desc").Order("id" + " " + order).Count(&count).Offset((page - 1) * 10).Limit(10).Find(&res).Error; err != nil {
 		c.JSON(400, gin.H{
 			"status": "failed",
-			"error":  err,
+			"error":  err.Error(),
 			"data":   nil,
 		})
 		return
@@ -110,7 +110,7 @@ func ListRules(c *gin.Context) {
 	})
 }
 
-// Create or update mysql rule from user submit
+// UpsertRules Create or update mysql rule from user submit
 func UpsertRules(c *gin.Context) {
 	var (
 		mysqlRule Rule
@@ -120,7 +120,7 @@ func UpsertRules(c *gin.Context) {
 	if err := c.ShouldBind(&mysqlRule); err != nil {
 		c.JSON(400, gin.H{
 			"status": "failed",
-			"error":  err,
+			"error":  err.Error(),
 			"data":   nil,
 		})
 		return
@@ -133,7 +133,7 @@ func UpsertRules(c *gin.Context) {
 	if err := mysqlRule.CreateOrUpdate(); err != nil {
 		c.JSON(400, gin.H{
 			"status": "failed",
-			"error":  err,
+			"error":  err.Error(),
 			"data":   nil,
 		})
 		return
@@ -152,14 +152,14 @@ func UpsertRules(c *gin.Context) {
 	})
 }
 
-// Delete mysql rule from user submit
+// DeleteRules Delete mysql rule from user submit
 func DeleteRules(c *gin.Context) {
 	var mysqlRule Rule
 
 	if err := c.ShouldBind(&mysqlRule); err != nil {
 		c.JSON(400, gin.H{
 			"status": "failed",
-			"error":  err,
+			"error":  err.Error(),
 			"data":   nil,
 		})
 		return
@@ -168,7 +168,7 @@ func DeleteRules(c *gin.Context) {
 	if err := mysqlRule.Delete(); err != nil {
 		c.JSON(400, gin.H{
 			"status": "failed",
-			"error":  err,
+			"error":  err.Error(),
 			"data":   nil,
 		})
 		return

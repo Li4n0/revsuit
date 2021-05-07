@@ -15,6 +15,7 @@ import (
 )
 
 type Revsuit struct {
+	config   *Config
 	logLevel log.Level
 
 	http  *http.Server
@@ -25,6 +26,11 @@ type Revsuit struct {
 }
 
 func initDatabase(dsn string) {
+	_ = log.NewConsole(100,
+		log.ConsoleConfig{
+			Level: log.LevelInfo,
+		})
+
 	err := database.InitDB("sqlite", dsn)
 	if err != nil {
 		log.Fatal(err.Error())
@@ -138,29 +144,27 @@ func initNotice(nc noticeConfig) {
 
 func New(c *Config) *Revsuit {
 
-	logLevel := initLog(c.LogLevel)
 	initDatabase(c.Database)
+	logLevel := initLog(c.LogLevel)
 	initNotice(c.Notice)
 
 	s := &Revsuit{
+		config:   c,
 		logLevel: logLevel,
 		http:     http.GetServer(),
 	}
-	if c.DNS.Enable {
-		s.dns = dns.GetServer()
-	}
-	if c.MySQL.Enable {
-		s.mysql = mysql.GetServer()
-		s.mysql.Config = c.MySQL
-	}
-	if c.RMI.Enable {
-		s.rmi = rmi.GetServer()
-		s.rmi.Config = c.RMI
-	}
-	if c.FTP.Enable {
-		s.ftp = ftp.GetServer()
-		s.ftp.Config = c.FTP
-	}
+
+	s.dns = dns.GetServer()
+	s.dns.Config = c.DNS
+
+	s.mysql = mysql.GetServer()
+	s.mysql.Config = c.MySQL
+
+	s.rmi = rmi.GetServer()
+	s.rmi.Config = c.RMI
+
+	s.ftp = ftp.GetServer()
+	s.ftp.Config = c.FTP
 
 	if c.Addr != "" {
 		s.http.SetAddr(c.Addr)
@@ -178,16 +182,16 @@ func (revsuit *Revsuit) Run() {
 	defer log.Stop()
 	revsuit.registerRouter()
 
-	if revsuit.dns != nil {
+	if revsuit.dns != nil && revsuit.dns.Enable {
 		go revsuit.dns.Run()
 	}
-	if revsuit.mysql != nil {
-		go revsuit.mysql.Run()
-	}
-	if revsuit.rmi != nil {
+	if revsuit.rmi != nil && revsuit.rmi.Enable {
 		go revsuit.rmi.Run()
 	}
-	if revsuit.ftp != nil {
+	if revsuit.mysql != nil && revsuit.mysql.Enable {
+		go revsuit.mysql.Run()
+	}
+	if revsuit.ftp != nil && revsuit.ftp.Enable {
 		go revsuit.ftp.Run()
 	}
 

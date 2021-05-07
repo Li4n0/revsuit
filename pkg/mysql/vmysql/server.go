@@ -259,7 +259,7 @@ func (l *Listener) handle(conn net.Conn, connectionID uint32, acceptTime time.Ti
 	// Catch panics, and close the connection in any case.
 	defer func() {
 		if x := recover(); x != nil {
-			log.Warn("mysql_server caught panic:\n%v\n%s", x, tb.Stack(4))
+			log.Trace("mysql_server caught panic:\n%v\n%s", x, tb.Stack(4))
 		}
 		// We call flush here in case there's a premature return after
 		// startWriterBuffering is called
@@ -275,7 +275,7 @@ func (l *Listener) handle(conn net.Conn, connectionID uint32, acceptTime time.Ti
 	salt, err := c.writeHandshakeV10(l.ServerVersion, l.authServer, l.TLSConfig != nil)
 	if err != nil {
 		if err != io.EOF {
-			log.Warn("Cannot send HandshakeV10 packet to %s: %v", c, err)
+			log.Trace("Cannot send HandshakeV10 packet to %s: %v", c, err)
 		}
 		return
 	}
@@ -286,13 +286,13 @@ func (l *Listener) handle(conn net.Conn, connectionID uint32, acceptTime time.Ti
 	if err != nil {
 		// Don't log EOF errors. They cause too much spam, same as main read loop.
 		if err != io.EOF {
-			log.Warn("Cannot read client handshake response from %s: %v", c, err)
+			log.Trace("Cannot read client handshake response from %s: %v", c, err)
 		}
 		return
 	}
 	user, authMethod, authResponse, err := l.parseClientHandshakePacket(c, true, response)
 	if err != nil {
-		log.Warn("Cannot parse client handshake response from %s: %v", c, err)
+		log.Trace("Cannot parse client handshake response from %s: %v", c, err)
 		return
 	}
 
@@ -305,14 +305,14 @@ func (l *Listener) handle(conn net.Conn, connectionID uint32, acceptTime time.Ti
 		// SSL was enabled. We need to re-read the auth packet.
 		response, err = c.readEphemeralPacket()
 		if err != nil {
-			log.Warn("Cannot read post-SSL client handshake response from %s: %v", c, err)
+			log.Trace("Cannot read post-SSL client handshake response from %s: %v", c, err)
 			return
 		}
 
 		// Returns copies of the data, so we can recycle the buffer.
 		user, authMethod, authResponse, err = l.parseClientHandshakePacket(c, false, response)
 		if err != nil {
-			log.Warn("Cannot parse post-SSL client handshake response from %s: %v", c, err)
+			log.Trace("Cannot parse post-SSL client handshake response from %s: %v", c, err)
 			return
 		}
 		c.RecycleReadPacket()
@@ -366,13 +366,13 @@ func (l *Listener) handle(conn net.Conn, connectionID uint32, acceptTime time.Ti
 		data := make([]byte, 21) //nolint:ineffassign,staticcheck // SA4006 This line is required because the binary protocol requires padding with 0
 		data = append(salt, byte(0x00))
 		if err := c.writeAuthSwitchRequest(MysqlNativePassword, data); err != nil {
-			log.Warn("Error writing auth switch packet for %s: %v", c, err)
+			log.Trace("Error writing auth switch packet for %s: %v", c, err)
 			return
 		}
 
 		response, err := c.readEphemeralPacket()
 		if err != nil {
-			log.Warn("Error reading auth switch response for %s: %v", c, err)
+			log.Trace("Error reading auth switch response for %s: %v", c, err)
 			return
 		}
 		c.RecycleReadPacket()
@@ -402,7 +402,7 @@ func (l *Listener) handle(conn net.Conn, connectionID uint32, acceptTime time.Ti
 			data = authServerDialogSwitchData()
 		}
 		if err := c.writeAuthSwitchRequest(authServerMethod, data); err != nil {
-			log.Warn("Error writing auth switch packet for %s: %v", c, err)
+			log.Trace("Error writing auth switch packet for %s: %v", c, err)
 			return
 		}
 
@@ -424,7 +424,7 @@ func (l *Listener) handle(conn net.Conn, connectionID uint32, acceptTime time.Ti
 
 	// Negotiation worked, send OK packet.
 	if err := c.writeOKPacket(0, 0, c.StatusFlags, 0); err != nil {
-		log.Warn("Cannot write OK packet to %s: %v", c, err)
+		log.Trace("Cannot write OK packet to %s: %v", c, err)
 		return
 	}
 
@@ -435,7 +435,7 @@ func (l *Listener) handle(conn net.Conn, connectionID uint32, acceptTime time.Ti
 	connectTime := time.Since(acceptTime)
 	if l.SlowConnectWarnThreshold != 0 && connectTime > l.SlowConnectWarnThreshold {
 		connSlow.Add(1)
-		log.Warn("Slow connection from %s: %v", c, connectTime)
+		log.Trace("Slow connection from %s: %v", c, connectTime)
 	}
 
 	for {
@@ -692,7 +692,7 @@ func (l *Listener) parseClientHandshakePacket(c *Conn, firstTime bool, data []by
 	// Decode connection attributes send by the client
 	if clientFlags&CapabilityClientConnAttr != 0 {
 		if connAttrs, _, err := parseConnAttrs(data, pos); err != nil {
-			log.Warn("Decode connection attributes send by the client: %v", err)
+			log.Trace("Decode connection attributes send by the client: %v", err)
 		} else {
 			c.ConnAttrs = connAttrs
 		}

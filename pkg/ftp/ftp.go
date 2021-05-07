@@ -1,6 +1,7 @@
 package ftp
 
 import (
+	"bufio"
 	"bytes"
 	"fmt"
 	"go/types"
@@ -104,6 +105,22 @@ func (s *Server) getPasvAddressFromCache(ip, pasvAddressTpl string) (pasvAddress
 	return pasvAddress
 }
 
+const (
+	NeedAccount             = "332 Need account for login.\r\n"
+	PasswordPlease          = "331 password please - version check\r\n"
+	PasswordError           = "331 please specify the password\r\n"
+	UserLogged              = "230 User logged in\r\n"
+	NoSuchFile              = "550 %s: No such file or directory.\r\n"
+	CommandNotFound         = "500 '%s': command not understood.\r\n"
+	EnteringPassiveMode     = "227 Entering Passive Mode (%s,%v,%d)\r\n"
+	OpeningBinaryMode       = "150 Opening BINARY mode data connection for '%s' (%d bytes).\r\n"
+	OpeningBinaryModeUpload = "150 Opening BINARY mode data connection for '%s'.\r\n"
+	TransferComplete        = "226 Transfer complete.\r\n"
+	Goodbye                 = "221 Goodbye.\r\n"
+	DirectoryChanged        = "250 Directory successfully changed.\r\n"
+	CurrentDirectory        = "257 \"%s\" is the current directory\r\n"
+)
+
 func (s *Server) handleConnection(conn net.Conn) {
 	defer func() {
 		if err := recover(); err != nil {
@@ -129,6 +146,7 @@ func (s *Server) handleConnection(conn net.Conn) {
 	ip, port, _ := net.SplitHostPort(conn.RemoteAddr().String())
 	clientPasvConnAddress := getClientPasvConnAddress(ip, port)
 	buf := &bytes.Buffer{}
+	connBuf := bufio.NewWriter(conn)
 
 	var user, password, method, flag, flagGroup, pasvAddress, filename string
 	status := CRASHED
@@ -157,23 +175,23 @@ loop:
 			log.Trace("FTP connection[%s] exec command: %s", conn.RemoteAddr(), strings.TrimRight(buf.String(), "\r\n"))
 
 			if _rule == nil && cmd != "USER" && cmd != "PASS" {
-				_, _ = conn.Write([]byte("332 Need account for login.\r\n"))
+				_, _ = connBuf.WriteString(NeedAccount)
 				break loop
 			}
 
 			switch cmd {
 			case "USER":
 				user = args
-				_, _ = conn.Write([]byte("331 password please - version check\r\n"))
+				_, _ = connBuf.WriteString(PasswordPlease)
 			case "PASS":
 				password = args
 				if _rule, flag, flagGroup, vars = s.authenticate(user, password); _rule == nil {
-					_, _ = conn.Write([]byte("331 please specify the password\r\n"))
+					_, _ = connBuf.WriteString(PasswordError)
 					break loop
 				}
 
 				log.Trace("FTP connection[%s] matched rule[rule_name: %s, flag: %s]", conn.RemoteAddr(), _rule.Name, flag)
-				_, _ = conn.Write([]byte("230 User logged in\r\n"))
+				_, _ = connBuf.WriteString(UserLogged)
 
 				if pasvAddress = s.getPasvAddressFromCache(ip, _rule.PasvAddress); pasvAddress == "" {
 					pasvAddress = fmt.Sprintf("%s:%d", s.PasvIP, s.PasvPort)
@@ -183,13 +201,13 @@ loop:
 			case "SIZE":
 				path += strings.TrimLeft(args, "/")
 				if _rule == nil || isRedirect || len(_rule.Data) == 0 {
-					_, _ = conn.Write([]byte(fmt.Sprintf("550 %s: No such file or directory.\r\n", args)))
+					_, _ = connBuf.WriteString(fmt.Sprintf(NoSuchFile, args))
 					break
 				}
-				_, _ = conn.Write([]byte(fmt.Sprintf("213 %d\r\n", len(_rule.Data))))
+				_, _ = connBuf.WriteString(fmt.Sprintf("213 %d\r\n", len(_rule.Data)))
 			case "EPSV", "EPRT", "PORT":
 				// refuse to use EPSV/EPRT/PORT in order to make the client to use PASV mode.
-				_, _ = conn.Write([]byte(fmt.Sprintf("500 '%s': command not understood.\r\n", cmd)))
+				_, _ = connBuf.WriteString(fmt.Sprintf(CommandNotFound, cmd))
 			case "PASV":
 				//Just so that ide does not prompt that there may be a nil value
 				if _rule != nil {
@@ -206,8 +224,8 @@ loop:
 						log.Warn("FTP failed to convert rule[id%d] pasv_port(%s) :%s", _rule.ID, pasvPort, err)
 						break
 					}
-					ret := fmt.Sprintf("227 Entering Passive Mode (%s,%v,%d)\r\n", strings.ReplaceAll(pasvIP, ".", ","), float64(port/256), port%256)
-					_, _ = conn.Write([]byte(ret))
+					ret := fmt.Sprintf(EnteringPassiveMode, strings.ReplaceAll(pasvIP, ".", ","), float64(port/256), port%256)
+					_, _ = connBuf.WriteString(ret)
 					if isRedirect {
 						log.Trace("FTP connection[%s] will be redirect[pasv_address: %s]", conn.RemoteAddr(), pasvAddress)
 					}
@@ -219,16 +237,18 @@ loop:
 					method = DOWNLOAD
 
 					//send data to client
-					_, _ = conn.Write([]byte(fmt.Sprintf("150 Opening BINARY mode data connection for '%s' (%d bytes).\r\n", filename, len(_rule.Data))))
+					_, _ = connBuf.WriteString(fmt.Sprintf(OpeningBinaryMode, filename, len(_rule.Data)))
+					_ = connBuf.Flush()
 					s.dataChannel <- map[string]interface{}{clientPasvConnAddress: []byte(rule.CompileTpl(_rule.Data, vars))}
-					_, _ = conn.Write([]byte("226 Transfer complete.\r\n"))
+					_, _ = connBuf.WriteString(TransferComplete)
 				}
 
 			case "STOR":
 				filename = args
 				method = UPLOAD
 
-				_, _ = conn.Write([]byte(fmt.Sprintf("150 Opening BINARY mode data connection for '%s'.\r\n", filename)))
+				_, _ = connBuf.WriteString(fmt.Sprintf(OpeningBinaryModeUpload, filename))
+				_ = connBuf.Flush()
 				//only could read data send to local pasv server.
 				if !isRedirect {
 					dataChannel := make(chan []byte)
@@ -236,19 +256,20 @@ loop:
 					uploadData = <-dataChannel
 					log.Trace("FTP connection[%s] uploaded %d bytes", conn.RemoteAddr(), len(uploadData))
 				}
-				_, _ = conn.Write([]byte("226 Transfer complete.\r\n"))
+				_, _ = connBuf.WriteString(TransferComplete)
 			case "QUIT":
-				_, _ = conn.Write([]byte("221 Goodbye.\r\n"))
+				_, _ = connBuf.WriteString(Goodbye)
 				status = FINISHED
 				break loop
 			case "CWD":
-				_, _ = conn.Write([]byte("250 Directory successfully changed.\r\n"))
+				_, _ = connBuf.WriteString(DirectoryChanged)
 				path += strings.TrimRight(args, "\r\n") + "/"
 			case "PWD":
-				_, _ = conn.Write([]byte(fmt.Sprintf("257 \"%s\" is the current directory\r\n", path)))
+				_, _ = connBuf.WriteString(fmt.Sprintf(CurrentDirectory, path))
 			default:
 				_, _ = conn.Write([]byte("230 more data please!\r\n"))
 			}
+			_ = connBuf.Flush()
 		}
 		buf = &bytes.Buffer{}
 	}

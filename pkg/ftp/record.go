@@ -129,7 +129,7 @@ func ListRecords(c *gin.Context) {
 func createRecord(_rule *Rule, flag, flagGroup, user, password, method, path, filename, ip string, uploadData []byte, status Status) {
 	// create new record
 	area := qqwry.Area(ip)
-	ftpFile := &file.FTPFile{}
+	var ftpFile *file.FTPFile
 	var r *Record
 	var err error
 

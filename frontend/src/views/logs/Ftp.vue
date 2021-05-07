@@ -44,7 +44,7 @@
     </span>
     <span slot="file" slot-scope="file">
      <a-tag
-         v-if="file.id"
+         v-if="file"
          color="#f5222d"
      ><a target="_blank" :href="'/revsuit/api/file/ftp/'+file.id">TRUE</a> </a-tag>
      <a-tag v-else color="#722ed1">

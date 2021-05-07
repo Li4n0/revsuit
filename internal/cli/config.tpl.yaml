@@ -20,7 +20,6 @@ ftp:
   addr: :21
   pasv_ip: 127.0.0.1                   # your public network ip
   pasv_port: 2020
-
 notice:
   dingtalk: https://oapi.dingtalk.com/robot/send?access_token={token}
   lark: https://open.feishu.cn/open-apis/bot/v2/hook/{token}

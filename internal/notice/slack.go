@@ -40,7 +40,6 @@ func (s *Slack) name() string {
 	return "Slack"
 }
 
-
 func (s *Slack) buildPayload(r record.Record) string {
 	payload := slackPayload{
 		Attachments: []slackAttachments{

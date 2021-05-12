@@ -42,6 +42,7 @@ func (revsuit *Revsuit) registerPlatformRouter() {
 	api.GET("/auth", auth)
 	api.GET("/events", events)
 	api.GET("/ping", ping)
+	api.GET("/version", version)
 }
 
 func (revsuit *Revsuit) registerHttpRouter() {

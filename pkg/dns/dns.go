@@ -135,11 +135,11 @@ func (s *Server) newZone(name string) *newdns.Zone {
 						database.DB.Where("rule_name=? and domain like ?", _rule.Name, "%"+flagGroup+"%").Model(&Record{}).Count(&count)
 						if count <= 1 {
 							r.PushToClient()
-							log.Trace("DNS record[id:%d] has been put to client message queue", r.ID)
+							log.Trace("DNS record[id:%d, flagGroup:%s] has been put to client message queue", r.ID, flagGroup)
 						}
 					} else {
 						r.PushToClient()
-						log.Trace("DNS record[id:%d] has been put to client message queue", r.ID)
+						log.Trace("DNS record[id:%d, flag:%s] has been put to client message queue", r.ID, flag)
 					}
 				}
 

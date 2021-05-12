@@ -288,8 +288,12 @@ export default {
       store,
       data: [],
       formVisible: false,
-      pagination: {current: 1},
-      filters: {},
+      pagination: {
+        current: 1, showSizeChanger: true, pageSize: store.pageSize,
+        onShowSizeChange: (current, size) => {
+          store.pageSize = size
+        }
+      },      filters: {},
       loading: false,
       columns,
       form: {},
@@ -357,6 +361,7 @@ export default {
       let params = {
         ...this.filters,
         page: this.pagination.current,
+        pageSize: this.pagination.pageSize,
         order: this.order
       }
       this.loading = true;
@@ -511,11 +516,6 @@ export default {
   },
   mounted() {
     this.fetch({page: "1"});
-  },
-  watch: {
-    'store.authed'() {
-      this.fetch()
-    }
   },
   components: {
     BasicRule,

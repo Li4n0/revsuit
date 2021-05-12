@@ -121,21 +121,22 @@ func (s *Server) handleConnection(conn net.Conn) {
 		if _rule.PushToClient {
 			if flagGroup != "" {
 				var count int64
-				database.DB.Where("rule_name=? and raw like ?", _rule.Name, "%"+flagGroup+"%").Model(&Record{}).Count(&count)
+				database.DB.Where("rule_name=? and path like ?", _rule.Name, "%"+flagGroup+"%").Model(&Record{}).Count(&count)
 				if count <= 1 {
 					r.PushToClient()
-					log.Trace("RMI record[id%d] has been put to client message queue", r.ID)
+					log.Trace("RMI record[id:%d, flagGroup:%s] has been put to client message queue", r.ID, flagGroup)
 				}
+			} else {
+				r.PushToClient()
+				log.Trace("RMI record[id:%d, flag:%s] has been put to client message queue", r.ID, flag)
 			}
-			r.PushToClient()
-			log.Trace("RMI record[id%d] has been put to client message queue", r.ID)
 		}
 
 		//send notice
 		if _rule.Notice {
 			go func() {
 				r.Notice()
-				log.Trace("RMI record[id%d] notice has been sent", r.ID)
+				log.Trace("RMI record[id:%d] notice has been sent", r.ID)
 			}()
 		}
 	}

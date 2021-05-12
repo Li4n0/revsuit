@@ -45,7 +45,7 @@
             <router-link to="/rules/ftp">FTP Rules</router-link>
           </a-menu-item>
         </a-sub-menu>
-        <a-menu-item  key="/settings">
+        <a-menu-item key="/settings">
           <router-link to="/settings">
             <a-icon type="setting"/>
             Settings
@@ -99,6 +99,12 @@
           <router-view ref='content'/>
         </transition>
       </a-layout-content>
+      <div class="copyright">
+        <p class="">
+          RevSuit Current Version: {{ this.version }} &copy;2021 <a href="https://github.com/Li4n0">Li4n0</a>. <a
+            href="https://github.com/Li4n0/revsuit">GitHub</a>
+        </p>
+      </div>
     </a-layout>
     <Auth></Auth>
   </a-layout>
@@ -106,15 +112,21 @@
 <script>
 import Auth from '@/components/Auth'
 import RuleIcon from "@/components/Icon";
+import {getVersion} from "@/api/auth";
+import {store} from "@/main";
+
 
 export default {
   data() {
     return {
+      store,
       autoRefresh: localStorage.getItem("autoRefresh") === "true",
-      refreshInterval: localStorage.getItem("refreshInterval"),
+      refreshInterval: localStorage.getItem("refreshInterval") ? localStorage.getItem("refreshInterval") : 5,
+      pageSize: store.pageSize,
       collapsed: false,
       showSettings: false,
       openKeys: ['logs', "rules"],
+      version: "",
     };
   },
   computed: {
@@ -130,12 +142,18 @@ export default {
       this.timer = setInterval(() => {
         this.$refs.content.fetch()
       }, this.refreshInterval * 1000)
+    },
+    GetVersion() {
+      getVersion().then(res => {
+        this.version = res.data.result
+      })
     }
   },
   mounted() {
     if (this.autoRefresh && this.isLogMode) {
       this.timing()
     }
+    this.GetVersion()
   },
   destroyed() {
     clearInterval(this.timer)
@@ -161,6 +179,21 @@ export default {
       clearInterval(this.timer)
       this.timing()
       localStorage.setItem('refreshInterval', val)
+    },
+    pageSize(val) {
+      if (val <= 0 || val > 100) {
+        val = 10
+      }
+      store.pageSize = val
+      localStorage.setItem('pageSize', val)
+    },
+    'store.authed'() {
+      this.$refs.content.fetch()
+    },
+    'store.pageSize'() {
+      this.$refs.content.pagination.pageSize = store.pageSize
+      localStorage.setItem("pageSize", store.pageSize.toString())
+      this.$refs.content.fetch()
     }
   },
   components: {
@@ -173,17 +206,6 @@ export default {
 html, body {
   height: 100%;
   margin: 0;
-}
-
-.fade-enter.fade-enter-active,
-.fade-appear.fade-appear-active {
-  -webkit-animation-name: none;
-  animation-name: none;
-}
-
-.fade-leave.fade-leave-active {
-  -webkit-animation-name: none;
-  animation-name: none;
 }
 
 /* fade-transform */
@@ -241,5 +263,11 @@ html, body {
   color: white;
   padding-bottom: 5px;
   border-bottom: 2px solid #b6befa;
+}
+
+.copyright {
+  color: #888;
+  text-align: right;
+  margin-right: 1rem;
 }
 </style>

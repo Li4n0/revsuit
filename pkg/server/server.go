@@ -14,6 +14,8 @@ import (
 	log "unknwon.dev/clog/v2"
 )
 
+const VERSION = "Beta0.1"
+
 type Revsuit struct {
 	config   *Config
 	logLevel log.Level

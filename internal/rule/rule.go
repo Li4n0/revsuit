@@ -51,7 +51,7 @@ func (br BaseRule) Match(s string) (flag, flagGroup string, vars map[string]stri
 	}
 
 	flag = matched[0]
-	if len(matched) > 1 && len(groupNames) == 0 {
+	if len(matched) > 1 && groupNames[1] == "" {
 		flagGroup = matched[1]
 	}
 

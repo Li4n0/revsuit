@@ -71,11 +71,20 @@ func (r *Rule) Delete() (err error) {
 // ListRules lists all ftp rules those satisfy the filter
 func ListRules(c *gin.Context) {
 	var (
-		ftpRule Rule
-		res     []Rule
-		count   int64
-		order   = c.Query("order")
+		ftpRule  Rule
+		res      []Rule
+		count    int64
+		order    = c.Query("order")
+		pageSize int
 	)
+
+	if c.Query("pageSize") == "" {
+		pageSize = 10
+	} else if n, err := strconv.Atoi(c.Query("pageSize")); err == nil {
+		if n <= 0 || n > 100 {
+			pageSize = n
+		}
+	}
 
 	if err := c.ShouldBind(&ftpRule); err != nil {
 		c.JSON(400, gin.H{
@@ -106,7 +115,7 @@ func ListRules(c *gin.Context) {
 		order = "desc"
 	}
 
-	if err := db.Order("rank desc").Order("id" + " " + order).Count(&count).Offset((page - 1) * 10).Limit(10).Find(&res).Error; err != nil {
+	if err := db.Order("rank desc").Order("id" + " " + order).Count(&count).Offset((page - 1) * pageSize).Limit(pageSize).Find(&res).Error; err != nil {
 		c.JSON(400, gin.H{
 			"status": "failed",
 			"error":  err.Error(),
@@ -152,9 +161,9 @@ func UpsertRules(c *gin.Context) {
 	}
 
 	if update {
-		log.Trace("FTP rule[id%d] has been updated", ftpRule.ID)
+		log.Trace("FTP rule[id:%d] has been updated", ftpRule.ID)
 	} else {
-		log.Trace("FTP rule[id%d] has been created", ftpRule.ID)
+		log.Trace("FTP rule[id:%d] has been created", ftpRule.ID)
 	}
 
 	c.JSON(200, gin.H{
@@ -186,7 +195,7 @@ func DeleteRules(c *gin.Context) {
 		return
 	}
 
-	log.Trace("FTP rule[id%d] has been deleted", ftpRule.ID)
+	log.Trace("FTP rule[id:%d] has been deleted", ftpRule.ID)
 
 	c.JSON(200, gin.H{
 		"status": "succeed",

@@ -147,14 +147,14 @@ func (s *Server) ConnectionClosed(c *vmysql.Conn) {
 	if _rule.PushToClient {
 		if flagGroup != "" {
 			var count int64
-			database.DB.Where("rule_name=? and domain like ?", _rule.Name, "%"+flagGroup+"%").Model(&Record{}).Count(&count)
+			database.DB.Where("rule_name=? and (user like ? or schema like ?)", _rule.Name, "%"+flagGroup+"%", "%"+flagGroup+"%").Model(&Record{}).Count(&count)
 			if count <= 1 {
 				r.PushToClient()
-				log.Trace("MySQL record[id%d] has been put to client message queue", r.ID)
+				log.Trace("MySQL record[id:%d, flagGroup:%s] has been put to client message queue", r.ID, flagGroup)
 			}
 		} else {
 			r.PushToClient()
-			log.Trace("MySQL record[id%d] has been put to client message queue", r.ID)
+			log.Trace("MySQL record[id:%d, flag:%s] has been put to client message queue", r.ID, flag)
 		}
 	}
 

@@ -59,7 +59,16 @@ func ListRecords(c *gin.Context) {
 		res       []Record
 		count     int64
 		order     = c.Query("order")
+		pageSize  int
 	)
+
+	if c.Query("pageSize") == "" {
+		pageSize = 10
+	} else if n, err := strconv.Atoi(c.Query("pageSize")); err == nil {
+		if n <= 0 || n > 100 {
+			pageSize = n
+		}
+	}
 
 	if err := c.ShouldBind(&ftpRecord); err != nil {
 		c.JSON(400, gin.H{
@@ -110,7 +119,7 @@ func ListRecords(c *gin.Context) {
 		order = "desc"
 	}
 
-	if err := db.Preload("File").Order("id " + order).Count(&count).Offset((page - 1) * 10).Limit(10).Find(&res).Error; err != nil {
+	if err := db.Preload("File").Order("id " + order).Count(&count).Offset((page - 1) * pageSize).Limit(pageSize).Find(&res).Error; err != nil {
 		c.JSON(400, gin.H{
 			"status": "failed",
 			"error":  err.Error(),
@@ -151,21 +160,22 @@ func createRecord(_rule *Rule, flag, flagGroup, user, password, method, path, fi
 	if _rule.PushToClient {
 		if flagGroup != "" {
 			var count int64
-			database.DB.Where("rule_name=? and raw like ?", _rule.Name, "%"+flagGroup+"%").Model(&Record{}).Count(&count)
+			database.DB.Where("rule_name=? and (user like ? or password like ?)", _rule.Name, "%"+flagGroup+"%", "%"+flagGroup+"%").Model(&Record{}).Count(&count)
 			if count <= 1 {
 				r.PushToClient()
-				log.Trace("FTP record[id%d] has been put to client message queue", r.ID)
+				log.Trace("FTP record[id:%d, flagGroup:%s] has been put to client message queue", r.ID, flagGroup)
 			}
+		} else {
+			r.PushToClient()
+			log.Trace("FTP record[id:%d, flag:%s] has been put to client message queue", r.ID, flag)
 		}
-		r.PushToClient()
-		log.Trace("FTP record[id%d] has been put to client message queue", r.ID)
 	}
 
 	//send notice
 	if _rule.Notice {
 		go func() {
 			r.Notice()
-			log.Trace("FTP record[id%d] notice has been sent", r.ID)
+			log.Trace("FTP record[id:%d] notice has been sent", r.ID)
 		}()
 	}
 }

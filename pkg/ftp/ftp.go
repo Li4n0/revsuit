@@ -215,13 +215,13 @@ loop:
 					pasvAddress := rule.CompileTpl(pasvAddress, vars)
 					pasvIP, pasvPort, err := net.SplitHostPort(pasvAddress)
 					if err != nil {
-						log.Warn("FTP failed to split rule[id%d] pasv_address(%s) :%s", _rule.ID, pasvAddress, err)
+						log.Warn("FTP failed to split rule[id:%d] pasv_address(%s) :%s", _rule.ID, pasvAddress, err)
 						break
 					}
 
 					port, err := strconv.Atoi(pasvPort)
 					if err != nil {
-						log.Warn("FTP failed to convert rule[id%d] pasv_port(%s) :%s", _rule.ID, pasvPort, err)
+						log.Warn("FTP failed to convert rule[id:%d] pasv_port(%s) :%s", _rule.ID, pasvPort, err)
 						break
 					}
 					ret := fmt.Sprintf(EnteringPassiveMode, strings.ReplaceAll(pasvIP, ".", ","), float64(port/256), port%256)

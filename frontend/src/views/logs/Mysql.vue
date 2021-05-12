@@ -178,7 +178,12 @@ export default {
     return {
       store,
       data: [],
-      pagination: {current: 1},
+      pagination: {
+        current: 1, showSizeChanger: true, pageSize: store.pageSize,
+        onShowSizeChange: (current, size) => {
+          store.pageSize = size
+        }
+      },
       filters: {},
       order: "desc",
       loading: false,
@@ -198,6 +203,7 @@ export default {
       let params = {
         ...this.filters,
         page: this.pagination.current,
+        pageSize: this.pagination.pageSize,
         order: this.order
       }
       this.loading = true;
@@ -221,11 +227,6 @@ export default {
   },
   mounted() {
     this.fetch();
-  },
-  watch: {
-    'store.authed'() {
-      this.fetch()
-    }
   },
   components: {
     FilterDropdown

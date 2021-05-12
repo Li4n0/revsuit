@@ -55,7 +55,16 @@ func ListRecords(c *gin.Context) {
 		res         []Record
 		count       int64
 		order       = c.Query("order")
+		pageSize    int
 	)
+
+	if c.Query("pageSize") == "" {
+		pageSize = 10
+	} else if n, err := strconv.Atoi(c.Query("pageSize")); err == nil {
+		if n <= 0 || n > 100 {
+			pageSize = n
+		}
+	}
 
 	if err := c.ShouldBind(&mysqlRecord); err != nil {
 		c.JSON(400, gin.H{
@@ -103,7 +112,7 @@ func ListRecords(c *gin.Context) {
 		order = "desc"
 	}
 
-	if err := db.Preload("Files").Order("id" + " " + order).Count(&count).Offset((page - 1) * 10).Limit(10).Find(&res).Error; err != nil {
+	if err := db.Preload("Files").Order("id" + " " + order).Count(&count).Offset((page - 1) * pageSize).Limit(pageSize).Find(&res).Error; err != nil {
 		c.JSON(400, gin.H{
 			"status": "failed",
 			"error":  err.Error(),

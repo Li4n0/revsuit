@@ -17,6 +17,7 @@ module.exports = {
             }
         },
     },
+    productionSourceMap:false,
     runtimeCompiler: true,
     filenameHashing: false,
     publicPath: ''

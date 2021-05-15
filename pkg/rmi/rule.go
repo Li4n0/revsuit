@@ -170,7 +170,7 @@ func UpsertRules(c *gin.Context) {
 	})
 }
 
-// DeleteRules Delete rmi rule from user submit
+// DeleteRules deletes rmi rule from user submit
 func DeleteRules(c *gin.Context) {
 	var rmiRule Rule
 

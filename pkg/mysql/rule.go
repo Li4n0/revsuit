@@ -21,7 +21,7 @@ func (Rule) TableName() string {
 	return "mysql_rules"
 }
 
-// CreateOrUpdate Create or update the mysql rule in database and ruleSet
+// CreateOrUpdate create or update the mysql rule in database and ruleSet
 func (r *Rule) CreateOrUpdate() (err error) {
 	db := database.DB.Model(r)
 	err = db.Clauses(clause.OnConflict{
@@ -56,7 +56,7 @@ func (r *Rule) Delete() (err error) {
 	return err
 }
 
-// ListRules List all mysql rules those satisfy the filter
+// ListRules list all mysql rules those satisfy the filter
 func ListRules(c *gin.Context) {
 	var (
 		mysqlRule Rule
@@ -119,7 +119,7 @@ func ListRules(c *gin.Context) {
 	})
 }
 
-// UpsertRules Create or update mysql rule from user submit
+// UpsertRules create or update mysql rule from user submit
 func UpsertRules(c *gin.Context) {
 	var (
 		mysqlRule Rule

@@ -88,7 +88,7 @@ func newSet(_rule *Rule, name, value, ip string, _type newdns.Type) []newdns.Set
 	return set
 }
 
-//create new dns zone with root domain
+// newZone creates new dns zone with root domain
 func (s *Server) newZone(name string) *newdns.Zone {
 	defer func() {
 		if err := recover(); err != nil {
@@ -98,11 +98,9 @@ func (s *Server) newZone(name string) *newdns.Zone {
 
 	domain := strings.TrimSuffix(name, ".")
 	frags := strings.Split(domain, ".")
-	zoneName := ""
+	zoneName := name
 	if len(frags) >= 2 {
 		zoneName = strings.Join(frags[len(frags)-2:], ".") + "."
-	} else {
-		zoneName = name
 	}
 	zone := &newdns.Zone{
 		Name:             zoneName,

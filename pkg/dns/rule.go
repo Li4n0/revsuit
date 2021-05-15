@@ -23,7 +23,7 @@ func (Rule) TableName() string {
 	return "dns_rules"
 }
 
-// NewRule New dns rule struct
+// NewRule new dns rule struct
 func NewRule(name, flagFormat, value string, pushToClient, notice bool, _type newdns.Type, ttl time.Duration) *Rule {
 	return &Rule{
 		BaseRule: rule.BaseRule{
@@ -38,7 +38,7 @@ func NewRule(name, flagFormat, value string, pushToClient, notice bool, _type ne
 	}
 }
 
-// CreateOrUpdate Create or update the dns rule in database and ruleSet
+// CreateOrUpdate create or update the dns rule in database and ruleSet
 func (r *Rule) CreateOrUpdate() (err error) {
 	db := database.DB.Model(r)
 	err = db.Clauses(clause.OnConflict{

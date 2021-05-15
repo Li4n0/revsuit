@@ -53,11 +53,7 @@ func Start() {
 				}
 			} else if os.IsNotExist(err) && configFile == "config.yaml" {
 				log.Warn("Generate default configurations to config.yaml, please configure and run again.")
-				err := os.WriteFile("config.yaml", configTemplate, 0644)
-				if err != nil {
-					return err
-				}
-				return nil
+				return os.WriteFile("config.yaml", configTemplate, 0644)
 			} else {
 				return err
 			}

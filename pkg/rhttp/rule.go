@@ -22,7 +22,7 @@ func (Rule) TableName() string {
 	return "http_rules"
 }
 
-// NewRule New http rule struct
+// NewRule new http rule struct
 func NewRule(name, flagFormat, responseBody string, pushToClient, notice bool, responseStatus string, responseHeaders database.MapField) *Rule {
 	return &Rule{
 		BaseRule: rule.BaseRule{
@@ -37,7 +37,7 @@ func NewRule(name, flagFormat, responseBody string, pushToClient, notice bool, r
 	}
 }
 
-// CreateOrUpdate Create or update the http rule in database and ruleSet
+// CreateOrUpdate create or update the http rule in database and ruleSet
 func (r *Rule) CreateOrUpdate() (err error) {
 	db := database.DB.Model(r)
 	err = db.Clauses(clause.OnConflict{
@@ -74,7 +74,7 @@ func (r *Rule) Delete() (err error) {
 	return err
 }
 
-// ListRules List all http rules those satisfy the filter
+// ListRules list all http rules those satisfy the filter
 func ListRules(c *gin.Context) {
 	var (
 		httpRule Rule
@@ -137,7 +137,7 @@ func ListRules(c *gin.Context) {
 	})
 }
 
-// UpsertRules Create or update http rule from user submit
+// UpsertRules create or update http rule from user submit
 func UpsertRules(c *gin.Context) {
 	var (
 		httpRule Rule
@@ -179,7 +179,7 @@ func UpsertRules(c *gin.Context) {
 	})
 }
 
-// DeleteRules Delete http rule from user submit
+// DeleteRules deletes http rule from user submit
 func DeleteRules(c *gin.Context) {
 	var httpRule Rule
 

@@ -82,7 +82,7 @@ func ListRules(c *gin.Context) {
 		pageSize = 10
 	} else if n, err := strconv.Atoi(c.Query("pageSize")); err == nil {
 		if n <= 0 || n > 100 {
-			pageSize = n
+			pageSize = 10
 		}
 	}
 

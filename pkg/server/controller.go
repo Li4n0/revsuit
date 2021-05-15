@@ -29,7 +29,6 @@ func ping(c *gin.Context) {
 func events(c *gin.Context) {
 	log.Info("Receive client connection from %v", c.Request.RemoteAddr)
 	c.Stream(func(w io.Writer) bool {
-		//c.SSEvent("message", "receive new flag")
 		select {
 		case <-c.Writer.CloseNotify():
 			return false

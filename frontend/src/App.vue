@@ -60,8 +60,7 @@
             :type="collapsed ? 'menu-unfold' : 'menu-fold'"
             @click="() => (collapsed = !collapsed)"
         />
-        <!--        <transition name="list1">-->
-        <div v-if="isLogMode" style="float: right; width:45% ;padding: 12px 0;line-height: 24px;">
+        <div v-if="isLogMode" style="float: right; min-width:50% ;padding: 12px 0;line-height: 24px;">
           <a-row :gutter="24" type="flex">
             <a-col :span="21">
               <a-form-model v-show="showSettings" ref="settings" layout="inline">
@@ -90,7 +89,6 @@
             </a-col>
           </a-row>
         </div>
-        <!--        </transition>-->
       </a-layout-header>
       <a-layout-content
           :style="{ margin: '24px 16px', padding: '24px', borderRadius: '20px',background: '#fff', minHeight: 'initial' }"
@@ -125,7 +123,7 @@ export default {
       pageSize: store.pageSize,
       collapsed: false,
       showSettings: false,
-      openKeys: ['logs', "rules"],
+      openKeys: ['logs'],
       version: "",
     };
   },

@@ -33,6 +33,10 @@ type dingPayload struct {
 	At       []dingAt     `json:"at"`
 }
 
+func (d *DingTalk) name() string {
+	return "DingTalk"
+}
+
 func (d *DingTalk) buildPayload(r record.Record) string {
 	payload := dingPayload{
 		MsgType: "markdown",

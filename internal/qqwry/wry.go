@@ -13,6 +13,10 @@ var wry *qqwry.QQwry
 var once sync.Once
 
 func init() {
+	_ = log.NewConsole(100,
+		log.ConsoleConfig{
+			Level: log.LevelInfo,
+		})
 	info, err := os.Stat("qqwry.dat")
 	if err != nil {
 		if os.IsNotExist(err) {

@@ -10,11 +10,11 @@ import (
 	log "unknwon.dev/clog/v2"
 )
 
-// FTP rule struct
+// Rule FTP rule struct
 type Rule struct {
-	rule.BaseRule
-	PasvAddress string `gorm:"pasv_address" json:"pasv_address" form:"pasv_address"`
-	Data        []byte `json:"data" form:"data"`
+	rule.BaseRule `yaml:",inline"`
+	PasvAddress   string `gorm:"pasv_address" json:"pasv_address" form:"pasv_address" yaml:"pasv_address"`
+	Data          []byte `json:"data" form:"data"`
 }
 
 func (Rule) TableName() string {
@@ -71,16 +71,25 @@ func (r *Rule) Delete() (err error) {
 // ListRules lists all ftp rules those satisfy the filter
 func ListRules(c *gin.Context) {
 	var (
-		ftpRule Rule
-		res     []Rule
-		count   int64
-		order   = c.Query("order")
+		ftpRule  Rule
+		res      []Rule
+		count    int64
+		order    = c.Query("order")
+		pageSize int
 	)
+
+	if c.Query("pageSize") == "" {
+		pageSize = 10
+	} else if n, err := strconv.Atoi(c.Query("pageSize")); err == nil {
+		if n <= 0 || n > 100 {
+			pageSize = 10
+		}
+	}
 
 	if err := c.ShouldBind(&ftpRule); err != nil {
 		c.JSON(400, gin.H{
 			"status": "failed",
-			"error":  err,
+			"error":  err.Error(),
 			"result": nil,
 		})
 		return
@@ -96,7 +105,7 @@ func ListRules(c *gin.Context) {
 	if err != nil {
 		c.JSON(400, gin.H{
 			"status": "failed",
-			"error":  err,
+			"error":  err.Error(),
 			"result": nil,
 		})
 		return
@@ -106,10 +115,10 @@ func ListRules(c *gin.Context) {
 		order = "desc"
 	}
 
-	if err := db.Order("rank desc").Order("id" + " " + order).Count(&count).Offset((page - 1) * 10).Limit(10).Find(&res).Error; err != nil {
+	if err := db.Order("rank desc").Order("id" + " " + order).Count(&count).Offset((page - 1) * pageSize).Limit(pageSize).Find(&res).Error; err != nil {
 		c.JSON(400, gin.H{
 			"status": "failed",
-			"error":  err,
+			"error":  err.Error(),
 			"data":   nil,
 		})
 		return
@@ -122,7 +131,7 @@ func ListRules(c *gin.Context) {
 	})
 }
 
-// Create or update ftp rule from user submit
+// UpsertRules creates or updates ftp rule from user submit
 func UpsertRules(c *gin.Context) {
 	var (
 		ftpRule Rule
@@ -132,7 +141,7 @@ func UpsertRules(c *gin.Context) {
 	if err := c.ShouldBind(&ftpRule); err != nil {
 		c.JSON(400, gin.H{
 			"status": "failed",
-			"error":  err,
+			"error":  err.Error(),
 			"data":   nil,
 		})
 		return
@@ -145,16 +154,16 @@ func UpsertRules(c *gin.Context) {
 	if err := ftpRule.CreateOrUpdate(); err != nil {
 		c.JSON(400, gin.H{
 			"status": "failed",
-			"error":  err,
+			"error":  err.Error(),
 			"result": nil,
 		})
 		return
 	}
 
 	if update {
-		log.Trace("FTP rule[id%d] has been updated", ftpRule.ID)
+		log.Trace("FTP rule[id:%d] has been updated", ftpRule.ID)
 	} else {
-		log.Trace("FTP rule[id%d] has been created", ftpRule.ID)
+		log.Trace("FTP rule[id:%d] has been created", ftpRule.ID)
 	}
 
 	c.JSON(200, gin.H{
@@ -164,14 +173,14 @@ func UpsertRules(c *gin.Context) {
 	})
 }
 
-// Delete ftp rule from user submit
+// DeleteRules deletes ftp rule from user submit
 func DeleteRules(c *gin.Context) {
 	var ftpRule Rule
 
 	if err := c.ShouldBind(&ftpRule); err != nil {
 		c.JSON(400, gin.H{
 			"status": "failed",
-			"error":  err,
+			"error":  err.Error(),
 			"data":   nil,
 		})
 		return
@@ -180,13 +189,13 @@ func DeleteRules(c *gin.Context) {
 	if err := ftpRule.Delete(); err != nil {
 		c.JSON(400, gin.H{
 			"status": "failed",
-			"error":  err,
+			"error":  err.Error(),
 			"data":   nil,
 		})
 		return
 	}
 
-	log.Trace("FTP rule[id%d] has been deleted", ftpRule.ID)
+	log.Trace("FTP rule[id:%d] has been deleted", ftpRule.ID)
 
 	c.JSON(200, gin.H{
 		"status": "succeed",

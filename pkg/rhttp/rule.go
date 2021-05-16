@@ -10,19 +10,19 @@ import (
 	log "unknwon.dev/clog/v2"
 )
 
-// Http rule struct
+// Rule Http rule struct
 type Rule struct {
-	rule.BaseRule
-	ResponseStatusCode string            `gorm:"index;default:200;not null" form:"response_status_code" json:"response_status_code"`
-	ResponseHeaders    database.MapField `form:"response_headers" json:"response_headers"`
-	ResponseBody       string            `gorm:"default:Hello RevSuit!" form:"response_body" json:"response_body"`
+	rule.BaseRule      `yaml:",inline"`
+	ResponseStatusCode string            `gorm:"index;default:200;not null" form:"response_status_code" json:"response_status_code" yaml:"response_status_code"`
+	ResponseHeaders    database.MapField `form:"response_headers" json:"response_headers" yaml:"response_headers"`
+	ResponseBody       string            `gorm:"default:Hello RevSuit!" form:"response_body" json:"response_body" yaml:"response_body"`
 }
 
 func (Rule) TableName() string {
 	return "http_rules"
 }
 
-// New http rule struct
+// NewRule new http rule struct
 func NewRule(name, flagFormat, responseBody string, pushToClient, notice bool, responseStatus string, responseHeaders database.MapField) *Rule {
 	return &Rule{
 		BaseRule: rule.BaseRule{
@@ -37,7 +37,7 @@ func NewRule(name, flagFormat, responseBody string, pushToClient, notice bool, r
 	}
 }
 
-// Create or update the http rule in database and ruleSet
+// CreateOrUpdate creates or updates the http rule in database and ruleSet
 func (r *Rule) CreateOrUpdate() (err error) {
 	db := database.DB.Model(r)
 	err = db.Clauses(clause.OnConflict{
@@ -62,7 +62,7 @@ func (r *Rule) CreateOrUpdate() (err error) {
 	return err
 }
 
-// Delete the http rule in database and ruleSet
+// Delete deletes the http rule in database and ruleSet
 func (r *Rule) Delete() (err error) {
 	db := database.DB.Model(r)
 	err = db.Delete(r).Error
@@ -74,19 +74,28 @@ func (r *Rule) Delete() (err error) {
 	return err
 }
 
-// List all http rules those satisfy the filter
+// ListRules lists all http rules those satisfy the filter
 func ListRules(c *gin.Context) {
 	var (
 		httpRule Rule
 		res      []Rule
 		count    int64
 		order    = c.Query("order")
+		pageSize int
 	)
+
+	if c.Query("pageSize") == "" {
+		pageSize = 10
+	} else if n, err := strconv.Atoi(c.Query("pageSize")); err == nil {
+		if n <= 0 || n > 100 {
+			pageSize = 10
+		}
+	}
 
 	if err := c.ShouldBind(&httpRule); err != nil {
 		c.JSON(400, gin.H{
 			"status": "failed",
-			"error":  err,
+			"error":  err.Error(),
 			"result": nil,
 		})
 		return
@@ -102,7 +111,7 @@ func ListRules(c *gin.Context) {
 	if err != nil {
 		c.JSON(400, gin.H{
 			"status": "failed",
-			"error":  err,
+			"error":  err.Error(),
 			"result": nil,
 		})
 		return
@@ -112,10 +121,10 @@ func ListRules(c *gin.Context) {
 		order = "desc"
 	}
 
-	if err := db.Order("rank desc").Order("id" + " " + order).Count(&count).Offset((page - 1) * 10).Limit(10).Find(&res).Error; err != nil {
+	if err := db.Order("rank desc").Order("id" + " " + order).Count(&count).Offset((page - 1) * pageSize).Limit(pageSize).Find(&res).Error; err != nil {
 		c.JSON(400, gin.H{
 			"status": "failed",
-			"error":  err,
+			"error":  err.Error(),
 			"data":   nil,
 		})
 		return
@@ -128,7 +137,7 @@ func ListRules(c *gin.Context) {
 	})
 }
 
-// Create or update http rule from user submit
+// UpsertRules create or update http rule from user submit
 func UpsertRules(c *gin.Context) {
 	var (
 		httpRule Rule
@@ -138,7 +147,7 @@ func UpsertRules(c *gin.Context) {
 	if err := c.ShouldBind(&httpRule); err != nil {
 		c.JSON(400, gin.H{
 			"status": "failed",
-			"error":  err,
+			"error":  err.Error(),
 			"data":   nil,
 		})
 		return
@@ -151,16 +160,16 @@ func UpsertRules(c *gin.Context) {
 	if err := httpRule.CreateOrUpdate(); err != nil {
 		c.JSON(400, gin.H{
 			"status": "failed",
-			"error":  err,
+			"error":  err.Error(),
 			"result": nil,
 		})
 		return
 	}
 
 	if update {
-		log.Trace("HTTP rule[id%d] has been updated", httpRule.ID)
+		log.Trace("HTTP rule[id:%d] has been updated", httpRule.ID)
 	} else {
-		log.Trace("HTTP rule[id%d] has been created", httpRule.ID)
+		log.Trace("HTTP rule[id:%d] has been created", httpRule.ID)
 	}
 
 	c.JSON(200, gin.H{
@@ -170,14 +179,14 @@ func UpsertRules(c *gin.Context) {
 	})
 }
 
-// Delete http rule from user submit
+// DeleteRules deletes http rule from user submit
 func DeleteRules(c *gin.Context) {
 	var httpRule Rule
 
 	if err := c.ShouldBind(&httpRule); err != nil {
 		c.JSON(400, gin.H{
 			"status": "failed",
-			"error":  err,
+			"error":  err.Error(),
 			"data":   nil,
 		})
 		return
@@ -186,13 +195,13 @@ func DeleteRules(c *gin.Context) {
 	if err := httpRule.Delete(); err != nil {
 		c.JSON(400, gin.H{
 			"status": "failed",
-			"error":  err,
+			"error":  err.Error(),
 			"data":   nil,
 		})
 		return
 	}
 
-	log.Trace("HTTP rule[id%d] has been deleted", httpRule.ID)
+	log.Trace("HTTP rule[id:%d] has been deleted", httpRule.ID)
 
 	c.JSON(200, gin.H{
 		"status": "succeed",

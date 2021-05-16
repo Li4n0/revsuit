@@ -10,6 +10,7 @@ Vue.config.productionTip = false;
 Vue.use(Antd);
 export const store = Vue.observable({
     authed: true,
+    pageSize: localStorage.getItem("pageSize") ? parseInt(localStorage.getItem("pageSize")) : 10
 })
 /* eslint-disable no-new */
 new Vue({

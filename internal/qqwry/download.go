@@ -15,8 +15,8 @@ import (
 )
 
 const (
-	COPY_WRITE_URL = "https://qqwry.mirror.noc.one/copywrite.rar"
-	QQWRY_URL      = "https://qqwry.mirror.noc.one/qqwry.rar"
+	CopyWriteUrl = "https://qqwry.mirror.noc.one/copywrite.rar"
+	QqwryUrl     = "https://qqwry.mirror.noc.one/qqwry.rar"
 )
 
 func get(url string) (b []byte, err error) {
@@ -70,14 +70,14 @@ func download() (err error) {
 	wg.Add(2)
 	go func() {
 		defer wg.Done()
-		if copyWriteData, err = get(COPY_WRITE_URL); err != nil {
+		if copyWriteData, err = get(CopyWriteUrl); err != nil {
 			return
 		}
 	}()
 
 	go func() {
 		defer wg.Done()
-		if qqwryData, err = get(QQWRY_URL); err != nil {
+		if qqwryData, err = get(QqwryUrl); err != nil {
 			return
 		}
 	}()

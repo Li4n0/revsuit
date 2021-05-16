@@ -44,7 +44,7 @@
     </span>
     <span slot="file" slot-scope="file">
      <a-tag
-         v-if="file.id"
+         v-if="file"
          color="#f5222d"
      ><a target="_blank" :href="'/revsuit/api/file/ftp/'+file.id">TRUE</a> </a-tag>
      <a-tag v-else color="#722ed1">
@@ -190,7 +190,12 @@ export default {
     return {
       store,
       data: [],
-      pagination: {current: 1},
+      pagination: {
+        current: 1, showSizeChanger: true, pageSize: store.pageSize,
+        onShowSizeChange: (current, size) => {
+          store.pageSize = size
+        }
+      },
       filters: {},
       order: "desc",
       loading: false,
@@ -199,9 +204,6 @@ export default {
     };
   },
   methods: {
-    aa(file) {
-      console.log(file)
-    },
     handleTableChange(pagination, filters, sorter) {
       const pager = {...this.pagination};
       pager.current = pagination.current;
@@ -213,6 +215,7 @@ export default {
       let params = {
         ...this.filters,
         page: this.pagination.current,
+        pageSize: this.pagination.pageSize,
         order: this.order
       }
       this.loading = true;
@@ -236,11 +239,6 @@ export default {
   },
   mounted() {
     this.fetch();
-  },
-  watch: {
-    'store.authed'() {
-      this.fetch()
-    }
   },
   components: {
     FilterDropdown

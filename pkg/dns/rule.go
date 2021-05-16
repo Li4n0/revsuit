@@ -13,17 +13,17 @@ import (
 )
 
 type Rule struct {
-	rule.BaseRule
-	Type  newdns.Type   `gorm:"default:1" form:"type" json:"type"`
-	Value string        `form:"value" json:"value"`
-	TTL   time.Duration `gorm:"ttl;default:10" form:"ttl" json:"ttl"`
+	rule.BaseRule `yaml:""`
+	Type          newdns.Type   `gorm:"default:1" form:"type" json:"type"`
+	Value         string        `form:"value" json:"value"`
+	TTL           time.Duration `gorm:"ttl;default:10" form:"ttl" json:"ttl"`
 }
 
 func (Rule) TableName() string {
 	return "dns_rules"
 }
 
-// New dns rule struct
+// NewRule new dns rule struct
 func NewRule(name, flagFormat, value string, pushToClient, notice bool, _type newdns.Type, ttl time.Duration) *Rule {
 	return &Rule{
 		BaseRule: rule.BaseRule{
@@ -38,7 +38,7 @@ func NewRule(name, flagFormat, value string, pushToClient, notice bool, _type ne
 	}
 }
 
-// Create or update the dns rule in database and ruleSet
+// CreateOrUpdate creates or updates the dns rule in database and ruleSet
 func (r *Rule) CreateOrUpdate() (err error) {
 	db := database.DB.Model(r)
 	err = db.Clauses(clause.OnConflict{
@@ -62,7 +62,7 @@ func (r *Rule) CreateOrUpdate() (err error) {
 	return err
 }
 
-// Delete the dns rule in database and ruleSet
+// Delete deletes the dns rule in database and ruleSet
 func (r *Rule) Delete() (err error) {
 	db := database.DB.Model(r)
 	err = db.Delete(r).Error
@@ -73,19 +73,28 @@ func (r *Rule) Delete() (err error) {
 	return err
 }
 
-// List all dns rules those satisfy the filter
+// ListRules lists all dns rules those satisfy the filter
 func ListRules(c *gin.Context) {
 	var (
-		dnsRule Rule
-		res     []Rule
-		count   int64
-		order   = c.Query("order")
+		dnsRule  Rule
+		res      []Rule
+		count    int64
+		order    = c.Query("order")
+		pageSize int
 	)
+
+	if c.Query("pageSize") == "" {
+		pageSize = 10
+	} else if n, err := strconv.Atoi(c.Query("pageSize")); err == nil {
+		if n <= 0 || n > 100 {
+			pageSize = 10
+		}
+	}
 
 	if err := c.ShouldBind(&dnsRule); err != nil {
 		c.JSON(400, gin.H{
 			"status": "failed",
-			"error":  err,
+			"error":  err.Error(),
 			"result": nil,
 		})
 		return
@@ -101,7 +110,7 @@ func ListRules(c *gin.Context) {
 	if err != nil {
 		c.JSON(400, gin.H{
 			"status": "failed",
-			"error":  err,
+			"error":  err.Error(),
 			"result": nil,
 		})
 		return
@@ -111,10 +120,10 @@ func ListRules(c *gin.Context) {
 		order = "desc"
 	}
 
-	if err := db.Order("rank desc").Order("id" + " " + order).Count(&count).Offset((page - 1) * 10).Limit(10).Find(&res).Error; err != nil {
+	if err := db.Order("rank desc").Order("id" + " " + order).Count(&count).Offset((page - 1) * pageSize).Limit(pageSize).Find(&res).Error; err != nil {
 		c.JSON(400, gin.H{
 			"status": "failed",
-			"error":  err,
+			"error":  err.Error(),
 			"data":   nil,
 		})
 		return
@@ -127,7 +136,7 @@ func ListRules(c *gin.Context) {
 	})
 }
 
-// Create or update dns rule from user submit
+// UpsertRules creates or updates dns rule from user submit
 func UpsertRules(c *gin.Context) {
 	var (
 		dnsRule Rule
@@ -137,7 +146,7 @@ func UpsertRules(c *gin.Context) {
 	if err := c.ShouldBind(&dnsRule); err != nil {
 		c.JSON(400, gin.H{
 			"status": "failed",
-			"error":  err,
+			"error":  err.Error(),
 			"data":   nil,
 		})
 		return
@@ -150,16 +159,16 @@ func UpsertRules(c *gin.Context) {
 	if err := dnsRule.CreateOrUpdate(); err != nil {
 		c.JSON(400, gin.H{
 			"status": "failed",
-			"error":  err,
+			"error":  err.Error(),
 			"data":   nil,
 		})
 		return
 	}
 
 	if update {
-		log.Trace("DNS rule[id%d] has been updated", dnsRule.ID)
+		log.Trace("DNS rule[id:%d] has been updated", dnsRule.ID)
 	} else {
-		log.Trace("DNS rule[id%d] has been created", dnsRule.ID)
+		log.Trace("DNS rule[id:%d] has been created", dnsRule.ID)
 	}
 
 	c.JSON(200, gin.H{
@@ -169,14 +178,14 @@ func UpsertRules(c *gin.Context) {
 	})
 }
 
-// Delete dns rule from user submit
+// DeleteRules Delete dns rule from user submit
 func DeleteRules(c *gin.Context) {
 	var dnsRule Rule
 
 	if err := c.ShouldBind(&dnsRule); err != nil {
 		c.JSON(400, gin.H{
 			"status": "failed",
-			"error":  err,
+			"error":  err.Error(),
 			"data":   nil,
 		})
 		return
@@ -185,13 +194,13 @@ func DeleteRules(c *gin.Context) {
 	if err := dnsRule.Delete(); err != nil {
 		c.JSON(400, gin.H{
 			"status": "failed",
-			"error":  err,
+			"error":  err.Error(),
 			"data":   nil,
 		})
 		return
 	}
 
-	log.Trace("DNS rule[id%d] has been deleted", dnsRule.ID)
+	log.Trace("DNS rule[id:%d] has been deleted", dnsRule.ID)
 
 	c.JSON(200, gin.H{
 		"status": "succeed",

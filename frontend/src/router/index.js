@@ -1,6 +1,5 @@
 import Vue from 'vue'
 import VueRouter from 'vue-router'
-import Home from '../views/Home.vue'
 
 Vue.use(VueRouter)
 
@@ -8,8 +7,9 @@ const routes = [
     {
         path: '/',
         name: 'Home',
-        component: Home
+        redirect: '/logs/http'
     },
+    // logs router
     {
         path: '/logs/http',
         name: 'HttpLogs',
@@ -35,6 +35,7 @@ const routes = [
         name: 'FtpLogs',
         component: () => import( '../views/logs/Ftp')
     },
+    // rules router
     {
         path: '/rules/http',
         name: 'HttpRules',
@@ -59,6 +60,12 @@ const routes = [
         path: '/rules/ftp',
         name: 'FtpRules',
         component: () => import( '../views/rules/Ftp')
+    },
+    //Settings router
+    {
+        path: '/settings',
+        name: 'Settings',
+        component: () => import( '../views/settings/Settings')
     }
 ]
 

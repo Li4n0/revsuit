@@ -3,7 +3,6 @@ package mysql
 import (
 	"encoding/base64"
 	"fmt"
-	"os"
 	"regexp"
 	"strings"
 	"sync"
@@ -13,6 +12,7 @@ import (
 	"github.com/li4n0/revsuit/internal/file"
 	"github.com/li4n0/revsuit/internal/qqwry"
 	"github.com/li4n0/revsuit/pkg/mysql/vmysql"
+	"github.com/pkg/errors"
 	log "unknwon.dev/clog/v2"
 	"vitess.io/vitess/go/sqltypes"
 )
@@ -25,8 +25,9 @@ var (
 
 type Server struct {
 	Config
-	rules     []*Rule
-	rulesLock sync.RWMutex
+	rules      []*Rule
+	rulesLock  sync.RWMutex
+	livingLock sync.Mutex
 
 	listener *vmysql.Listener
 	Handler  vmysql.Handler
@@ -36,7 +37,7 @@ type Server struct {
 
 func GetServer() *Server {
 	once.Do(func() {
-		server = &Server{rulesLock: sync.RWMutex{}}
+		server = &Server{rulesLock: sync.RWMutex{}, livingLock: sync.Mutex{}}
 	})
 	return server
 }
@@ -51,7 +52,7 @@ func (s *Server) updateRules() error {
 	db := database.DB.Model(new(Rule))
 	defer s.rulesLock.Unlock()
 	s.rulesLock.Lock()
-	return db.Order("rank desc").Find(&s.rules).Error
+	return errors.Wrap(db.Order("rank desc").Find(&s.rules).Error, "MySQL update rules error")
 }
 
 // NewConnection is part of the mysql.Handler interface.
@@ -146,14 +147,14 @@ func (s *Server) ConnectionClosed(c *vmysql.Conn) {
 	if _rule.PushToClient {
 		if flagGroup != "" {
 			var count int64
-			database.DB.Where("rule_name=? and domain like ?", _rule.Name, "%"+flagGroup+"%").Model(&Record{}).Count(&count)
+			database.DB.Where("rule_name=? and (user like ? or schema like ?)", _rule.Name, "%"+flagGroup+"%", "%"+flagGroup+"%").Model(&Record{}).Count(&count)
 			if count <= 1 {
 				r.PushToClient()
-				log.Trace("MySQL record[id%d] has been put to client message queue", r.ID)
+				log.Trace("MySQL record[id:%d, flagGroup:%s] has been put to client message queue", r.ID, flagGroup)
 			}
 		} else {
 			r.PushToClient()
-			log.Trace("MySQL record[id%d] has been put to client message queue", r.ID)
+			log.Trace("MySQL record[id:%d, flag:%s] has been put to client message queue", r.ID, flag)
 		}
 	}
 
@@ -266,9 +267,31 @@ func (s *Server) WarningCount(c *vmysql.Conn) uint16 {
 	return 0
 }
 
+func (s *Server) Stop() {
+	log.Info("MySQL Server is stopping...")
+	s.Enable = false
+	s.livingLock.Unlock()
+}
+
+func (s *Server) Restart() {
+	s.Enable = false
+	time.Sleep(time.Second * 2)
+	go s.Run()
+}
+
 func (s *Server) Run() {
+	s.Enable = true
+	s.livingLock.Lock()
+	defer func() {
+		if s.Enable {
+			log.Error("MySQL Server exited unexpectedly")
+		}
+		s.Enable = false
+		s.livingLock.Unlock()
+	}()
 	if err := s.updateRules(); err != nil {
-		log.Fatal(err.Error())
+		log.Error(err.Error())
+		return
 	}
 
 	s.Handler = s
@@ -279,9 +302,15 @@ func (s *Server) Run() {
 	log.Info("Starting MySQL Server at %s", s.Addr)
 	s.listener, err = vmysql.NewListener("tcp", s.Addr, authServer, s, s.VersionString, 0, 0)
 	if err != nil {
-		log.Warn("New MySQL Server failed: %s", err)
-		os.Exit(-1)
+		log.Error("New MySQL Server failed: %s", err)
 	}
+
+	go func() {
+
+		if !s.Enable {
+			s.listener.Close()
+		}
+	}()
 
 	s.listener.Accept()
 }

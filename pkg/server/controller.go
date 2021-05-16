@@ -27,9 +27,8 @@ func ping(c *gin.Context) {
 }
 
 func events(c *gin.Context) {
-	log.Info("Receive connection from %v", c.Request.RemoteAddr)
+	log.Info("Receive client connection from %v", c.Request.RemoteAddr)
 	c.Stream(func(w io.Writer) bool {
-		c.SSEvent("message", "connect succeed")
 		select {
 		case <-c.Writer.CloseNotify():
 			return false
@@ -38,7 +37,7 @@ func events(c *gin.Context) {
 		}
 		return true
 	})
-	log.Info(c.Request.RemoteAddr, "disconnect")
+	log.Info("Client %s disconnect", c.Request.RemoteAddr)
 }
 
 func recovery(c *gin.Context) {
@@ -84,4 +83,12 @@ func recovery(c *gin.Context) {
 		}
 	}()
 	c.Next()
+}
+
+func version(c *gin.Context) {
+	c.JSON(200, gin.H{
+		"status": "succeed",
+		"error":  nil,
+		"result": VERSION,
+	})
 }

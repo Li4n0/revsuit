@@ -19,7 +19,7 @@ type Config struct {
 	Addr     string
 	Token    string
 	Database string
-	LogLevel string
+	LogLevel string `yaml:"log_level"`
 	Notice   noticeConfig
 	rhttp.Config
 	DNS   dns.Config

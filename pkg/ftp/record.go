@@ -8,7 +8,9 @@ import (
 	"github.com/li4n0/revsuit/internal/database"
 	"github.com/li4n0/revsuit/internal/file"
 	"github.com/li4n0/revsuit/internal/notice"
+	"github.com/li4n0/revsuit/internal/qqwry"
 	"github.com/li4n0/revsuit/internal/record"
+	log "unknwon.dev/clog/v2"
 )
 
 var _ record.Record = (*Record)(nil)
@@ -57,12 +59,21 @@ func ListRecords(c *gin.Context) {
 		res       []Record
 		count     int64
 		order     = c.Query("order")
+		pageSize  int
 	)
+
+	if c.Query("pageSize") == "" {
+		pageSize = 10
+	} else if n, err := strconv.Atoi(c.Query("pageSize")); err == nil {
+		if n <= 0 || n > 100 {
+			pageSize = 10
+		}
+	}
 
 	if err := c.ShouldBind(&ftpRecord); err != nil {
 		c.JSON(400, gin.H{
 			"status": "failed",
-			"error":  err,
+			"error":  err.Error(),
 			"result": nil,
 		})
 		return
@@ -98,7 +109,7 @@ func ListRecords(c *gin.Context) {
 	if err != nil {
 		c.JSON(400, gin.H{
 			"status": "failed",
-			"error":  err,
+			"error":  err.Error(),
 			"result": nil,
 		})
 		return
@@ -108,10 +119,10 @@ func ListRecords(c *gin.Context) {
 		order = "desc"
 	}
 
-	if err := db.Preload("File").Order("id " + order).Count(&count).Offset((page - 1) * 10).Limit(10).Find(&res).Error; err != nil {
+	if err := db.Preload("File").Order("id " + order).Count(&count).Offset((page - 1) * pageSize).Limit(pageSize).Find(&res).Error; err != nil {
 		c.JSON(400, gin.H{
 			"status": "failed",
-			"error":  err,
+			"error":  err.Error(),
 			"data":   nil,
 		})
 		return
@@ -122,4 +133,49 @@ func ListRecords(c *gin.Context) {
 		"error":  nil,
 		"result": gin.H{"count": count, "data": res},
 	})
+}
+
+func createRecord(_rule *Rule, flag, flagGroup, user, password, method, path, filename, ip string, uploadData []byte, status Status) {
+	// create new record
+	area := qqwry.Area(ip)
+	var ftpFile *file.FTPFile
+	var r *Record
+	var err error
+
+	if len(uploadData) != 0 {
+		ftpFile = &file.FTPFile{
+			Name:    filename,
+			Content: uploadData,
+		}
+	}
+
+	r, err = NewRecord(_rule, flag, user, password, method, path, ip, area, ftpFile, status)
+	if err != nil {
+		log.Warn("FTP record[rule_id:%d] created failed :%s", _rule.ID, err)
+		return
+	}
+	log.Info("FTP record[id:%d rule:%s remote_ip:%s] has been created", r.ID, _rule.Name, ip)
+
+	//only send to client when this connection recorded first time.
+	if _rule.PushToClient {
+		if flagGroup != "" {
+			var count int64
+			database.DB.Where("rule_name=? and (user like ? or password like ?)", _rule.Name, "%"+flagGroup+"%", "%"+flagGroup+"%").Model(&Record{}).Count(&count)
+			if count <= 1 {
+				r.PushToClient()
+				log.Trace("FTP record[id:%d, flagGroup:%s] has been put to client message queue", r.ID, flagGroup)
+			}
+		} else {
+			r.PushToClient()
+			log.Trace("FTP record[id:%d, flag:%s] has been put to client message queue", r.ID, flag)
+		}
+	}
+
+	//send notice
+	if _rule.Notice {
+		go func() {
+			r.Notice()
+			log.Trace("FTP record[id:%d] notice has been sent", r.ID)
+		}()
+	}
 }

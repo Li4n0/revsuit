@@ -10,3 +10,13 @@ export function auth(token) {
         }
     })
 }
+
+export function getVersion() {
+    return request({
+        url: '/version',
+        method: 'get',
+        validateStatus: function (status) {
+            return status >= 200 && status < 300
+        }
+    })
+}

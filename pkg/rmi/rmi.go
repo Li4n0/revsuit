@@ -12,13 +12,15 @@ import (
 	"github.com/li4n0/revsuit/internal/database"
 	"github.com/li4n0/revsuit/internal/qqwry"
 	"github.com/li4n0/revsuit/internal/recycler"
+	"github.com/pkg/errors"
 	log "unknwon.dev/clog/v2"
 )
 
 type Server struct {
 	Config
-	rules     []*Rule
-	rulesLock sync.RWMutex
+	rules      []*Rule
+	rulesLock  sync.RWMutex
+	livingLock sync.Mutex
 }
 
 var (
@@ -28,7 +30,7 @@ var (
 
 func GetServer() *Server {
 	once.Do(func() {
-		server = &Server{rulesLock: sync.RWMutex{}}
+		server = &Server{rulesLock: sync.RWMutex{}, livingLock: sync.Mutex{}}
 	})
 	return server
 }
@@ -43,7 +45,7 @@ func (s *Server) updateRules() error {
 	db := database.DB.Model(new(Rule))
 	defer s.rulesLock.Unlock()
 	s.rulesLock.Lock()
-	return db.Order("rank desc").Find(&s.rules).Error
+	return errors.Wrap(db.Order("rank desc").Find(&s.rules).Error, "RMI update rules error")
 }
 
 func (s *Server) handleConnection(conn net.Conn) {
@@ -119,29 +121,53 @@ func (s *Server) handleConnection(conn net.Conn) {
 		if _rule.PushToClient {
 			if flagGroup != "" {
 				var count int64
-				database.DB.Where("rule_name=? and raw like ?", _rule.Name, "%"+flagGroup+"%").Model(&Record{}).Count(&count)
+				database.DB.Where("rule_name=? and path like ?", _rule.Name, "%"+flagGroup+"%").Model(&Record{}).Count(&count)
 				if count <= 1 {
 					r.PushToClient()
-					log.Trace("RMI record[id%d] has been put to client message queue", r.ID)
+					log.Trace("RMI record[id:%d, flagGroup:%s] has been put to client message queue", r.ID, flagGroup)
 				}
+			} else {
+				r.PushToClient()
+				log.Trace("RMI record[id:%d, flag:%s] has been put to client message queue", r.ID, flag)
 			}
-			r.PushToClient()
-			log.Trace("RMI record[id%d] has been put to client message queue", r.ID)
 		}
 
 		//send notice
 		if _rule.Notice {
 			go func() {
 				r.Notice()
-				log.Trace("RMI record[id%d] notice has been sent", r.ID)
+				log.Trace("RMI record[id:%d] notice has been sent", r.ID)
 			}()
 		}
 	}
 }
 
+func (s *Server) Stop() {
+	log.Info("RMI Server is stopping...")
+	s.Enable = false
+	s.livingLock.Unlock()
+}
+
+func (s *Server) Restart() {
+	s.Enable = false
+	time.Sleep(time.Second * 2)
+	go s.Run()
+}
+
 func (s *Server) Run() {
+	s.Enable = true
+	s.livingLock.Lock()
+	defer func() {
+		if s.Enable {
+			log.Error("RMI Server exited unexpectedly")
+		}
+		s.Enable = false
+		s.livingLock.Unlock()
+	}()
+
 	if err := s.updateRules(); err != nil {
-		log.Fatal(err.Error())
+		log.Error(err.Error())
+		return
 	}
 
 	// run server
@@ -149,16 +175,27 @@ func (s *Server) Run() {
 
 	listener, err := net.Listen("tcp", s.Addr)
 	if err != nil {
-		log.Fatal(err.Error())
+		log.Error(err.Error())
+		return
 	}
 
-	for {
+	go func() {
+		s.livingLock.Lock()
+		if !s.Enable {
+			_ = listener.Close()
+		}
+	}()
+
+	for s.Enable {
 		tcpConn, err := listener.Accept()
 		if err != nil {
-			log.Warn("RMI accept connection error: %v", err)
+			if !strings.Contains(err.Error(), net.ErrClosed.Error()) {
+				log.Warn("RMI accept connection error: %v", err)
+			} else {
+				break
+			}
 			continue
 		}
 		go s.handleConnection(tcpConn)
 	}
-
 }

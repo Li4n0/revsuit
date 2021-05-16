@@ -36,7 +36,11 @@ type slackPayload struct {
 	Attachments []slackAttachments `json:"attachments"`
 }
 
-func (d *Slack) buildPayload(r record.Record) string {
+func (s *Slack) name() string {
+	return "Slack"
+}
+
+func (s *Slack) buildPayload(r record.Record) string {
 	payload := slackPayload{
 		Attachments: []slackAttachments{
 			{
@@ -67,8 +71,8 @@ func (d *Slack) buildPayload(r record.Record) string {
 	return string(p)
 }
 
-func (d *Slack) notice(r record.Record) error {
-	resp, err := http.Post(d.URL, "application/json", strings.NewReader(d.buildPayload(r)))
+func (s *Slack) notice(r record.Record) error {
+	resp, err := http.Post(s.URL, "application/json", strings.NewReader(s.buildPayload(r)))
 	if err != nil {
 		return errors.Wrap(err, "HTTP request")
 	}

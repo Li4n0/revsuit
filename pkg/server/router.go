@@ -42,6 +42,7 @@ func (revsuit *Revsuit) registerPlatformRouter() {
 	api.GET("/auth", auth)
 	api.GET("/events", events)
 	api.GET("/ping", ping)
+	api.GET("/version", version)
 }
 
 func (revsuit *Revsuit) registerHttpRouter() {
@@ -53,6 +54,23 @@ func (revsuit *Revsuit) registerHttpRouter() {
 		log.Fatal("Failed to sub path `dist`: %v", err)
 	}
 	revsuit.http.Router.StaticFS("/revsuit/admin", http.FS(fe))
+
+	// init settings router group
+	settingsGroup := revsuit.http.ApiGroup.Group("setting")
+	settingsGroup.GET("/exportRules", exportRules)
+	settingsGroup.POST("/importRules", importRules)
+	settingsGroup.GET("/getHttpConfig", revsuit.getHttpConfig)
+	settingsGroup.POST("/updateHttpConfig", revsuit.updateHttpConfig)
+	settingsGroup.GET("/getDnsConfig", revsuit.getDnsConfig)
+	settingsGroup.POST("/updateDnsConfig", revsuit.updateDnsConfig)
+	settingsGroup.GET("/getRmiConfig", revsuit.getRmiConfig)
+	settingsGroup.POST("/updateRmiConfig", revsuit.updateRmiConfig)
+	settingsGroup.GET("/getMySQLConfig", revsuit.getMySQLConfig)
+	settingsGroup.POST("/updateMySQLConfig", revsuit.updateMySQLConfig)
+	settingsGroup.GET("/getFtpConfig", revsuit.getFtpConfig)
+	settingsGroup.POST("/updateFtpConfig", revsuit.updateFtpConfig)
+	settingsGroup.GET("/getNoticeConfig", revsuit.getNoticeConfig)
+	settingsGroup.POST("/updateNoticeConfig", revsuit.updateNoticeConfig)
 
 	// init record router group
 	recordGroup := revsuit.http.ApiGroup.Group("/record")

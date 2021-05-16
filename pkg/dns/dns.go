@@ -11,12 +11,15 @@ import (
 	"github.com/li4n0/revsuit/internal/recycler"
 	"github.com/li4n0/revsuit/internal/rule"
 	"github.com/patrickmn/go-cache"
+	"github.com/pkg/errors"
 	log "unknwon.dev/clog/v2"
 )
 
 type Server struct {
-	rules     []*Rule
-	rulesLock sync.RWMutex
+	Config
+	rules      []*Rule
+	rulesLock  sync.RWMutex
+	livingLock sync.Mutex
 }
 
 var (
@@ -27,7 +30,7 @@ var (
 
 func GetServer() *Server {
 	once.Do(func() {
-		server = &Server{rulesLock: sync.RWMutex{}}
+		server = &Server{rulesLock: sync.RWMutex{}, livingLock: sync.Mutex{}}
 	})
 	return server
 }
@@ -42,141 +45,171 @@ func (s *Server) updateRules() error {
 	db := database.DB.Model(new(Rule))
 	defer s.rulesLock.Unlock()
 	s.rulesLock.Lock()
-	return db.Order("rank desc").Find(&s.rules).Error
+	return errors.Wrap(db.Order("rank desc").Find(&s.rules).Error, "DNS update rules error")
 }
 
-func (s *Server) Run() {
+func newSet(_rule *Rule, name, value, ip string, _type newdns.Type) []newdns.Set {
+	set := []newdns.Set{
+		{
+			Name: name,
+			Type: _type,
+			Records: func() []newdns.Record {
+				switch _rule.Type {
+				case newdns.TXT:
+					return []newdns.Record{{Data: []string{value}}}
+				case newdns.CNAME, newdns.NS:
+					return []newdns.Record{{Address: value + "."}}
+				case newdns.REBINDING:
 
-	if err := s.updateRules(); err != nil {
-		log.Fatal(err.Error())
+					// Get rebinding ip list
+					values, ok := rebindingCache.Get(ip)
+					if !ok {
+						rebindingCache.Set(ip, strings.Split(value, ","), cache.DefaultExpiration)
+						values = strings.Split(value, ",")
+					}
+
+					//Choose and delete first ip
+					value := values.([]string)[0]
+					if len(values.([]string)) > 1 {
+						rebindingCache.Set(ip, values.([]string)[1:len(values.([]string))], cache.DefaultExpiration)
+					} else {
+						rebindingCache.Delete(ip)
+					}
+
+					log.Trace("DNS rebinding client[ip:%v] to %v", ip, value)
+					return []newdns.Record{{Address: value}}
+				default:
+					return []newdns.Record{{Address: value}}
+				}
+			}(),
+			TTL: _rule.TTL * time.Second,
+		},
 	}
+	return set
+}
 
-	//create new dns zone with root domain
-	newZone := func(name string) *newdns.Zone {
-		defer func() {
-			if err := recover(); err != nil {
-				recycler.Recycle(err)
-			}
-		}()
-
-		domain := strings.TrimSuffix(name, ".")
-		frags := strings.Split(domain, ".")
-		zoneName := ""
-		if len(frags) >= 2 {
-			zoneName = strings.Join(frags[len(frags)-2:], ".") + "."
-		} else {
-			zoneName = name
+// newZone creates new dns zone with root domain
+func (s *Server) newZone(name string) *newdns.Zone {
+	defer func() {
+		if err := recover(); err != nil {
+			recycler.Recycle(err)
 		}
-		return &newdns.Zone{
-			Name:             zoneName,
-			MasterNameServer: "ns1.hostmaster.com.",
-			AllNameServers: []string{
-				"ns1.hostmaster.com.",
-				"ns2.hostmaster.com.",
-				"ns3.hostmaster.com.",
-			},
-			Handler: func(lookedName, remoteAddr string) ([]newdns.Set, error) {
-				ip := strings.Split(remoteAddr, ":")[0]
+	}()
 
-				for _, _rule := range s.getRules() {
-					flag, flagGroup, vars := _rule.Match(domain)
-					if flag == "" {
-						continue
-					}
+	domain := strings.TrimSuffix(name, ".")
+	frags := strings.Split(domain, ".")
+	zoneName := name
+	if len(frags) >= 2 {
+		zoneName = strings.Join(frags[len(frags)-2:], ".") + "."
+	}
+	zone := &newdns.Zone{
+		Name:             zoneName,
+		MasterNameServer: "ns1.hostmaster.com.",
+		AllNameServers: []string{
+			"ns1.hostmaster.com.",
+			"ns2.hostmaster.com.",
+			"ns3.hostmaster.com.",
+		},
+		Handler: func(lookedName, remoteAddr string) ([]newdns.Set, error) {
+			ip := strings.Split(remoteAddr, ":")[0]
 
-					r, err := newRecord(_rule, flag, domain, ip, qqwry.Area(ip))
-					if err != nil {
-						log.Warn("DNS record(rule_id:%s) created failed :%s", _rule.Name, err)
-						return nil, nil
-					}
-					log.Info("DNS record[id:%d rule:%s remote_ip:%s] has been created", r.ID, _rule.Name, ip)
+			for _, _rule := range s.getRules() {
+				flag, flagGroup, vars := _rule.Match(domain)
+				if flag == "" {
+					continue
+				}
 
-					//only send to client when this connection recorded first time.
-					if _rule.PushToClient {
-						if flagGroup != "" {
-							var count int64
-							database.DB.Where("rule_name=? and domain like ?", _rule.Name, "%"+flagGroup+"%").Model(&Record{}).Count(&count)
-							if count <= 1 {
-								r.PushToClient()
-								log.Trace("DNS record[id%d] has been put to client message queue", r.ID)
-							}
-						} else {
+				r, err := newRecord(_rule, flag, domain, ip, qqwry.Area(ip))
+				if err != nil {
+					log.Warn("DNS record(rule_id:%s) created failed :%s", _rule.Name, err)
+					return nil, nil
+				}
+				log.Info("DNS record[id:%d rule:%s remote_ip:%s] has been created", r.ID, _rule.Name, ip)
+
+				//only send to client when this connection recorded first time.
+				if _rule.PushToClient {
+					if flagGroup != "" {
+						var count int64
+						database.DB.Where("rule_name=? and domain like ?", _rule.Name, "%"+flagGroup+"%").Model(&Record{}).Count(&count)
+						if count <= 1 {
 							r.PushToClient()
-							log.Trace("DNS record[id%d] has been put to client message queue", r.ID)
+							log.Trace("DNS record[id:%d, flagGroup:%s] has been put to client message queue", r.ID, flagGroup)
 						}
-					}
-
-					//send notice
-					if _rule.Notice {
-						go func() {
-							r.Notice()
-							log.Trace("DNS record[id%d] notice has been sent", r.ID)
-						}()
-					}
-
-					if _rule.Value != "" {
-						value := rule.CompileTpl(_rule.Value, vars)
-						_type := _rule.Type
-						if _rule.Type == newdns.REBINDING {
-							_type = newdns.A
-						}
-
-						return []newdns.Set{
-							{
-								Name: name,
-								Type: _type,
-								Records: func() []newdns.Record {
-									switch _rule.Type {
-									case newdns.TXT:
-										return []newdns.Record{{Data: []string{value}}}
-									case newdns.CNAME, newdns.NS:
-										return []newdns.Record{{Address: value + "."}}
-									case newdns.REBINDING:
-
-										// Get rebinding ip list
-										values, ok := rebindingCache.Get(ip)
-										if !ok {
-											rebindingCache.Set(ip, strings.Split(value, ","), cache.DefaultExpiration)
-											values = strings.Split(value, ",")
-										}
-
-										//Choose and delete first ip
-										value := values.([]string)[0]
-										if len(values.([]string)) > 1 {
-											rebindingCache.Set(ip, values.([]string)[1:len(values.([]string))], cache.DefaultExpiration)
-										} else {
-											rebindingCache.Delete(ip)
-										}
-
-										log.Trace("DNS rebinding client(ip:%v) to %v", ip, value)
-										return []newdns.Record{{Address: value}}
-									default:
-										return []newdns.Record{{Address: value}}
-									}
-								}(),
-								TTL: _rule.TTL * time.Second,
-							},
-						}, nil
+					} else {
+						r.PushToClient()
+						log.Trace("DNS record[id:%d, flag:%s] has been put to client message queue", r.ID, flag)
 					}
 				}
 
-				return nil, nil
-			},
+				//send notice
+				if _rule.Notice {
+					go func() {
+						r.Notice()
+						log.Trace("DNS record[id:%d] notice has been sent", r.ID)
+					}()
+				}
+
+				if _rule.Value != "" {
+					value := rule.CompileTpl(_rule.Value, vars)
+					_type := _rule.Type
+					if _rule.Type == newdns.REBINDING {
+						_type = newdns.A
+					}
+
+					return newSet(_rule, name, value, ip, _type), nil
+				}
+			}
+
+			return nil, nil
+		},
+	}
+	return zone
+}
+
+func (s *Server) Stop() {
+	log.Info("DNS server is stopping...")
+	s.Enable = false
+	s.livingLock.Unlock()
+}
+
+func (s *Server) Run() {
+	s.Enable = true
+	s.livingLock.Lock()
+
+	defer func() {
+		if s.Enable {
+			log.Error("DNS Server exited unexpectedly")
 		}
+		s.Enable = false
+		s.livingLock.Unlock()
+	}()
+
+	if err := s.updateRules(); err != nil {
+		log.Error(err.Error())
+		return
 	}
 
 	// create server
 	server := newdns.NewServer(newdns.Config{
 		Handler: func(name string) (*newdns.Zone, error) {
-			return newZone(name), nil
+			return s.newZone(name), nil
 		},
 	})
 
 	// run server
 	log.Info("Starting DNS Server at :53")
-	err := server.Run(":53")
-	if err != nil {
-		log.Fatal(err.Error())
-	}
+	go func() {
+		s.livingLock.Lock()
+		if !s.Enable {
+			server.Close()
+		}
+	}()
 
+	err := server.Run(":53")
+	defer server.Close()
+
+	if err != nil {
+		log.Error(err.Error())
+		return
+	}
 }

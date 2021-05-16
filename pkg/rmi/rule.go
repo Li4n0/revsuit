@@ -10,16 +10,16 @@ import (
 	log "unknwon.dev/clog/v2"
 )
 
-// RMI rule struct
+// Rule RMI rule struct
 type Rule struct {
-	rule.BaseRule
+	rule.BaseRule `yaml:",inline"`
 }
 
 func (Rule) TableName() string {
 	return "rmi_rules"
 }
 
-// New rmi rule struct
+// NewRule new rmi rule struct
 func NewRule(name, flagFormat string, pushToClient, notice bool) *Rule {
 	return &Rule{
 		BaseRule: rule.BaseRule{
@@ -31,7 +31,7 @@ func NewRule(name, flagFormat string, pushToClient, notice bool) *Rule {
 	}
 }
 
-// Create or update the rmi rule in database and ruleSet
+// CreateOrUpdate creates or updates the rmi rule in database and ruleSet
 func (r *Rule) CreateOrUpdate() (err error) {
 	db := database.DB.Model(r)
 	err = db.Clauses(clause.OnConflict{
@@ -53,7 +53,7 @@ func (r *Rule) CreateOrUpdate() (err error) {
 	return err
 }
 
-// Delete the rmi rule in database and ruleSet
+// Delete deletes the rmi rule in database and ruleSet
 func (r *Rule) Delete() (err error) {
 	db := database.DB.Model(r)
 	err = db.Delete(r).Error
@@ -65,19 +65,28 @@ func (r *Rule) Delete() (err error) {
 	return err
 }
 
-// List all rmi rules those satisfy the filter
+// ListRules lists all rmi rules those satisfy the filter
 func ListRules(c *gin.Context) {
 	var (
-		rmiRule Rule
-		res     []Rule
-		count   int64
-		order   = c.Query("order")
+		rmiRule  Rule
+		res      []Rule
+		count    int64
+		order    = c.Query("order")
+		pageSize int
 	)
+
+	if c.Query("pageSize") == "" {
+		pageSize = 10
+	} else if n, err := strconv.Atoi(c.Query("pageSize")); err == nil {
+		if n <= 0 || n > 100 {
+			pageSize = 10
+		}
+	}
 
 	if err := c.ShouldBind(&rmiRule); err != nil {
 		c.JSON(400, gin.H{
 			"status": "failed",
-			"error":  err,
+			"error":  err.Error(),
 			"result": nil,
 		})
 		return
@@ -93,7 +102,7 @@ func ListRules(c *gin.Context) {
 	if err != nil {
 		c.JSON(400, gin.H{
 			"status": "failed",
-			"error":  err,
+			"error":  err.Error(),
 			"result": nil,
 		})
 		return
@@ -103,10 +112,10 @@ func ListRules(c *gin.Context) {
 		order = "desc"
 	}
 
-	if err := db.Order("rank desc").Order("id" + " " + order).Count(&count).Offset((page - 1) * 10).Limit(10).Find(&res).Error; err != nil {
+	if err := db.Order("rank desc").Order("id" + " " + order).Count(&count).Offset((page - 1) * pageSize).Limit(pageSize).Find(&res).Error; err != nil {
 		c.JSON(400, gin.H{
 			"status": "failed",
-			"error":  err,
+			"error":  err.Error(),
 			"data":   nil,
 		})
 		return
@@ -119,7 +128,7 @@ func ListRules(c *gin.Context) {
 	})
 }
 
-// Create or update rmi rule from user submit
+// UpsertRules creates or updates rmi rule from user submit
 func UpsertRules(c *gin.Context) {
 	var (
 		rmiRule Rule
@@ -129,7 +138,7 @@ func UpsertRules(c *gin.Context) {
 	if err := c.ShouldBind(&rmiRule); err != nil {
 		c.JSON(400, gin.H{
 			"status": "failed",
-			"error":  err,
+			"error":  err.Error(),
 			"data":   nil,
 		})
 		return
@@ -142,16 +151,16 @@ func UpsertRules(c *gin.Context) {
 	if err := rmiRule.CreateOrUpdate(); err != nil {
 		c.JSON(400, gin.H{
 			"status": "failed",
-			"error":  err,
+			"error":  err.Error(),
 			"result": nil,
 		})
 		return
 	}
 
 	if update {
-		log.Trace("RMI rule[id%d] has been updated", rmiRule.ID)
+		log.Trace("RMI rule[id:%d] has been updated", rmiRule.ID)
 	} else {
-		log.Trace("RMI rule[id%d] has been created", rmiRule.ID)
+		log.Trace("RMI rule[id:%d] has been created", rmiRule.ID)
 	}
 
 	c.JSON(200, gin.H{
@@ -161,14 +170,14 @@ func UpsertRules(c *gin.Context) {
 	})
 }
 
-// Delete rmi rule from user submit
+// DeleteRules deletes rmi rule from user submit
 func DeleteRules(c *gin.Context) {
 	var rmiRule Rule
 
 	if err := c.ShouldBind(&rmiRule); err != nil {
 		c.JSON(400, gin.H{
 			"status": "failed",
-			"error":  err,
+			"error":  err.Error(),
 			"data":   nil,
 		})
 		return
@@ -177,13 +186,13 @@ func DeleteRules(c *gin.Context) {
 	if err := rmiRule.Delete(); err != nil {
 		c.JSON(400, gin.H{
 			"status": "failed",
-			"error":  err,
+			"error":  err.Error(),
 			"data":   nil,
 		})
 		return
 	}
 
-	log.Trace("RMI rule[id%d] has been deleted", rmiRule.ID)
+	log.Trace("RMI rule[id:%d] has been deleted", rmiRule.ID)
 
 	c.JSON(200, gin.H{
 		"status": "succeed",

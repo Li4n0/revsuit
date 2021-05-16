@@ -13,7 +13,7 @@ import (
 )
 
 type Rule struct {
-	rule.BaseRule `yaml:""`
+	rule.BaseRule `yaml:",inline"`
 	Type          newdns.Type   `gorm:"default:1" form:"type" json:"type"`
 	Value         string        `form:"value" json:"value"`
 	TTL           time.Duration `gorm:"ttl;default:10" form:"ttl" json:"ttl"`

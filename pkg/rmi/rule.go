@@ -19,7 +19,7 @@ func (Rule) TableName() string {
 	return "rmi_rules"
 }
 
-// NewRule New rmi rule struct
+// NewRule new rmi rule struct
 func NewRule(name, flagFormat string, pushToClient, notice bool) *Rule {
 	return &Rule{
 		BaseRule: rule.BaseRule{
@@ -31,7 +31,7 @@ func NewRule(name, flagFormat string, pushToClient, notice bool) *Rule {
 	}
 }
 
-// CreateOrUpdate Create or update the rmi rule in database and ruleSet
+// CreateOrUpdate creates or updates the rmi rule in database and ruleSet
 func (r *Rule) CreateOrUpdate() (err error) {
 	db := database.DB.Model(r)
 	err = db.Clauses(clause.OnConflict{
@@ -53,7 +53,7 @@ func (r *Rule) CreateOrUpdate() (err error) {
 	return err
 }
 
-// Delete the rmi rule in database and ruleSet
+// Delete deletes the rmi rule in database and ruleSet
 func (r *Rule) Delete() (err error) {
 	db := database.DB.Model(r)
 	err = db.Delete(r).Error
@@ -65,7 +65,7 @@ func (r *Rule) Delete() (err error) {
 	return err
 }
 
-// ListRules List all rmi rules those satisfy the filter
+// ListRules lists all rmi rules those satisfy the filter
 func ListRules(c *gin.Context) {
 	var (
 		rmiRule  Rule
@@ -128,7 +128,7 @@ func ListRules(c *gin.Context) {
 	})
 }
 
-// UpsertRules Create or update rmi rule from user submit
+// UpsertRules creates or updates rmi rule from user submit
 func UpsertRules(c *gin.Context) {
 	var (
 		rmiRule Rule

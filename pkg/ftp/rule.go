@@ -131,7 +131,7 @@ func ListRules(c *gin.Context) {
 	})
 }
 
-// Create or update ftp rule from user submit
+// UpsertRules creates or updates ftp rule from user submit
 func UpsertRules(c *gin.Context) {
 	var (
 		ftpRule Rule
@@ -173,7 +173,7 @@ func UpsertRules(c *gin.Context) {
 	})
 }
 
-// Delete ftp rule from user submit
+// DeleteRules deletes ftp rule from user submit
 func DeleteRules(c *gin.Context) {
 	var ftpRule Rule
 

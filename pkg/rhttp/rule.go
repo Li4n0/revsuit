@@ -37,7 +37,7 @@ func NewRule(name, flagFormat, responseBody string, pushToClient, notice bool, r
 	}
 }
 
-// CreateOrUpdate create or update the http rule in database and ruleSet
+// CreateOrUpdate creates or updates the http rule in database and ruleSet
 func (r *Rule) CreateOrUpdate() (err error) {
 	db := database.DB.Model(r)
 	err = db.Clauses(clause.OnConflict{
@@ -62,7 +62,7 @@ func (r *Rule) CreateOrUpdate() (err error) {
 	return err
 }
 
-// Delete the http rule in database and ruleSet
+// Delete deletes the http rule in database and ruleSet
 func (r *Rule) Delete() (err error) {
 	db := database.DB.Model(r)
 	err = db.Delete(r).Error
@@ -74,7 +74,7 @@ func (r *Rule) Delete() (err error) {
 	return err
 }
 
-// ListRules list all http rules those satisfy the filter
+// ListRules lists all http rules those satisfy the filter
 func ListRules(c *gin.Context) {
 	var (
 		httpRule Rule

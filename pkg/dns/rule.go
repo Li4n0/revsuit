@@ -38,7 +38,7 @@ func NewRule(name, flagFormat, value string, pushToClient, notice bool, _type ne
 	}
 }
 
-// CreateOrUpdate create or update the dns rule in database and ruleSet
+// CreateOrUpdate creates or updates the dns rule in database and ruleSet
 func (r *Rule) CreateOrUpdate() (err error) {
 	db := database.DB.Model(r)
 	err = db.Clauses(clause.OnConflict{
@@ -62,7 +62,7 @@ func (r *Rule) CreateOrUpdate() (err error) {
 	return err
 }
 
-// Delete the dns rule in database and ruleSet
+// Delete deletes the dns rule in database and ruleSet
 func (r *Rule) Delete() (err error) {
 	db := database.DB.Model(r)
 	err = db.Delete(r).Error
@@ -73,7 +73,7 @@ func (r *Rule) Delete() (err error) {
 	return err
 }
 
-// ListRules List all dns rules those satisfy the filter
+// ListRules lists all dns rules those satisfy the filter
 func ListRules(c *gin.Context) {
 	var (
 		dnsRule  Rule
@@ -136,7 +136,7 @@ func ListRules(c *gin.Context) {
 	})
 }
 
-// UpsertRules Create or update dns rule from user submit
+// UpsertRules creates or updates dns rule from user submit
 func UpsertRules(c *gin.Context) {
 	var (
 		dnsRule Rule

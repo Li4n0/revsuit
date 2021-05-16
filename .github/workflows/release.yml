@@ -41,6 +41,7 @@ jobs:
           CGO_ENABLE: 1
         run: |
           GOARCH="amd64" go build -v -ldflags="-s -w" -trimpath -o "bin/revsuit_darwin_amd64" ./cmd/revsuit/revsuit.go
+          GOARCH="arm64" go build -v -ldflags="-s -w" -trimpath -o "bin/revsuit_darwin_arm64" ./cmd/revsuit/revsuit.go
       - name: Upload the artifacts
         uses: li4n0/upload-release-action@v2
         with:

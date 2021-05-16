@@ -7,4 +7,5 @@ const banner = `
  / _, _/  __/ |/ /___/ / /_/ / / /_  
 /_/ |_|\___/|___//____/\__,_/_/\__/    
                                    v%s
-     https://revsuit.pro`
+     https://revsuit.pro
+`

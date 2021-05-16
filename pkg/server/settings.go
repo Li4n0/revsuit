@@ -164,6 +164,9 @@ func (revsuit *Revsuit) updateHttpConfig(c *gin.Context) {
 	if form["LogLevel"] != revsuit.config.LogLevel {
 		revsuit.logLevel = initLog(form["LogLevel"])
 		revsuit.config.LogLevel = form["LogLevel"]
+		if revsuit.logLevel == log.LevelTrace {
+			revsuit.http.Router.Use(gin.Logger())
+		}
 		log.Info("Update platform config [log_level] to %s", form["LogLevel"])
 	}
 
@@ -183,18 +186,6 @@ func (revsuit *Revsuit) updateHttpConfig(c *gin.Context) {
 		revsuit.config.IpHeader = form["IpHeader"]
 		revsuit.http.SetIpHeader(form["IpHeader"])
 		log.Info("Update http config [ip_header] to %s", form["IpHeader"])
-	}
-
-	if form["Addr"] != revsuit.config.Addr {
-		revsuit.config.Addr = form["Addr"]
-		revsuit.http.SetAddr(form["Addr"])
-		log.Info("Update platform config [addr] to %s", form["Addr"])
-		c.JSON(200, gin.H{
-			"status": "succeed",
-			"error":  nil,
-			"result": "update platform listen addr, please check it by yourself",
-		})
-		revsuit.http.Restart()
 	}
 
 	c.JSON(200, gin.H{

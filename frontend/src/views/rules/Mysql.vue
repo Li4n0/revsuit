@@ -13,7 +13,7 @@
         @close="closeDrawer"
     >
       <a-form-model :model="form" ref="form" layout="vertical" @submit="handleSubmit">
-        <BasicRule :form="form" :readOnly="formReadOnly"/>
+        <BasicRule :form="form" :readOnly="formReadOnly" :flagField="'user or schema'"/>
         <a-row :gutter="24">
           <a-col :span="24">
             <a-form-model-item label="Files" :rules="rules.files">
@@ -31,7 +31,8 @@
           <a-form-model-item>
             <div class="ant-form-item-label">
               <label for="exploit-jdbc-client">Exploit Jdbc Client
-                <a-tooltip placement="topLeft" title="Whether test to exploit jdbc client.">
+                <a-tooltip placement="topLeft"
+                           title="Whether test to exploit jdbc client.">
                   <a-icon type="question-circle"/>
                 </a-tooltip>
               </label>
@@ -41,8 +42,13 @@
         </a-row>
         <a-row :gutter="24">
           <a-col :span="24">
-            <a-form-model-item label="Payload">
-              <a-input-group compact v-for="payloadKey in payloadKeys" :key="payloadKey">
+            <a-form-model-item>
+              <label for="payload">Payload
+                <a-tooltip placement="topLeft" title="Need to set ${payload} variable by flag format first. Payload which key is same as ${payload} will be used.">
+                  <a-icon type="question-circle"/>
+                </a-tooltip>
+              </label>
+              <a-input-group id="payload" compact v-for="payloadKey in payloadKeys" :key="payloadKey">
                 <a-input v-model="form['Key-'+payloadKey]"
                          style="width: 47%;margin-bottom: 5px"
                          v-decorator="['Key-'+payloadKey,]"
@@ -256,7 +262,7 @@ export default {
         onShowSizeChange: (current, size) => {
           store.pageSize = size
         }
-      },      filters: {},
+      }, filters: {},
       loading: false,
       columns,
       form: {},

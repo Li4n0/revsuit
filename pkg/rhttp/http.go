@@ -191,27 +191,31 @@ func (s *Server) Receive(c *gin.Context) {
 		}
 		log.Info("HTTP record[id:%d rule:%s remote_ip:%s] has been created", r.ID, _rule.Name, ip)
 
-		//only send to client when this connection recorded first time.
-		if _rule.PushToClient {
-			if flagGroup != "" {
-				var count int64
-				database.DB.Where("rule_name=? and raw_request like ?", _rule.Name, "%"+flagGroup+"%").Model(&Record{}).Count(&count)
-				if count <= 1 {
-					r.PushToClient()
-					log.Trace("HTTP record[id:%d, flagGroup:%s] has been put to client message queue", r.ID, flagGroup)
-				}
-			} else {
-				r.PushToClient()
-				log.Trace("HTTP record[id:%d, flag:%s] has been put to client message queue", r.ID, r.Flag)
-			}
+		//only send to client or notify user when this connection recorded first time.
+		var count int64
+		if flagGroup != "" {
+			database.DB.Where("rule_name=? and raw_request like ?", _rule.Name, "%"+flagGroup+"%").Model(&Record{}).Count(&count)
 		}
-
-		//send notice
-		if _rule.Notice {
-			go func() {
-				r.Notice()
-				log.Trace("HTTP record[id:%d] notice has been sent", r.ID)
-			}()
+		if count <= 1 {
+			if _rule.PushToClient {
+				r.PushToClient()
+				if flagGroup != "" {
+					log.Trace("HTTP record[id:%d, flagGroup:%s] has been put to client message queue", r.ID, flagGroup)
+				} else {
+					log.Trace("HTTP record[id:%d] has been put to client message queue", r.ID)
+				}
+			}
+			//send notice
+			if _rule.Notice {
+				go func() {
+					r.Notice()
+					if flagGroup != "" {
+						log.Trace("HTTP record[id:%d, flagGroup:%s]  notice has been sent", r.ID, flagGroup)
+					} else {
+						log.Trace("HTTP record[id:%d] notice has been sent", r.ID)
+					}
+				}()
+			}
 		}
 
 		for header, value := range _rule.ResponseHeaders {

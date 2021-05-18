@@ -18,7 +18,7 @@ import (
 
 func auth(c *gin.Context) {
 	c.SetSameSite(http.SameSiteLaxMode)
-	c.SetCookie("token", c.Request.Header["Token"][0], 0, "/revsuit/api/", c.Request.Host, true, true)
+	c.SetCookie("token", c.Request.Header["Token"][0], 0, "/revsuit/api/", "", false, true)
 	c.String(200, "pong")
 }
 

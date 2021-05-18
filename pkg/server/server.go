@@ -14,7 +14,7 @@ import (
 	log "unknwon.dev/clog/v2"
 )
 
-const VERSION = "Beta0.1"
+const VERSION = "0.1.1-beta"
 
 type Revsuit struct {
 	config   *Config
@@ -97,7 +97,7 @@ func initLog(level string) (logLevel log.Level) {
 		database.DB.Logger.LogMode(logger.Info)
 		logLevel = log.LevelTrace
 	case "info":
-		gin.SetMode(gin.DebugMode)
+		gin.SetMode(gin.ReleaseMode)
 		database.DB.Logger.LogMode(logger.Info)
 		logLevel = log.LevelInfo
 	case "warning", "warn":

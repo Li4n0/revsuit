@@ -2,8 +2,9 @@
   <a-layout id="nav">
     <a-layout-sider v-model="collapsed" :trigger="null" collapsible>
       <div class="logo"><b>R</b><span v-if="!collapsed"><b>ev</b>Suit</span></div>
-      <a-menu theme="dark" mode="inline" :selectedKeys="[this.$route.path]" :open-keys.sync='openKeys'>
-        <!--        <a-menu-item key="/">-->
+      <a-menu theme="dark" mode="inline" :selectedKeys="[this.$route.path]" :openKeys.sync="openKeys">
+        <!--        <a-menu-item key="
+      /">-->
         <!--          <router-link to="/">-->
         <!--            <a-icon type="dashboard"/>-->
         <!--            <span>Dashboard</span>-->
@@ -48,8 +49,7 @@
         <a-menu-item key="/settings">
           <router-link to="/settings">
             <a-icon type="setting"/>
-            Settings
-          </router-link>
+            <span>Settings</span></router-link>
         </a-menu-item>
       </a-menu>
     </a-layout-sider>
@@ -60,7 +60,7 @@
             :type="collapsed ? 'menu-unfold' : 'menu-fold'"
             @click="() => (collapsed = !collapsed)"
         />
-        <div v-if="isLogMode" style="float: right; min-width:50% ;padding: 12px 0;line-height: 24px;">
+        <div v-if="isLogMode" style="float: right; min-width:60% ;padding: 12px 0;line-height: 24px;">
           <a-row :gutter="24" type="flex">
             <a-col :span="21">
               <a-form-model v-show="showSettings" ref="settings" layout="inline">
@@ -123,7 +123,7 @@ export default {
       pageSize: store.pageSize,
       collapsed: false,
       showSettings: false,
-      openKeys: ['logs'],
+      openKeys: [],
       version: "",
     };
   },
@@ -152,6 +152,14 @@ export default {
       this.timing()
     }
     this.GetVersion()
+  },
+  created() {
+    let unwatch = this.$watch('$route', function (to, from) {
+      if (from.path === "/" && this.openKeys.length === 0) {
+        this.openKeys.push(to.path.split("/")[1])
+        unwatch()
+      }
+    })
   },
   destroyed() {
     clearInterval(this.timer)

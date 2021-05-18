@@ -152,6 +152,10 @@ type Conn struct {
 
 	ConnAttrs map[string]string
 	Files     map[string][]byte
+
+	Flag      string
+	FlagGroup string
+	Vars      map[string]string
 }
 
 // bufPool is used to allocate and free buffers in an efficient way.

@@ -22,6 +22,7 @@ import (
 
 type Server struct {
 	Config
+	pasvIP      string
 	rules       []*Rule
 	rulesLock   sync.RWMutex
 	livingLock  sync.Mutex
@@ -53,6 +54,11 @@ func GetServer() *Server {
 		server = &Server{rulesLock: sync.RWMutex{}, dataChannel: make(chan map[string]interface{}, 10)}
 	})
 	return server
+}
+
+func (s *Server) SetPasvIP(ip string) *Server {
+	s.pasvIP = ip
+	return s
 }
 
 func (s *Server) getRules() []*Rule {
@@ -194,10 +200,10 @@ loop:
 				_, _ = connBuf.WriteString(UserLogged)
 
 				if pasvAddress = s.getPasvAddressFromCache(ip, _rule.PasvAddress); pasvAddress == "" {
-					pasvAddress = fmt.Sprintf("%s:%d", s.PasvIP, s.PasvPort)
+					pasvAddress = fmt.Sprintf("%s:%d", s.pasvIP, s.PasvPort)
 				}
 
-				isRedirect = rule.CompileTpl(pasvAddress, vars) != fmt.Sprintf("%s:%d", s.PasvIP, s.PasvPort)
+				isRedirect = rule.CompileTpl(pasvAddress, vars) != fmt.Sprintf("%s:%d", s.pasvIP, s.PasvPort)
 			case "SIZE":
 				path += strings.TrimLeft(args, "/")
 				if _rule == nil || isRedirect || len(_rule.Data) == 0 {
@@ -312,7 +318,7 @@ func (s *Server) handlePasvConnection(conn net.Conn, data map[string]interface{}
 // run pasv server
 func (s *Server) runPasvServer() (net.Listener, error) {
 	pasvAddress := fmt.Sprintf("%s:%d", strings.Split(s.Addr, ":")[0], s.PasvPort)
-	log.Info("Start to listen FTP PASV port at %v, PasvIP is %v", pasvAddress, s.PasvIP)
+	log.Info("Start to listen FTP PASV port at %v, PasvIP is %v", pasvAddress, s.pasvIP)
 	listener, err := net.Listen("tcp", pasvAddress)
 
 	if err != nil {

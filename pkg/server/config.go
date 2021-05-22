@@ -16,11 +16,14 @@ type noticeConfig struct {
 }
 
 type Config struct {
-	Addr     string
-	Token    string
-	Database string
-	LogLevel string `yaml:"log_level"`
-	Notice   noticeConfig
+	Version    float64
+	Addr       string
+	Token      string
+	Domain     string
+	ExternalIP string `yaml:"external_ip"`
+	Database   string
+	LogLevel   string `yaml:"log_level"`
+	Notice     noticeConfig
 	rhttp.Config
 	DNS   dns.Config
 	MySQL mysql.Config

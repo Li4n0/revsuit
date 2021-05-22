@@ -1,14 +1,14 @@
 import request from './index'
 
-export function getHttpConfig() {
+export function getPlatformConfig() {
     return request({
-        url: '/setting/getHttpConfig',
+        url: '/setting/getPlatformConfig',
     })
 }
 
-export function updateHttpConfig(data) {
+export function updatePlatformConfig(data) {
     return request({
-        url: '/setting/updateHttpConfig',
+        url: '/setting/updatePlatformConfig',
         method: "post",
         data: data
     })

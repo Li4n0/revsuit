@@ -20,7 +20,7 @@
 </template>
 
 <script>
-import {getHttpConfig, updateHttpConfig} from "@/api/settings"
+import {getPlatformConfig, updatePlatformConfig} from "@/api/settings"
 import SettingForm from "@/components/SettingForm";
 
 export default {
@@ -37,7 +37,7 @@ export default {
   },
   methods: {
     getConfig() {
-      getHttpConfig().then(res => {
+      getPlatformConfig().then(res => {
         this.form = res.data
       }).catch(e => {
         this.$notification.error({
@@ -55,10 +55,10 @@ export default {
     updateConfig() {
       this.spinning = true
       let targetConfig = JSON.stringify(this.form)
-      updateHttpConfig(this.form).then(
+      updatePlatformConfig(this.form).then(
           () => {
             setTimeout(() => {
-              getHttpConfig().then((res) => {
+              getPlatformConfig().then((res) => {
                     this.spinning = false
                     let nowConfig = JSON.stringify(res.data)
                     if (nowConfig !== targetConfig) {

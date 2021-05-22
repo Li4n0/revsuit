@@ -28,7 +28,7 @@
           <a-input
               v-model="form.flag_format"
               style="width: 100%"
-              placeholder="please enter flag format"
+              placeholder="Please enter flag format"
               :readOnly="readOnly"
           />
         </a-form-model-item>

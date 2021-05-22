@@ -1,6 +1,8 @@
-version: 4.0
+version: 1.0
 addr: :10000
 token:
+domain:
+external_ip:                        # You need to make sure that your target can access the server through this ip.
 database: revsuit.db
 log_level: info
 
@@ -18,7 +20,6 @@ mysql:
 ftp:
   enable: true
   addr: :21
-  pasv_ip: 127.0.0.1                   # your public network ip
   pasv_port: 2020
 notice:
   dingtalk: https://oapi.dingtalk.com/robot/send?access_token={token}

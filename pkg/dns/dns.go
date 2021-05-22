@@ -17,9 +17,11 @@ import (
 
 type Server struct {
 	Config
-	rules      []*Rule
-	rulesLock  sync.RWMutex
-	livingLock sync.Mutex
+	serverDomain string
+	serverIP     string
+	rules        []*Rule
+	rulesLock    sync.RWMutex
+	livingLock   sync.Mutex
 }
 
 var (
@@ -33,6 +35,16 @@ func GetServer() *Server {
 		server = &Server{rulesLock: sync.RWMutex{}, livingLock: sync.Mutex{}}
 	})
 	return server
+}
+
+func (s *Server) SetServerDomain(serverDomain string) *Server {
+	s.serverDomain = serverDomain
+	return s
+}
+
+func (s *Server) SetServerIP(serverIP string) *Server {
+	s.serverIP = serverIP
+	return s
 }
 
 func (s *Server) getRules() []*Rule {
@@ -53,6 +65,7 @@ func newSet(_rule *Rule, name, value, ip string, _type newdns.Type) []newdns.Set
 		{
 			Name: name,
 			Type: _type,
+			TTL:  _rule.TTL * time.Second,
 			Records: func() []newdns.Record {
 				switch _rule.Type {
 				case newdns.TXT:
@@ -82,10 +95,18 @@ func newSet(_rule *Rule, name, value, ip string, _type newdns.Type) []newdns.Set
 					return []newdns.Record{{Address: value}}
 				}
 			}(),
-			TTL: _rule.TTL * time.Second,
 		},
 	}
 	return set
+}
+
+func getZoneName(domain string) string {
+	frags := strings.Split(domain, ".")
+	zoneName := domain
+	if len(frags) >= 2 {
+		zoneName = strings.Join(frags[len(frags)-2:], ".") + "."
+	}
+	return zoneName
 }
 
 // newZone creates new dns zone with root domain
@@ -97,13 +118,8 @@ func (s *Server) newZone(name string) *newdns.Zone {
 	}()
 
 	domain := strings.TrimSuffix(name, ".")
-	frags := strings.Split(domain, ".")
-	zoneName := name
-	if len(frags) >= 2 {
-		zoneName = strings.Join(frags[len(frags)-2:], ".") + "."
-	}
 	zone := &newdns.Zone{
-		Name:             zoneName,
+		Name:             getZoneName(domain),
 		MasterNameServer: "ns1.hostmaster.com.",
 		AllNameServers: []string{
 			"ns1.hostmaster.com.",
@@ -175,6 +191,12 @@ func (s *Server) Stop() {
 	s.livingLock.Unlock()
 }
 
+func (s *Server) Restart() {
+	s.Stop()
+	time.Sleep(time.Second * 2)
+	go s.Run()
+}
+
 func (s *Server) Run() {
 	s.Enable = true
 	s.livingLock.Lock()
@@ -195,12 +217,34 @@ func (s *Server) Run() {
 	// create server
 	server := newdns.NewServer(newdns.Config{
 		Handler: func(name string) (*newdns.Zone, error) {
+			if name == s.serverDomain+"." {
+				return &newdns.Zone{
+					Name:             getZoneName(s.serverDomain),
+					MasterNameServer: "ns1.hostmaster.com.",
+					AllNameServers: []string{
+						"ns1.hostmaster.com.",
+						"ns2.hostmaster.com.",
+						"ns3.hostmaster.com.",
+					},
+					Handler: func(_, remoteAddr string) ([]newdns.Set, error) {
+						return []newdns.Set{
+							{
+								Name: name,
+								Type: newdns.A,
+								TTL:  10,
+								Records: []newdns.Record{
+									{
+										Address: s.serverIP,
+									},
+								}}}, nil
+					}}, nil
+			}
 			return s.newZone(name), nil
 		},
 	})
 
 	// run server
-	log.Info("Starting DNS Server at :53")
+	log.Info("Starting DNS Server at :53, resolve %s to %s", s.serverDomain, s.serverIP)
 	go func() {
 		s.livingLock.Lock()
 		if !s.Enable {

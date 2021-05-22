@@ -228,12 +228,14 @@ export default {
         this.pagination = pagination;
         this.loading = false
       }).catch(e => {
-        if (e.response.status === 403) {
-          store.authed = false
-          return []
-        } else {
-          console.error(e)
-        }
+        this.$notification.error({
+            message: 'Unknown error: ' + e.response.status,
+            style: {
+              width: '100px',
+              marginLeft: `${335 - 600}px`,
+            },
+            duration: 4
+          });
       })
     },
   },

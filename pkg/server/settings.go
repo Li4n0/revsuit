@@ -138,10 +138,12 @@ func importRules(c *gin.Context) {
 	})
 }
 
-func (revsuit *Revsuit) getHttpConfig(c *gin.Context) {
+func (revsuit *Revsuit) getPlatformConfig(c *gin.Context) {
 	var res = make(map[string]string)
 	res["Addr"] = revsuit.config.Addr
 	res["Token"] = revsuit.config.Token
+	res["Domain"] = revsuit.config.Domain
+	res["ExternalIP"] = revsuit.config.ExternalIP
 	res["Database"] = revsuit.config.Database
 	res["LogLevel"] = revsuit.config.LogLevel
 	res["IpHeader"] = revsuit.config.IpHeader
@@ -149,7 +151,7 @@ func (revsuit *Revsuit) getHttpConfig(c *gin.Context) {
 	c.JSON(200, res)
 }
 
-func (revsuit *Revsuit) updateHttpConfig(c *gin.Context) {
+func (revsuit *Revsuit) updatePlatformConfig(c *gin.Context) {
 	var form = make(map[string]string)
 
 	if err := c.ShouldBindJSON(&form); err != nil {
@@ -188,6 +190,34 @@ func (revsuit *Revsuit) updateHttpConfig(c *gin.Context) {
 		log.Info("Update http config [ip_header] to %s", form["IpHeader"])
 	}
 
+	if form["Domain"] != revsuit.config.Domain {
+		revsuit.config.Domain = form["Domain"]
+		revsuit.dns.SetServerDomain(form["Domain"])
+		log.Info("Update platform config [domain] to %s", form["Domain"])
+		if revsuit.dns.Enable {
+			revsuit.dns.Restart()
+		}
+	}
+
+	if form["ExternalIP"] != revsuit.config.ExternalIP {
+		revsuit.config.ExternalIP = form["ExternalIP"]
+		revsuit.dns.SetServerIP(form["ExternalIP"])
+		revsuit.ftp.SetPasvIP(form["ExternalIP"])
+		log.Info("Update platform config [ExternalIP] to %s", form["ExternalIP"])
+		if revsuit.dns.Enable {
+			revsuit.dns.Restart()
+		}
+		if revsuit.ftp.Enable {
+			revsuit.ftp.Restart()
+		}
+	}
+
+	if form["Token"] != revsuit.config.Token {
+		revsuit.config.Token = form["Token"]
+		revsuit.http.SetToken(form["Token"])
+		log.Info("Update platform config [token] to %s", form["Token"])
+	}
+
 	c.JSON(200, gin.H{
 		"status": "succeed",
 		"error":  nil,
@@ -214,11 +244,6 @@ func (revsuit *Revsuit) updateFtpConfig(c *gin.Context) {
 	if form.Addr != revsuit.ftp.Addr {
 		revsuit.ftp.Addr = form.Addr
 		log.Info("Update ftp config [addr] to %s", form.Addr)
-	}
-
-	if form.PasvIP != revsuit.ftp.PasvIP {
-		revsuit.ftp.PasvIP = form.PasvIP
-		log.Info("Update ftp config [pasv_ip] to %s", form.PasvIP)
 	}
 
 	if form.PasvPort != revsuit.ftp.PasvPort {

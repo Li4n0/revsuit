@@ -181,6 +181,13 @@ func New(c *Config) *Revsuit {
 	if c.IpHeader != "" {
 		s.http.SetIpHeader(c.IpHeader)
 	}
+	if c.Domain != "" {
+		s.dns.SetServerDomain(c.Domain)
+	}
+	if c.ExternalIP != "" {
+		s.dns.SetServerIP(c.ExternalIP)
+		s.ftp.SetPasvIP(c.ExternalIP)
+	}
 	return s
 }
 

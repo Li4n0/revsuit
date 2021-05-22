@@ -179,7 +179,6 @@ export default {
       } else {
         this.timing()
       }
-      localStorage.setItem('autoRefresh', val)
     },
     refreshInterval(val) {
       clearInterval(this.timer)
@@ -193,8 +192,11 @@ export default {
       store.pageSize = val
       localStorage.setItem('pageSize', val)
     },
-    'store.authed'() {
-      this.$refs.content.fetch()
+    'store.authed'(val) {
+      if (val) {
+        this.$refs.content.fetch()
+        this.GetVersion()
+      }
     },
     'store.pageSize'() {
       this.$refs.content.pagination.pageSize = store.pageSize

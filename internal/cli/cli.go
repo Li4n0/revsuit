@@ -47,10 +47,21 @@ func Start() {
 				configFile = c.Path("config")
 			}
 			conf := &server.Config{}
+			tpl := &server.Config{}
+			_ = yaml.Unmarshal(configTemplate, tpl)
 			if content, err := os.ReadFile(configFile); err == nil {
 				if err := yaml.Unmarshal(content, conf); err != nil {
 					return err
 				}
+				if conf.Version != tpl.Version {
+					backup := fmt.Sprintf("%s_%.1f", configFile, conf.Version)
+					log.Warn("Old version of configuration file detected, new configuration file being generated, old configuration backed up to %s", backup)
+					if err := os.WriteFile(backup, content, 0644); err != nil {
+						return err
+					}
+					return os.WriteFile(configFile, configTemplate, 0644)
+				}
+
 			} else if os.IsNotExist(err) && configFile == "config.yaml" {
 				log.Warn("Generate default configurations to config.yaml, please configure and run again.")
 				return os.WriteFile("config.yaml", configTemplate, 0644)
@@ -69,13 +80,13 @@ func Start() {
 			if c.String("log") != "" {
 				conf.Database = c.String("log")
 			}
-			fmt.Printf(banner, server.VERSION)
 			server.New(conf).Run()
 			return nil
 		},
 	}
 	sort.Sort(cli.FlagsByName(app.Flags))
 	sort.Sort(cli.CommandsByName(app.Commands))
+	fmt.Printf(banner, server.VERSION)
 
 	err := app.Run(os.Args)
 	if err != nil {

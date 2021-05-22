@@ -5,13 +5,13 @@
         :active-tab-key="tabKey"
         @tabChange="key => this.tabKey = key"
         style="width: 100%;">
-      <http v-if="tabKey==='HTTP'"></http>
-      <dns v-else-if="tabKey==='DNS'"></dns>
-      <rmi v-else-if="tabKey==='RMI'"></rmi>
-      <mysql v-else-if="tabKey==='MYSQL'"></mysql>
-      <ftp v-else-if="tabKey==='FTP'"></ftp>
-      <notice v-else-if="tabKey==='NOTICE'"></notice>
-      <rules v-else-if="tabKey==='RULES'"></rules>
+      <http ref="settings" v-if="tabKey==='HTTP'"></http>
+      <dns ref="settings" v-else-if="tabKey==='DNS'"></dns>
+      <rmi ref="settings" v-else-if="tabKey==='RMI'"></rmi>
+      <mysql ref="settings" v-else-if="tabKey==='MYSQL'"></mysql>
+      <ftp ref="settings" v-else-if="tabKey==='FTP'"></ftp>
+      <notice ref="settings" v-else-if="tabKey==='NOTICE'"></notice>
+      <rules ref="settings" v-else-if="tabKey==='RULES'"></rules>
     </a-card>
   </div>
 </template>
@@ -42,7 +42,11 @@ export default {
     }
   }
   ,
-  methods: {},
+  methods: {
+    fetch() {
+      this.$refs.settings.getConfig();
+    }
+  },
   components: {
     Http,
     Dns,

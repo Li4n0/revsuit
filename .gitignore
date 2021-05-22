@@ -7,7 +7,7 @@ revsuit.db-shm
 revsuit.db-wal
 
 # local config
-config.yaml
+config.yaml*
 
 # binary
 revsuit

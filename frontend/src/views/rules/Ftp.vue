@@ -28,7 +28,7 @@
               <a-input
                   v-model="form.pasv_address"
                   style="width: 100%"
-                  placeholder="use default value in the config"
+                  placeholder="Use external IP by default"
                   :readOnly="formReadOnly"
               />
             </a-form-model-item>
@@ -267,11 +267,7 @@ export default {
         this.pagination = pagination;
         this.loading = false
       }).catch(e => {
-        if (e.response.status === 403) {
-          store.authed = false
-          return []
-        } else {
-          this.$notification.error({
+        this.$notification.error({
             message: 'Unknown error: ' + e.response.status,
             style: {
               width: '100px',
@@ -279,7 +275,6 @@ export default {
             },
             duration: 4
           });
-        }
       })
     },
     clickSwitch(record, prop) {

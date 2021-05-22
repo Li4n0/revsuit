@@ -194,6 +194,9 @@ func (revsuit *Revsuit) updatePlatformConfig(c *gin.Context) {
 		revsuit.config.Domain = form["Domain"]
 		revsuit.dns.SetServerDomain(form["Domain"])
 		log.Info("Update platform config [domain] to %s", form["Domain"])
+		if revsuit.dns.Enable {
+			revsuit.dns.Restart()
+		}
 	}
 
 	if form["ExternalIP"] != revsuit.config.ExternalIP {

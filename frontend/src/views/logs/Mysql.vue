@@ -216,14 +216,9 @@ export default {
         this.pagination = pagination;
         this.loading = false
       }).catch(e => {
-        this.$notification.error({
-          message: 'Unknown error: ' + e.response.status,
-          style: {
-            width: '100px',
-            marginLeft: `${335 - 600}px`,
-          },
-          duration: 4
-        });
+        if (e.response.status !== 403) {
+          this.$message.error('Unknown error with status code: ' + e.response.status)
+        }
       })
     },
   },

@@ -58,7 +58,7 @@ func (revsuit *Revsuit) registerHttpRouter() {
 	// init settings router group
 	settingsGroup := revsuit.http.ApiGroup.Group("setting")
 	settingsGroup.GET("/exportRules", exportRules)
-	settingsGroup.POST("/importRules", importRules)
+	settingsGroup.POST("/importRules", revsuit.importRules)
 	settingsGroup.GET("/getPlatformConfig", revsuit.getPlatformConfig)
 	settingsGroup.POST("/updatePlatformConfig", revsuit.updatePlatformConfig)
 	settingsGroup.GET("/getDnsConfig", revsuit.getDnsConfig)

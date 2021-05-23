@@ -58,7 +58,7 @@ func (r *Rule) CreateOrUpdate() (err error) {
 		return
 	}
 
-	err = GetServer().updateRules()
+	err = GetServer().UpdateRules()
 	return err
 }
 
@@ -70,7 +70,7 @@ func (r *Rule) Delete() (err error) {
 		return
 	}
 
-	err = GetServer().updateRules()
+	err = GetServer().UpdateRules()
 	return err
 }
 

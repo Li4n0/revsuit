@@ -13,7 +13,7 @@
         @close="closeDrawer"
     >
       <a-form-model :model="form" ref="form" layout="vertical" @submit="handleSubmit">
-        <BasicRule :form="form" :readOnly="formReadOnly"/>
+        <BasicRule :form="form" :readOnly="formReadOnly" flagFormat="user or password"/>
         <a-row :gutter="24">
           <a-col :span="24">
             <a-form-model-item>
@@ -28,7 +28,7 @@
               <a-input
                   v-model="form.pasv_address"
                   style="width: 100%"
-                  placeholder="Use external IP by default"
+                  placeholder="Use `external_ip:pasv_port` by default"
                   :readOnly="formReadOnly"
               />
             </a-form-model-item>
@@ -267,14 +267,9 @@ export default {
         this.pagination = pagination;
         this.loading = false
       }).catch(e => {
-        this.$notification.error({
-            message: 'Unknown error: ' + e.response.status,
-            style: {
-              width: '100px',
-              marginLeft: `${335 - 600}px`,
-            },
-            duration: 4
-          });
+        if (e.response.status !== 403) {
+          this.$message.error('Unknown error with status code: ' + e.response.status)
+        }
       })
     },
     clickSwitch(record, prop) {

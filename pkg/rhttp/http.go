@@ -83,7 +83,7 @@ func (s *Server) getRules() []*Rule {
 	return s.rules
 }
 
-func (s *Server) updateRules() error {
+func (s *Server) UpdateRules() error {
 	db := database.DB.Model(new(Rule))
 	defer s.rulesLock.Unlock()
 	s.rulesLock.Lock()
@@ -116,7 +116,7 @@ func (s *Server) Restart() {
 }
 
 func (s *Server) Run() {
-	if err := s.updateRules(); err != nil {
+	if err := s.UpdateRules(); err != nil {
 		log.Warn(err.Error())
 	}
 	for {
@@ -156,8 +156,12 @@ func compileTpl(c *gin.Context, tpl string, vars map[string]string) (compiled st
 
 func (s *Server) Receive(c *gin.Context) {
 	u := c.Request.URL.String()
+	raw, err := getRawRequest(c.Request)
+	if err != nil {
+		log.Warn(err.Error())
+	}
 	for _, _rule := range s.getRules() {
-		flag, flagGroup, vars := _rule.Match(u)
+		flag, flagGroup, vars := _rule.Match(string(raw))
 		if flag == "" {
 			continue
 		}
@@ -170,11 +174,6 @@ func (s *Server) Receive(c *gin.Context) {
 		if ip1 := c.Request.Header.Get(s.IpHeader); s.IpHeader != "" && ip1 != "" {
 			ip = ip1
 			delete(c.Request.Header, s.IpHeader)
-		}
-
-		raw, err := getRawRequest(c.Request)
-		if err != nil {
-			log.Warn(err.Error())
 		}
 
 		// create new record

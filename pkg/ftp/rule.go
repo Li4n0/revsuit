@@ -54,7 +54,7 @@ func (r *Rule) CreateOrUpdate() (err error) {
 		return
 	}
 
-	return GetServer().updateRules()
+	return GetServer().UpdateRules()
 }
 
 // Delete deletes the ftp rule in database and ruleSet
@@ -65,7 +65,7 @@ func (r *Rule) Delete() (err error) {
 		return
 	}
 
-	return GetServer().updateRules()
+	return GetServer().UpdateRules()
 }
 
 // ListRules lists all ftp rules those satisfy the filter

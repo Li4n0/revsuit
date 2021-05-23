@@ -14,7 +14,7 @@ var _ record.Record = (*Record)(nil)
 
 type Record struct {
 	Method string `gorm:"index" form:"method" json:"method"`
-	Path   string `form:"path" json:"path"`
+	URI    string `form:"uri" json:"uri"`
 	record.BaseRecord
 	RawRequest string `json:"raw_request" notice:"-"`
 	Rule       Rule   `gorm:"foreignKey:RuleName;references:Name;constraint:OnUpdate:CASCADE,OnDelete:SET NULL;" form:"-" json:"-" notice:"-"`
@@ -37,7 +37,7 @@ func NewRecord(rule *Rule, flag, method, url, ip, area, raw string) (r *Record, 
 			RequestTime: time.Now(),
 		},
 		Method:     method,
-		Path:       url,
+		URI:        url,
 		RawRequest: raw,
 		Rule:       *rule,
 	}
@@ -78,8 +78,8 @@ func ListRecords(c *gin.Context) {
 	if httpRecord.Method != "" {
 		db.Where("method = ?", httpRecord.Method)
 	}
-	if httpRecord.Path != "" {
-		db.Where("path like ?", "%"+httpRecord.Path+"%")
+	if httpRecord.URI != "" {
+		db.Where("path like ?", "%"+httpRecord.URI+"%")
 	}
 	if httpRecord.RemoteIP != "" {
 		db.Where("remote_ip = ?", httpRecord.RemoteIP)

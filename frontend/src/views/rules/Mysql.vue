@@ -300,7 +300,7 @@ export default {
         this.$notification.error({
             message: 'Unknown error: ' + e.response.status,
             style: {
-              width: '100px',
+              width: '400px',
               marginLeft: `${335 - 600}px`,
             },
             duration: 4

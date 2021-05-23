@@ -45,7 +45,7 @@ func exportRules(c *gin.Context) {
 	c.String(200, string(out))
 }
 
-func importRules(c *gin.Context) {
+func (revsuit *Revsuit) importRules(c *gin.Context) {
 	var (
 		db    = database.DB
 		rules Rules
@@ -87,48 +87,58 @@ func importRules(c *gin.Context) {
 	}
 
 	for _, rule := range rules.Http {
-		err := db.Model(&rhttp.Rule{}).Create(&rule).Error
-		if err != nil {
+		if err := db.Model(&rhttp.Rule{}).Create(&rule).Error; err != nil {
 			errs = append(errs, errors.Wrap(err, fmt.Sprintf("http rule[%s]", rule.Name)).Error())
 			continue
 		}
 		count += 1
 	}
+	if err := revsuit.http.UpdateRules(); err != nil {
+		errs = append(errs, err.Error())
+	}
 
 	for _, rule := range rules.Dns {
-		err := db.Model(&dns.Rule{}).Create(&rule).Error
-		if err != nil {
+		if err := db.Model(&dns.Rule{}).Create(&rule).Error; err != nil {
 			errs = append(errs, errors.Wrap(err, fmt.Sprintf("dns rule[%s]", rule.Name)).Error())
 			continue
 		}
 		count += 1
 	}
+	if err := revsuit.dns.UpdateRules(); err != nil {
+		errs = append(errs, err.Error())
+	}
 
 	for _, rule := range rules.Mysql {
-		err := db.Model(&mysql.Rule{}).Create(&rule).Error
-		if err != nil {
+		if err := db.Model(&mysql.Rule{}).Create(&rule).Error; err != nil {
 			errs = append(errs, errors.Wrap(err, fmt.Sprintf("mysql rule[%s]", rule.Name)).Error())
 			continue
 		}
 		count += 1
 	}
+	if err := revsuit.mysql.UpdateRules(); err != nil {
+		errs = append(errs, err.Error())
+	}
 
 	for _, rule := range rules.Rmi {
-		err := db.Model(&rmi.Rule{}).Create(&rule).Error
-		if err != nil {
+		if err := db.Model(&rmi.Rule{}).Create(&rule).Error; err != nil {
 			errs = append(errs, errors.Wrap(err, fmt.Sprintf("rmi rule[%s]", rule.Name)).Error())
 			continue
 		}
 		count += 1
 	}
+	if err := revsuit.rmi.UpdateRules(); err != nil {
+		errs = append(errs, err.Error())
+	}
 
 	for _, rule := range rules.Ftp {
-		err := db.Model(&ftp.Rule{}).Create(&rule).Error
-		if err != nil {
+		if err := db.Model(&ftp.Rule{}).Create(&rule).Error; err != nil {
 			errs = append(errs, errors.Wrap(err, fmt.Sprintf("ftp rule[%s]", rule.Name)).Error())
 			continue
 		}
 		count += 1
+	}
+	if err := revsuit.ftp.UpdateRules(); err != nil {
+		errs = append(errs, err.Error())
 	}
 
 	c.JSON(200, gin.H{

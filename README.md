@@ -26,14 +26,8 @@ Powerful:
 
 Download the latest release firstly.
 
-RevSuit will generate default configuration file on first run.
-
-```bash
-$ ./revsuit     
-2021/05/16 05:16:16 [ WARN] Generate default configurations to config.yaml, please configure and run again.
-``` 
-
-Modify the configuration file according to your needs, then re-run.
+RevSuit will generate default configuration file on first run. Modify the configuration file according to your needs,
+then re-run.
 
 To confirm the location of the connection IP, if there is no qqwry.dat in the current directory or its modification time
 is more than 5 days ago. RevSuit will download it.(Support for GeoIP is in the planning stages).
@@ -76,12 +70,15 @@ A few notes are as follows：
 
 As shown below, we create a rule that uses the built-in template variables and custom template variables of the http
 protocol, and names it `test_create_rule`:
+
 ![img.png](./images/create_rule.png)
 
 Then make a request that satisfies the rule and view the response.
+
 ![img.png](./images/do_request.png)
 
 The request will be logged on the platform at the same time.
+
 ![img.png](./images/http_log.png)
 
 ### Notice
@@ -130,9 +127,11 @@ RevSuit was split from my scanner project, so its native support works with scan
 
 From RevSuit's perspective, we call a scanner a client.
 
-RevSuit uses
-[HTTP Server-sent Events](https://developer.mozilla.org/en-US/docs/Web/API/Server-sent_events/Using_server-sent_events) (
-SSE) to establish a one-way communication channel with the client.
+#### Server-sent Events
+
+RevSuit
+uses [HTTP Server-sent Events](https://developer.mozilla.org/en-US/docs/Web/API/Server-sent_events/Using_server-sent_events)
+(SSE) to establish a one-way communication channel with the client.
 
 The API for the channel is: `/revsuit/api/events?message` .The client first needs to add the `Token: your token` header
 to the Header, and then access the API to establish the channel. When the platform receives a new connection, the `flag`
@@ -140,60 +139,19 @@ captured by the rule will be passed to the client through this channel.
 
 ![img.png](./images/sse.gif)
 
-Here is a simple demo using Golang's sse library as an example:
+Here is a [simple demo](https://gist.github.com/Li4n0/21aa0bec2d626114a729ca2677efb05a) using Golang's sse library as an
+example.
 
-```go
-package client
+#### Use flagGroup
 
-import (
-	"crypto/tls"
-	"log"
-	"time"
-	"net"
-	"net/http"
-
-	"github.com/r3labs/sse"
-	"gopkg.in/cenkalti/backoff.v1"
-)
-
-func Listen() {
-	client := sse.NewClient("http://127.0.0.1:10000/revsuit/api/events")
-	client.Connection.Transport = &http.Transport{
-		TLSClientConfig: &tls.Config{InsecureSkipVerify: true},
-		DialContext: (
-			&net.Dialer{
-				Timeout: 30 * time.Second,
-			}).DialContext,
-	}
-	// Set token.
-	client.Headers = map[string]string{"Token": "your token"}
-
-	//Set reconnection policy.
-	reconnectStrategy := backoff.NewExponentialBackOff()
-	reconnectStrategy.MaxElapsedTime = time.Minute
-	client.ReconnectStrategy = reconnectStrategy
-
-	//Listening channel.
-	err := client.Subscribe("messages", func(event *sse.Event) {
-		log.Println(string(event.Data))
-		// Look up this flag in your local database of recorded requests 
-		//to find which request attack was successful for the scanner.
-		searchRequest(event.Data)
-	})
-	if err != nil {
-		log.Fatal("Disconnect from reverse platform, please check network or reverse connection platform's status.")
-	}
-}
-```
+`FlagGroup` is the content matched by the anonymous group in the `flagFormat` field of the rule. The platform will check
+the content matched in the grouping,and the flag is only pushed to the client when then content(`flagGroup`) captured
+for the first time.
 
 In a real-world vulnerability scanning scenario, you may send a large number of different payloads for a single
 vulnerability point, and they may all be valid, which can result in the backlink platform receiving many requests, yet
 they are caused by the same vulnerability. If you don't want the client to receive so many `flags` for the same
 vulnerability, you can take advantage of the `flagGroup` feature of rule's flagFormat.
-
-`FlagGroup` is the content matched by the anonymous group in the `flagFormat` field of the rule. The platform will check
-the content matched in the grouping,and the flag is only pushed to the client when then content(`flagGroup`) captured
-for the first time.
 
 For example, SSRF scanning.
 
@@ -230,24 +188,28 @@ modules, combined with template variables, to quickly complete a port scan.
 First use create an HTTP rule to return evil.dtd, customize the response to the contents of dtd so that it goes to
 connect to RevSuit's FTP service, and use template variables to pass the Host and Port to be scanned to FTP via FTP's
 user and password.
+
 ![create evil.dtd rule](./images/evil_dtd_rule.png)
 
 Then create an FTP rule that receives the Host and port to be scanned from the user and password template variables, set
 to Pasv address.
+
 ![create ftp scan rule](./images/ftp_scan_rule.png)
 
 Then use BurpSuit to launch the scan, by setting the host and port parameters in the evil.dtd URL to set the target of
 the port scan.
+
 ![xxe](./images/xxe.png)
 
 The running effect is as follows:
+
 ![ftp-scan](./images/ftp-scan.gif)
 
 It because the FTP connection will be crashed if `Passive Address` is not accessible, we can determine whether the port
 is open or not based on whether the connection exits normally.For this example, we successfully detected that port 8005
 and 8080 are open.
 
-## More Uses
+## More Usage
 
 A more detailed wiki is being prepared, you can explore by yourself before it.
 

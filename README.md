@@ -192,7 +192,7 @@ user and password.
 ![create evil.dtd rule](./images/evil_dtd_rule.png)
 
 Then create an FTP rule that receives the Host and port to be scanned from the user and password template variables, set
-to Pasv address.
+to Pasv Address.
 
 ![create ftp scan rule](./images/ftp_scan_rule.png)
 
@@ -226,7 +226,8 @@ Submit an issue or contact me through Weixin: `Li4n06`
 
 ### Specifically
 
-Thanks to my friend @E99plant for all the help and advice I received during the development of this project.
+Thanks to my friend [@E99plant](https://github.com/wuhan005/) for all the help and advice I received during the
+development of this project.
 
 ## License
 

@@ -40,7 +40,7 @@ func (revsuit *Revsuit) registerPlatformRouter() {
 
 	//platform routers
 	api.GET("/auth", auth)
-	api.GET("/events", events)
+	api.GET("/events", revsuit.events)
 	api.GET("/ping", ping)
 	api.GET("/version", version)
 }

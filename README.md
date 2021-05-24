@@ -127,7 +127,7 @@ RevSuit was split from my scanner project, so its native support works with scan
 
 From RevSuit's perspective, we call a scanner a client.
 
-#### Server-sent Events
+#### Create Connection
 
 RevSuit
 uses [HTTP Server-sent Events](https://developer.mozilla.org/en-US/docs/Web/API/Server-sent_events/Using_server-sent_events)
@@ -136,11 +136,21 @@ uses [HTTP Server-sent Events](https://developer.mozilla.org/en-US/docs/Web/API/
 The API for the channel is: `/revsuit/api/events?message` .The client first needs to add the `Token: your token` header
 to the Header, and then access the API to establish the channel. When the platform receives a new connection, the `flag`
 captured by the rule will be passed to the client through this channel.
-
 ![img.png](./images/sse.gif)
 
 Here is a [simple demo](https://gist.github.com/Li4n0/21aa0bec2d626114a729ca2677efb05a) using Golang's sse library as an
 example.
+
+#### Multi-client
+
+RevSuit supports multiple clients, and each client in the connected state receives a push of `flag`, so distributed
+scanning can be supported.
+
+#### Temporary storage queue
+
+RevSuit will store `flag` temporarily in the queue when there is no client connection and send it when the client
+connects, so you don't have to worry about missing the vulnerability because the client disconnects. (This is especially
+helpful for discovering delay-triggered vulnerabilities.)
 
 #### Use flagGroup
 

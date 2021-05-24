@@ -18,13 +18,13 @@ import (
 )
 
 type Server struct {
-	Addr        string
-	Token       string
-	IpHeader    string
-	Router      *gin.Engine
-	ApiGroup    *gin.RouterGroup
-	rules       []*Rule
-	rulesLock   sync.RWMutex
+	Addr      string
+	Token     string
+	IpHeader  string
+	Router    *gin.Engine
+	ApiGroup  *gin.RouterGroup
+	rules     []*Rule
+	rulesLock sync.RWMutex
 
 	httpServer http.Server
 }

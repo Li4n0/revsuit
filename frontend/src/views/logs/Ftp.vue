@@ -1,5 +1,6 @@
 <template>
   <a-table
+      style="overflow-x: auto;"
       :columns="columns"
       :data-source="data"
       :loading="loading"

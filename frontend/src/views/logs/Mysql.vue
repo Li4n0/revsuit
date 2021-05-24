@@ -1,5 +1,6 @@
 <template>
   <a-table
+      style="overflow-x: auto;"
       :columns="columns"
       :data-source="data"
       :loading="loading"
@@ -115,6 +116,15 @@ const columns = [
     title: 'USER',
     dataIndex: 'username',
     key: 'username',
+    scopedSlots: {
+      filterDropdown: 'filterDropdown',
+      filterIcon: 'filterIcon',
+    },
+  },
+  {
+    title: 'SCHEMA',
+    dataIndex: 'schema',
+    key: 'schema',
     scopedSlots: {
       filterDropdown: 'filterDropdown',
       filterIcon: 'filterIcon',

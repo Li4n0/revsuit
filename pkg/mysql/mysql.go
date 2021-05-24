@@ -105,11 +105,11 @@ func (s *Server) ConnectionClosed(c *vmysql.Conn) {
 	var clientName, clientOS, flag, flagGroup string
 
 	user := c.User
+	schema := c.SchemaName
 	supportLoadLocalData := c.SupportLoadDataLocal
 
 	cr, ok := s.connRulePool.Load(c.ConnectionID)
 	if !ok {
-		log.Warn("MySQL Connection rule(%d) not match flag", c.ConnectionID)
 		return
 	}
 
@@ -130,7 +130,7 @@ func (s *Server) ConnectionClosed(c *vmysql.Conn) {
 		}
 	}
 
-	r, err := newRecord(_rule, flag, user, clientName, clientOS, ip, qqwry.Area(ip), supportLoadLocalData, files)
+	r, err := newRecord(_rule, flag, user, schema, clientName, clientOS, ip, qqwry.Area(ip), supportLoadLocalData, files)
 	if err != nil {
 		log.Warn("MySQL record[rule_id: %s] created failed: %s", _rule.Name, err)
 		return

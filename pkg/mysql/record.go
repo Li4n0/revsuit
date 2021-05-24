@@ -17,6 +17,7 @@ type Record struct {
 	record.BaseRecord
 	Username      string           `gorm:"index" form:"username" json:"username" notice:"username"`
 	ClientName    string           `gorm:"index" form:"client_name" json:"client_name" notice:"client_name"`
+	Schema        string           `gorm:"index" form:"schema" json:"schema" notice:"schema"`
 	ClientOS      string           `gorm:"index" form:"client_os" json:"client_os" notice:"client_os"`
 	LoadLocalData bool             `gorm:"index" form:"load_local_data" json:"load_local_data" notice:"load_local_data"`
 	Files         []file.MySQLFile `form:"-" json:"files" notice:"-"`
@@ -31,7 +32,7 @@ func (r Record) Notice() {
 	notice.Notice(r)
 }
 
-func newRecord(rule *Rule, flag, username, clientName, clientOS, remoteIp, ipArea string, supportLoadLocalData bool, files []file.MySQLFile) (r *Record, err error) {
+func newRecord(rule *Rule, flag, username, schema, clientName, clientOS, remoteIp, ipArea string, supportLoadLocalData bool, files []file.MySQLFile) (r *Record, err error) {
 	r = &Record{
 		BaseRecord: record.BaseRecord{
 			Flag:        flag,
@@ -40,6 +41,7 @@ func newRecord(rule *Rule, flag, username, clientName, clientOS, remoteIp, ipAre
 			RequestTime: time.Now(),
 		},
 		Username:      username,
+		Schema:        schema,
 		ClientName:    clientName,
 		ClientOS:      clientOS,
 		LoadLocalData: supportLoadLocalData,
@@ -89,6 +91,9 @@ func ListRecords(c *gin.Context) {
 	}
 	if mysqlRecord.ClientName != "" {
 		db.Where("client_name like ?", "%"+mysqlRecord.ClientName)
+	}
+	if mysqlRecord.Schema != "" {
+		db.Where("schema like ?", "%"+mysqlRecord.Schema)
 	}
 	if c.Query("load_local_data") != "" {
 		if c.Query("load_local_data") == "true" {

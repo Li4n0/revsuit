@@ -78,6 +78,7 @@
     </a-drawer>
     <!--    rule table -->
     <a-table
+      style="overflow-x: auto;"
         :columns="columns"
         :data-source="data"
         :loading="loading"

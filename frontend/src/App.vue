@@ -148,6 +148,9 @@ export default {
     }
   },
   mounted() {
+    if (localStorage.getItem("autoRefresh") === null) {
+      this.autoRefresh = true;
+    }
     if (this.autoRefresh && this.isLogMode) {
       this.timing()
     }
@@ -176,8 +179,6 @@ export default {
     isLogMode(val) {
       if (!val) {
         clearInterval(this.timer)
-      } else {
-        this.timing()
       }
     },
     refreshInterval(val) {

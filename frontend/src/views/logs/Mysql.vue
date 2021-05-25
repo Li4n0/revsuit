@@ -1,5 +1,6 @@
 <template>
   <a-table
+      style="overflow-x: auto;"
       :columns="columns"
       :data-source="data"
       :loading="loading"
@@ -121,6 +122,15 @@ const columns = [
     },
   },
   {
+    title: 'SCHEMA',
+    dataIndex: 'schema',
+    key: 'schema',
+    scopedSlots: {
+      filterDropdown: 'filterDropdown',
+      filterIcon: 'filterIcon',
+    },
+  },
+  {
     title: 'LOAD DATA',
     dataIndex: 'load_local_data',
     key: 'load_local_data',
@@ -216,14 +226,9 @@ export default {
         this.pagination = pagination;
         this.loading = false
       }).catch(e => {
-        this.$notification.error({
-          message: 'Unknown error: ' + e.response.status,
-          style: {
-            width: '100px',
-            marginLeft: `${335 - 600}px`,
-          },
-          duration: 4
-        });
+        if (e.response.status !== 403) {
+          this.$message.error('Unknown error with status code: ' + e.response.status)
+        }
       })
     },
   },

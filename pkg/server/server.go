@@ -1,10 +1,13 @@
 package server
 
 import (
+	"sync"
+
 	"github.com/gin-gonic/gin"
 	"github.com/li4n0/revsuit/internal/database"
 	"github.com/li4n0/revsuit/internal/file"
 	"github.com/li4n0/revsuit/internal/notice"
+	"github.com/li4n0/revsuit/internal/record"
 	"github.com/li4n0/revsuit/pkg/dns"
 	"github.com/li4n0/revsuit/pkg/ftp"
 	"github.com/li4n0/revsuit/pkg/mysql"
@@ -14,7 +17,7 @@ import (
 	log "unknwon.dev/clog/v2"
 )
 
-const VERSION = "0.1.2-beta"
+const VERSION = "0.1.3-beta"
 
 type Revsuit struct {
 	config   *Config
@@ -25,6 +28,29 @@ type Revsuit struct {
 	mysql *mysql.Server
 	rmi   *rmi.Server
 	ftp   *ftp.Server
+
+	clients     map[int]*gin.Context
+	clientID    int
+	clientsLock sync.RWMutex
+	clientsNum  chan struct{}
+}
+
+func (revsuit *Revsuit) addClient(c *gin.Context) int {
+	revsuit.clientsLock.Lock()
+	defer revsuit.clientsLock.Unlock()
+
+	revsuit.clientID++
+	revsuit.clients[revsuit.clientID] = c
+	revsuit.clientsNum <- struct{}{}
+	return revsuit.clientID
+}
+
+func (revsuit *Revsuit) removeClient(id int) {
+	revsuit.clientsLock.Lock()
+	defer revsuit.clientsLock.Unlock()
+
+	delete(revsuit.clients, id)
+	<-revsuit.clientsNum
 }
 
 func initDatabase(dsn string) {
@@ -188,6 +214,8 @@ func New(c *Config) *Revsuit {
 		s.dns.SetServerIP(c.ExternalIP)
 		s.ftp.SetPasvIP(c.ExternalIP)
 	}
+	s.clients = make(map[int]*gin.Context)
+	s.clientsNum = make(chan struct{}, 100)
 	return s
 }
 
@@ -207,6 +235,17 @@ func (revsuit *Revsuit) Run() {
 	if revsuit.ftp != nil && revsuit.ftp.Enable {
 		go revsuit.ftp.Run()
 	}
-
+	go func() {
+		for r := range record.Channel() {
+			<-revsuit.clientsNum
+			revsuit.clientsLock.RLock()
+			for _, client := range revsuit.clients {
+				client.SSEvent("message", r.GetFlag())
+				client.Writer.Flush()
+			}
+			revsuit.clientsNum <- struct{}{}
+			revsuit.clientsLock.RUnlock()
+		}
+	}()
 	revsuit.http.Run()
 }

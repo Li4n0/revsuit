@@ -4,7 +4,7 @@ import (
 	"time"
 )
 
-var recordChan = make(chan BaseRecord, 100)
+var recordChan = make(chan BaseRecord, 1000)
 
 type Record interface {
 	GetFlag() string

@@ -41,7 +41,7 @@ func (s *Server) getRules() []*Rule {
 	return s.rules
 }
 
-func (s *Server) updateRules() error {
+func (s *Server) UpdateRules() error {
 	db := database.DB.Model(new(Rule))
 	defer s.rulesLock.Unlock()
 	s.rulesLock.Lock()
@@ -165,7 +165,7 @@ func (s *Server) Run() {
 		s.livingLock.Unlock()
 	}()
 
-	if err := s.updateRules(); err != nil {
+	if err := s.UpdateRules(); err != nil {
 		log.Error(err.Error())
 		return
 	}

@@ -13,7 +13,7 @@
         @close="closeDrawer"
     >
       <a-form-model :model="form" ref="form" layout="vertical" @submit="handleSubmit">
-        <BasicRule :form="form" :readOnly="formReadOnly"/>
+        <BasicRule :form="form" :readOnly="formReadOnly" flagFormat="raw message"/>
         <a-row :gutter="24">
           <a-col :span="24">
             <a-form-model-item :rules="rules.response_status_code"
@@ -130,6 +130,7 @@
     </a-drawer>
     <!--    rule table -->
     <a-table
+      style="overflow-x: auto;"
         :columns="columns"
         :data-source="data"
         :loading="loading"
@@ -374,14 +375,9 @@ export default {
         this.pagination = pagination;
         this.loading = false
       }).catch(e => {
-        this.$notification.error({
-            message: 'Unknown error: ' + e.response.status,
-            style: {
-              width: '100px',
-              marginLeft: `${335 - 600}px`,
-            },
-            duration: 4
-          });
+        if (e.response.status !== 403) {
+          this.$message.error('Unknown error with status code: ' + e.response.status)
+        }
       })
     },
     clickSwitch(record, prop) {

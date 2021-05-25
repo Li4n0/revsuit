@@ -67,7 +67,7 @@ func (s *Server) getRules() []*Rule {
 	return s.rules
 }
 
-func (s *Server) updateRules() error {
+func (s *Server) UpdateRules() error {
 	db := database.DB.Model(new(Rule))
 	defer s.rulesLock.Unlock()
 	s.rulesLock.Lock()
@@ -94,6 +94,7 @@ func (s *Server) authenticate(user, password string) (_rule *Rule, flag, flagGro
 }
 
 func (s *Server) getPasvAddressFromCache(ip, pasvAddressTpl string) (pasvAddress string) {
+	pasvAddress = pasvAddressTpl
 	if strings.Contains(pasvAddressTpl, ",") {
 		values, ok := rebindingCache.Get(ip)
 		if !ok {
@@ -202,8 +203,8 @@ loop:
 				if pasvAddress = s.getPasvAddressFromCache(ip, _rule.PasvAddress); pasvAddress == "" {
 					pasvAddress = fmt.Sprintf("%s:%d", s.pasvIP, s.PasvPort)
 				}
-
-				isRedirect = rule.CompileTpl(pasvAddress, vars) != fmt.Sprintf("%s:%d", s.pasvIP, s.PasvPort)
+				pasvAddress = rule.CompileTpl(pasvAddress, vars)
+				isRedirect = pasvAddress != fmt.Sprintf("%s:%d", s.pasvIP, s.PasvPort)
 			case "SIZE":
 				path += strings.TrimLeft(args, "/")
 				if _rule == nil || isRedirect || len(_rule.Data) == 0 {
@@ -217,8 +218,6 @@ loop:
 			case "PASV":
 				//Just so that ide does not prompt that there may be a nil value
 				if _rule != nil {
-					// return rule's pasv_address or default pasv address
-					pasvAddress := rule.CompileTpl(pasvAddress, vars)
 					pasvIP, pasvPort, err := net.SplitHostPort(pasvAddress)
 					if err != nil {
 						log.Warn("FTP failed to split rule[id:%d] pasv_address(%s) :%s", _rule.ID, pasvAddress, err)
@@ -365,7 +364,7 @@ func (s *Server) Run() {
 		s.livingLock.Unlock()
 	}()
 
-	if err := s.updateRules(); err != nil {
+	if err := s.UpdateRules(); err != nil {
 		log.Error(err.Error())
 		return
 	}

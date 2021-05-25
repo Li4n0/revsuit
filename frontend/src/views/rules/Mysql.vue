@@ -100,6 +100,7 @@
     </a-drawer>
     <!--    rule table -->
     <a-table
+      style="overflow-x: auto;"
         :columns="columns"
         :data-source="data"
         :loading="loading"
@@ -300,7 +301,7 @@ export default {
         this.$notification.error({
             message: 'Unknown error: ' + e.response.status,
             style: {
-              width: '100px',
+              width: '400px',
               marginLeft: `${335 - 600}px`,
             },
             duration: 4

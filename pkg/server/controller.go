@@ -11,7 +11,6 @@ import (
 	"time"
 
 	"github.com/gin-gonic/gin"
-	"github.com/li4n0/revsuit/internal/record"
 	"github.com/li4n0/revsuit/internal/recycler"
 	log "unknwon.dev/clog/v2"
 )
@@ -26,18 +25,15 @@ func ping(c *gin.Context) {
 	c.String(200, "pong")
 }
 
-func events(c *gin.Context) {
-	log.Info("Receive client connection from %v", c.Request.RemoteAddr)
+func (revsuit *Revsuit) events(c *gin.Context) {
+	id := revsuit.addClient(c)
+	log.Info("Receive client[id:%d] connection from %v", id, c.Request.RemoteAddr)
 	c.Stream(func(w io.Writer) bool {
-		select {
-		case <-c.Writer.CloseNotify():
-			return false
-		case r := <-record.Channel():
-			c.SSEvent("message", r.GetFlag())
-		}
-		return true
+		<-c.Writer.CloseNotify()
+		return false
 	})
-	log.Info("Client %s disconnect", c.Request.RemoteAddr)
+	revsuit.removeClient(id)
+	log.Info("Client[id:%d, remote_addr:%s] disconnect", id, c.Request.RemoteAddr)
 }
 
 func recovery(c *gin.Context) {

@@ -37,18 +37,20 @@ type Revsuit struct {
 
 func (revsuit *Revsuit) addClient(c *gin.Context) int {
 	revsuit.clientsLock.Lock()
+	defer revsuit.clientsLock.Unlock()
+	
 	revsuit.clientID++
 	revsuit.clients[revsuit.clientID] = c
 	revsuit.clientsNum <- struct{}{}
-	revsuit.clientsLock.Unlock()
 	return revsuit.clientID
 }
 
 func (revsuit *Revsuit) removeClient(id int) {
 	revsuit.clientsLock.Lock()
+	defer revsuit.clientsLock.Unlock()
+	
 	delete(revsuit.clients, id)
 	<-revsuit.clientsNum
-	revsuit.clientsLock.Unlock()
 }
 
 func initDatabase(dsn string) {

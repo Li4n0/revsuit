@@ -91,7 +91,7 @@ func (revsuit *Revsuit) importRules(c *gin.Context) {
 			errs = append(errs, errors.Wrap(err, fmt.Sprintf("http rule[%s]", rule.Name)).Error())
 			continue
 		}
-		count += 1
+		count++
 	}
 	if err := revsuit.http.UpdateRules(); err != nil {
 		errs = append(errs, err.Error())
@@ -102,7 +102,7 @@ func (revsuit *Revsuit) importRules(c *gin.Context) {
 			errs = append(errs, errors.Wrap(err, fmt.Sprintf("dns rule[%s]", rule.Name)).Error())
 			continue
 		}
-		count += 1
+		count++
 	}
 	if err := revsuit.dns.UpdateRules(); err != nil {
 		errs = append(errs, err.Error())
@@ -113,7 +113,7 @@ func (revsuit *Revsuit) importRules(c *gin.Context) {
 			errs = append(errs, errors.Wrap(err, fmt.Sprintf("mysql rule[%s]", rule.Name)).Error())
 			continue
 		}
-		count += 1
+		count++
 	}
 	if err := revsuit.mysql.UpdateRules(); err != nil {
 		errs = append(errs, err.Error())
@@ -124,7 +124,7 @@ func (revsuit *Revsuit) importRules(c *gin.Context) {
 			errs = append(errs, errors.Wrap(err, fmt.Sprintf("rmi rule[%s]", rule.Name)).Error())
 			continue
 		}
-		count += 1
+		count++
 	}
 	if err := revsuit.rmi.UpdateRules(); err != nil {
 		errs = append(errs, err.Error())
@@ -135,7 +135,7 @@ func (revsuit *Revsuit) importRules(c *gin.Context) {
 			errs = append(errs, errors.Wrap(err, fmt.Sprintf("ftp rule[%s]", rule.Name)).Error())
 			continue
 		}
-		count += 1
+		count++
 	}
 	if err := revsuit.ftp.UpdateRules(); err != nil {
 		errs = append(errs, err.Error())

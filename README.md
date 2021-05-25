@@ -3,7 +3,7 @@
 ## Overview
 
 RevSuit is a flexible and powerful reverse connection platform designed for receiving connection from target host in
-penetration.It currently supports HTTP, DNS, RMI, MySQL and FTP protocols.
+penetration. It currently supports HTTP, DNS, RMI, MySQL and FTP protocols.
 
 Flexible:
 

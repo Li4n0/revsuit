@@ -213,7 +213,7 @@ the port scan.
 
 The running effect is as follows:
 
-![ftp-scan](./images/ftp-scan.gif)
+![ftp-scan](images/ftp_scan.gif)
 
 It because the FTP connection will be crashed if `Passive Address` is not accessible, we can determine whether the port
 is open or not based on whether the connection exits normally.For this example, we successfully detected that port 8005
@@ -236,7 +236,7 @@ Submit an issue or contact me through Weixin: `Li4n06`
 
 ### Specifically
 
-Thanks to my friend [@E99plant](https://github.com/wuhan005/) for all the help and advice I received during the
+Thanks to my friend [@E99p1ant](https://github.com/wuhan005/) for all the help and advice I received during the
 development of this project.
 
 ## License

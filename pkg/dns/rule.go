@@ -80,14 +80,14 @@ func ListRules(c *gin.Context) {
 		res      []Rule
 		count    int64
 		order    = c.Query("order")
-		pageSize int
+		pageSize = 10
 	)
 
-	if c.Query("pageSize") == "" {
-		pageSize = 10
-	} else if n, err := strconv.Atoi(c.Query("pageSize")); err == nil {
-		if n <= 0 || n > 100 {
-			pageSize = 10
+	if c.Query("pageSize") != "" {
+		if n, err := strconv.Atoi(c.Query("pageSize")); err == nil {
+			if n > 0 && n < 100 {
+				pageSize = n
+			}
 		}
 	}
 

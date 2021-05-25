@@ -143,8 +143,8 @@ example.
 
 #### Multi-client
 
-RevSuit supports multiple clients, and each client in the connected state receives a push of `flag`, so distributed
-scanning can be supported.
+As shown above, RevSuit supports multiple clients, and each client in the connected state receives a push of `flag`, so
+distributed scanning can be supported.
 
 #### Temporary storage queue
 

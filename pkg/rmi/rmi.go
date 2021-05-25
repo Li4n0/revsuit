@@ -58,6 +58,7 @@ func (s *Server) handleConnection(conn net.Conn) {
 
 	if err := conn.SetDeadline(time.Now().Add(time.Second * 30)); err != nil {
 		log.Warn("RMI set connection deadline error:%v", err)
+		return
 	}
 
 	ip, port, _ := net.SplitHostPort(conn.RemoteAddr().String())
@@ -66,6 +67,7 @@ func (s *Server) handleConnection(conn net.Conn) {
 	_, err := conn.Read(buf)
 	if err != nil {
 		log.Warn("RMI read connection error:%v", err)
+		return
 	}
 
 	if !bytes.Contains(buf, []byte{0x4a, 0x52, 0x4d, 0x49}) {
@@ -86,6 +88,7 @@ func (s *Server) handleConnection(conn net.Conn) {
 	_, err = conn.Write(send)
 	if err != nil {
 		log.Warn("RMI write connection error: %v", err)
+		return
 	}
 
 	data := make([]byte, 512)
@@ -94,6 +97,7 @@ func (s *Server) handleConnection(conn net.Conn) {
 		n, err := conn.Read(data)
 		if err != nil {
 			log.Warn("RMI read connection error: %v", err)
+			return
 		}
 		length += n
 	}

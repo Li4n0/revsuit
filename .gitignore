@@ -20,3 +20,8 @@ revsuit
 *.njsproj
 *.sln
 *.sw?
+
+## node
+package.json
+package-lock.json
+node_modules/

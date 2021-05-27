@@ -10,7 +10,7 @@ http:
   ip_header:
 dns:
   enable: true
-  addr: 21
+  addr: :53
 rmi:
   enable: true
   addr: :1099

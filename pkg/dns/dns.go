@@ -252,7 +252,7 @@ func (s *Server) Run() {
 		}
 	}()
 
-	err := server.Run(":53")
+	err := server.Run(s.Addr)
 	defer server.Close()
 
 	if err != nil {

@@ -166,10 +166,7 @@ func (s *Server) Receive(c *gin.Context) {
 			continue
 		}
 
-		var (
-			ip   = strings.Split(c.Request.RemoteAddr, ":")[0]
-			area = qqwry.Area(ip)
-		)
+		ip := strings.Split(c.Request.RemoteAddr, ":")[0]
 
 		if ip1 := c.Request.Header.Get(s.IpHeader); s.IpHeader != "" && ip1 != "" {
 			ip = ip1
@@ -177,7 +174,7 @@ func (s *Server) Receive(c *gin.Context) {
 		}
 
 		// create new record
-		r, err := NewRecord(_rule, flag, c.Request.Method, u, ip, area, string(raw))
+		r, err := NewRecord(_rule, flag, c.Request.Method, u, ip, qqwry.Area(ip), string(raw))
 		if err != nil {
 			log.Warn("HTTP record[rule_id:%d] created failed :%s", _rule.ID, err)
 			code, err := strconv.Atoi(compileTpl(c, _rule.ResponseStatusCode, vars))

@@ -1,5 +1,5 @@
 <template>
-  <a-layout id="nav">
+  <a-layout id="app" v-visibility-change="()=>{this.$refs.content.fetch?this.$refs.content.fetch():null}">
     <a-layout-sider v-model="collapsed" :trigger="null" collapsible>
       <div class="logo"><b>R</b><span v-if="!collapsed"><b>ev</b>Suit</span></div>
       <a-menu theme="dark" mode="inline" :selectedKeys="[this.$route.path]" :openKeys.sync="openKeys">
@@ -247,11 +247,11 @@ html, body {
   color: white;
 }
 
-#nav {
+#app {
   height: 100%;
 }
 
-#nav .trigger {
+#app .trigger {
   font-size: 18px;
   line-height: 64px;
   padding: 0 24px;
@@ -259,11 +259,11 @@ html, body {
   transition: color 0.3s;
 }
 
-#nav .trigger:hover {
+#app .trigger:hover {
   color: #1890ff;
 }
 
-#nav .logo {
+#app .logo {
   height: 32px;
   background: #0a1d2d;
   margin: 16px;

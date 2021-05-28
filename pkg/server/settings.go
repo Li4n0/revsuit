@@ -156,7 +156,7 @@ func (revsuit *Revsuit) getPlatformConfig(c *gin.Context) {
 	res["ExternalIP"] = revsuit.config.ExternalIP
 	res["Database"] = revsuit.config.Database
 	res["LogLevel"] = revsuit.config.LogLevel
-	res["IpHeader"] = revsuit.config.IpHeader
+	res["IpHeader"] = revsuit.config.HTTP.IpHeader
 
 	c.JSON(200, res)
 }
@@ -194,8 +194,8 @@ func (revsuit *Revsuit) updatePlatformConfig(c *gin.Context) {
 		log.Info("Update platform config [database] to %s", form["Database"])
 	}
 
-	if form["IpHeader"] != revsuit.config.IpHeader {
-		revsuit.config.IpHeader = form["IpHeader"]
+	if form["IpHeader"] != revsuit.config.HTTP.IpHeader {
+		revsuit.config.HTTP.IpHeader = form["IpHeader"]
 		revsuit.http.SetIpHeader(form["IpHeader"])
 		log.Info("Update http config [ip_header] to %s", form["IpHeader"])
 	}

@@ -204,8 +204,8 @@ func New(c *Config) *Revsuit {
 	if c.Token != "" {
 		s.http.SetToken(c.Token)
 	}
-	if c.IpHeader != "" {
-		s.http.SetIpHeader(c.IpHeader)
+	if c.HTTP.IpHeader != "" {
+		s.http.SetIpHeader(c.HTTP.IpHeader)
 	}
 	if c.Domain != "" {
 		s.dns.SetServerDomain(c.Domain)

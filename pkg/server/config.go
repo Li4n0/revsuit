@@ -24,9 +24,9 @@ type Config struct {
 	Database   string
 	LogLevel   string `yaml:"log_level"`
 	Notice     noticeConfig
-	rhttp.Config
-	DNS   dns.Config
-	MySQL mysql.Config
-	RMI   rmi.Config
-	FTP   ftp.Config
+	HTTP       rhttp.Config
+	DNS        dns.Config
+	MySQL      mysql.Config
+	RMI        rmi.Config
+	FTP        ftp.Config
 }

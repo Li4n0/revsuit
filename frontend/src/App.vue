@@ -151,9 +151,6 @@ export default {
     if (localStorage.getItem("autoRefresh") === null) {
       this.autoRefresh = true;
     }
-    if (this.autoRefresh && this.isLogMode) {
-      this.timing()
-    }
     this.GetVersion()
   },
   created() {
@@ -177,8 +174,10 @@ export default {
       localStorage.setItem('autoRefresh', val)
     },
     isLogMode(val) {
-      if (!val) {
+      if (!val && this.timer) {
         clearInterval(this.timer)
+      } else if (this.autoRefresh && !this.timer) {
+        this.timing()
       }
     },
     refreshInterval(val) {

@@ -3,6 +3,7 @@ package server
 import (
 	"io/fs"
 	"net/http"
+	"path"
 
 	"github.com/gin-gonic/gin"
 	"github.com/li4n0/revsuit/frontend"
@@ -28,7 +29,7 @@ func (revsuit *Revsuit) registerRouter() {
 
 func (revsuit *Revsuit) registerPlatformRouter() {
 	// /api need Authorization
-	api := revsuit.http.Router.Group("/revsuit/api")
+	api := revsuit.http.Router.Group(revsuit.config.AdminPathPrefix + "/api")
 	api.Use(func(c *gin.Context) {
 		cookieToken, err := c.Request.Cookie("token")
 		if !(c.Request.Header.Get("Token") == revsuit.http.Token || err == nil && cookieToken.Value == revsuit.http.Token) {
@@ -39,7 +40,7 @@ func (revsuit *Revsuit) registerPlatformRouter() {
 	revsuit.http.ApiGroup = api
 
 	//platform routers
-	api.GET("/auth", auth)
+	api.GET("/auth", revsuit.auth)
 	api.GET("/events", revsuit.events)
 	api.GET("/ping", ping)
 	api.GET("/version", version)
@@ -53,7 +54,7 @@ func (revsuit *Revsuit) registerHttpRouter() {
 	if err != nil {
 		log.Fatal("Failed to sub path `dist`: %v", err)
 	}
-	revsuit.http.Router.StaticFS("/revsuit/admin", http.FS(fe))
+	revsuit.http.Router.StaticFS(path.Clean(revsuit.config.AdminPathPrefix+"/admin"), http.FS(fe))
 
 	// init settings router group
 	settingsGroup := revsuit.http.ApiGroup.Group("setting")

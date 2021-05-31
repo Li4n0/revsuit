@@ -153,6 +153,7 @@ func (revsuit *Revsuit) getPlatformConfig(c *gin.Context) {
 	res["Addr"] = revsuit.config.Addr
 	res["Token"] = revsuit.config.Token
 	res["Domain"] = revsuit.config.Domain
+	res["AdminPathPrefix"] = revsuit.config.AdminPathPrefix
 	res["ExternalIP"] = revsuit.config.ExternalIP
 	res["Database"] = revsuit.config.Database
 	res["LogLevel"] = revsuit.config.LogLevel

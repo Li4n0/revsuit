@@ -15,9 +15,9 @@ import (
 	log "unknwon.dev/clog/v2"
 )
 
-func auth(c *gin.Context) {
+func (revsuit *Revsuit) auth(c *gin.Context) {
 	c.SetSameSite(http.SameSiteLaxMode)
-	c.SetCookie("token", c.Request.Header["Token"][0], 0, "/revsuit/api/", "", false, true)
+	c.SetCookie("token", c.Request.Header["Token"][0], 0, revsuit.config.AdminPathPrefix, "", false, true)
 	c.String(200, "pong")
 }
 

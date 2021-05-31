@@ -21,6 +21,7 @@ type Config struct {
 	Token      string
 	Domain     string
 	ExternalIP string `yaml:"external_ip"`
+	AdminPathPrefix  string `yaml:"admin_path_prefix"`
 	Database   string
 	LogLevel   string `yaml:"log_level"`
 	Notice     noticeConfig

@@ -12,7 +12,7 @@ module.exports = {
             '/api': {
                 target: 'http://localhost:10000',
                 pathRewrite: {
-                    '^/revsuit/api': '/revsuit/api'
+                    '^/api': '/revsuit/api'
                 }
             }
         },

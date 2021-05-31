@@ -17,7 +17,8 @@
               <a-select-option value='error'>ERROR</a-select-option>
               <a-select-option value='fatal'>FATAL</a-select-option>
             </a-select>
-            <a-input :disabled="key ==='Addr' && parent==='Http'" v-else v-model="form[key]"/>
+            <a-input :disabled="(key ==='Addr'||key==='AdminPathPrefix') && parent==='Http'" v-else
+                     v-model="form[key]"/>
           </a-form-model-item>
         </a-col>
       </a-row>

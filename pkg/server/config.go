@@ -16,18 +16,18 @@ type noticeConfig struct {
 }
 
 type Config struct {
-	Version    float64
-	Addr       string
-	Token      string
-	Domain     string
-	ExternalIP string `yaml:"external_ip"`
-	AdminPathPrefix  string `yaml:"admin_path_prefix"`
-	Database   string
-	LogLevel   string `yaml:"log_level"`
-	Notice     noticeConfig
-	HTTP       rhttp.Config
-	DNS        dns.Config
-	MySQL      mysql.Config
-	RMI        rmi.Config
-	FTP        ftp.Config
+	Version         float64
+	Addr            string
+	Token           string
+	Domain          string
+	ExternalIP      string `yaml:"external_ip"`
+	AdminPathPrefix string `yaml:"admin_path_prefix"`
+	Database        string
+	LogLevel        string `yaml:"log_level"`
+	Notice          noticeConfig
+	HTTP            rhttp.Config
+	DNS             dns.Config
+	MySQL           mysql.Config
+	RMI             rmi.Config
+	FTP             ftp.Config
 }

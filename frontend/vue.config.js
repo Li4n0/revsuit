@@ -17,8 +17,8 @@ module.exports = {
             }
         },
     },
-    productionSourceMap:false,
+    productionSourceMap: false,
     runtimeCompiler: true,
     filenameHashing: false,
-    publicPath: ''
+    publicPath: '/revsuit/admin/',
 }

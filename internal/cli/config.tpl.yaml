@@ -1,4 +1,4 @@
-version: 1.2
+version: 1.3
 addr: :10000
 token:
 domain:
@@ -6,6 +6,10 @@ external_ip:                        # You need to make sure that your target can
 admin_path_prefix: "/revsuit"
 database: revsuit.db
 log_level: info
+
+ip_location_database:
+  database: "qqwry"                 # qqwry or geoip.
+  geo_license_key: ""               # Mandatory field, if you choose to use GeoIP.
 
 http:
   ip_header:

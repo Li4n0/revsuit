@@ -10,7 +10,7 @@ import (
 
 	"github.com/li4n0/revsuit/internal/database"
 	"github.com/li4n0/revsuit/internal/file"
-	"github.com/li4n0/revsuit/internal/qqwry"
+	"github.com/li4n0/revsuit/internal/ipinfo"
 	"github.com/li4n0/revsuit/pkg/mysql/vmysql"
 	"github.com/pkg/errors"
 	log "unknwon.dev/clog/v2"
@@ -130,7 +130,7 @@ func (s *Server) ConnectionClosed(c *vmysql.Conn) {
 		}
 	}
 
-	r, err := newRecord(_rule, flag, user, schema, clientName, clientOS, ip, qqwry.Area(ip), supportLoadLocalData, files)
+	r, err := newRecord(_rule, flag, user, schema, clientName, clientOS, ip, ipinfo.Area(ip), supportLoadLocalData, files)
 	if err != nil {
 		log.Warn("MySQL record[rule_id: %s] created failed: %s", _rule.Name, err)
 		return

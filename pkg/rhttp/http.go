@@ -13,7 +13,7 @@ import (
 
 	"github.com/gin-gonic/gin"
 	"github.com/li4n0/revsuit/internal/database"
-	"github.com/li4n0/revsuit/internal/qqwry"
+	"github.com/li4n0/revsuit/internal/ipinfo"
 	log "unknwon.dev/clog/v2"
 )
 
@@ -174,7 +174,7 @@ func (s *Server) Receive(c *gin.Context) {
 		}
 
 		// create new record
-		r, err := NewRecord(_rule, flag, c.Request.Method, u, ip, qqwry.Area(ip), string(raw))
+		r, err := NewRecord(_rule, flag, c.Request.Method, u, ip, ipinfo.Area(ip), string(raw))
 		if err != nil {
 			log.Warn("HTTP record[rule_id:%d] created failed :%s", _rule.ID, err)
 			code, err := strconv.Atoi(compileTpl(c, _rule.ResponseStatusCode, vars))

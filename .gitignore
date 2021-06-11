@@ -2,9 +2,10 @@
 
 # local files
 qqwry.dat
-revsuit.db
-revsuit.db-shm
-revsuit.db-wal
+GeoLite2-City.mmdb
+*.db
+*.db-shm
+*.db-wal
 
 # local config
 config.yaml*

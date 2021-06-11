@@ -16,7 +16,7 @@ import (
 
 const (
 	CopyWriteUrl = "https://qqwry.mirror.noc.one/copywrite.rar"
-	QqwryUrl     = "https://qqwry.mirror.noc.one/qqwry.rar"
+	Url          = "https://qqwry.mirror.noc.one/qqwry.rar"
 )
 
 func get(url string) (b []byte, err error) {
@@ -77,7 +77,7 @@ func download() (err error) {
 
 	go func() {
 		defer wg.Done()
-		if qqwryData, err = get(QqwryUrl); err != nil {
+		if qqwryData, err = get(Url); err != nil {
 			return
 		}
 	}()
@@ -87,7 +87,7 @@ func download() (err error) {
 	}
 	var key uint32
 	if key, err = getKey(copyWriteData); err != nil {
-		return
+		return err
 	}
 	b, err := decrypt(qqwryData, key)
 	if err != nil {

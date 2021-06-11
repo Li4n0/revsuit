@@ -176,7 +176,7 @@ export default {
     isLogMode(val) {
       if (!val && this.timer) {
         clearInterval(this.timer)
-      } else if (this.autoRefresh && !this.timer) {
+      } else if (this.autoRefresh) {
         this.timing()
       }
     },

@@ -6,8 +6,9 @@ import (
 	"crypto/tls"
 	"encoding/binary"
 	"errors"
-	"io/ioutil"
+	"io"
 	"net/http"
+	"os"
 	"sync"
 	"time"
 
@@ -34,8 +35,7 @@ func get(url string) (b []byte, err error) {
 	}
 	defer resp.Body.Close()
 
-	b, err = ioutil.ReadAll(resp.Body)
-	return b, err
+	return io.ReadAll(resp.Body)
 }
 
 func getKey(b []byte) (key uint32, err error) {
@@ -58,15 +58,17 @@ func decrypt(b []byte, key uint32) (_ []byte, err error) {
 		return
 	}
 	defer rc.Close()
-	return ioutil.ReadAll(rc)
+	return io.ReadAll(rc)
 }
 
 func download() (err error) {
 	var (
 		copyWriteData, qqwryData []byte
 		wg                       sync.WaitGroup
+		key                      uint32
 	)
 	log.Info("Downloading qqwry.dat...")
+
 	wg.Add(2)
 	go func() {
 		defer wg.Done()
@@ -82,18 +84,16 @@ func download() (err error) {
 		}
 	}()
 	wg.Wait()
+
 	if err != nil {
 		return err
 	}
-	var key uint32
 	if key, err = getKey(copyWriteData); err != nil {
 		return err
 	}
-	b, err := decrypt(qqwryData, key)
-	if err != nil {
+	if b, err := decrypt(qqwryData, key); err != nil {
 		return err
+	} else {
+		return os.WriteFile("qqwry.dat", b, 0644)
 	}
-	_ = ioutil.WriteFile("qqwry.dat", b, 0644)
-
-	return nil
 }

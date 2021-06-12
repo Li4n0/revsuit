@@ -22,6 +22,6 @@ func Init(config Config) {
 	case "geoip":
 		db = geoip.New(config.GeoLicenseKey)
 	default:
-		log.Fatal("wrong ip location database type")
+		log.Fatal("wrong ip location database type: %q", config.Database)
 	}
 }

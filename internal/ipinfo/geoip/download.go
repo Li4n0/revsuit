@@ -7,7 +7,6 @@ import (
 	"crypto/tls"
 	"fmt"
 	"io"
-	"io/ioutil"
 	"net/http"
 	"os"
 	"strings"
@@ -26,7 +25,7 @@ func get(url string) (b []byte, err error) {
 		Transport: &http.Transport{
 			TLSClientConfig: &tls.Config{InsecureSkipVerify: true}, // disable verify
 		}}
-	request, _ := http.NewRequest("GET", url, nil)
+	request, _ := http.NewRequest(http.MethodGet, url, nil)
 	request.Header.Add("User-Agent", "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.77 Safari/537.36")
 
 	resp, err := client.Do(request)
@@ -35,8 +34,7 @@ func get(url string) (b []byte, err error) {
 	}
 	defer resp.Body.Close()
 
-	b, err = ioutil.ReadAll(resp.Body)
-	return b, err
+	return io.ReadAll(resp.Body)
 }
 
 func extractTarGz(gzipStream io.Reader) error {
@@ -78,17 +76,11 @@ func extractTarGz(gzipStream io.Reader) error {
 }
 
 func download(licenseKey string) (err error) {
-	var (
-		GeoLite2TarGz []byte
-	)
+	var GeoLite2TarGz []byte
 	log.Info("Downloading GeoLite2-City.mmdb...")
 	if GeoLite2TarGz, err = get(fmt.Sprintf(Url, licenseKey)); err != nil {
 		return err
 	}
 
-	if err := extractTarGz(bytes.NewReader(GeoLite2TarGz)); err != nil {
-		return err
-	}
-
-	return nil
+	return extractTarGz(bytes.NewReader(GeoLite2TarGz))
 }

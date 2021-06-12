@@ -29,7 +29,7 @@ Download the latest release firstly.
 RevSuit will generate default configuration file on first run. Modify the configuration file according to your needs,
 then re-run.
 
-In order to confirm the ip location, you need to use the ip location database. `QQwry` is used as the data source by
+In order to confirm the IP location, you need to use the IP location database. `QQwry` is used as the data source by
 default, you can also modify the configuration to use `GeoIP`. If the selected database is not available in the current
 directory or the database is updated for more than a week, RevSuit will automatically download the latest database. If
 the download fails, the `IpArea` field will always be null.

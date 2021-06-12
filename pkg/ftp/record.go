@@ -7,8 +7,8 @@ import (
 	"github.com/gin-gonic/gin"
 	"github.com/li4n0/revsuit/internal/database"
 	"github.com/li4n0/revsuit/internal/file"
+	"github.com/li4n0/revsuit/internal/ipinfo"
 	"github.com/li4n0/revsuit/internal/notice"
-	"github.com/li4n0/revsuit/internal/qqwry"
 	"github.com/li4n0/revsuit/internal/record"
 	log "unknwon.dev/clog/v2"
 )
@@ -137,7 +137,7 @@ func ListRecords(c *gin.Context) {
 
 func createRecord(_rule *Rule, flag, flagGroup, user, password, method, path, filename, ip string, uploadData []byte, status Status) {
 	// create new record
-	area := qqwry.Area(ip)
+	area := ipinfo.Area(ip)
 	var ftpFile *file.FTPFile
 	var r *Record
 	var err error

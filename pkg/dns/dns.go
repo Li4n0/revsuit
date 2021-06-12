@@ -6,8 +6,8 @@ import (
 	"time"
 
 	"github.com/li4n0/revsuit/internal/database"
+	"github.com/li4n0/revsuit/internal/ipinfo"
 	"github.com/li4n0/revsuit/internal/newdns"
-	"github.com/li4n0/revsuit/internal/qqwry"
 	"github.com/li4n0/revsuit/internal/recycler"
 	"github.com/li4n0/revsuit/internal/rule"
 	"github.com/patrickmn/go-cache"
@@ -135,7 +135,7 @@ func (s *Server) newZone(name string) *newdns.Zone {
 					continue
 				}
 
-				r, err := newRecord(_rule, flag, domain, ip, qqwry.Area(ip))
+				r, err := newRecord(_rule, flag, domain, ip, ipinfo.Area(ip))
 				if err != nil {
 					log.Warn("DNS record(rule_id:%s) created failed :%s", _rule.Name, err)
 					return nil, nil

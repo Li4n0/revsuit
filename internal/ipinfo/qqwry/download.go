@@ -6,8 +6,9 @@ import (
 	"crypto/tls"
 	"encoding/binary"
 	"errors"
-	"io/ioutil"
+	"io"
 	"net/http"
+	"os"
 	"sync"
 	"time"
 
@@ -16,7 +17,7 @@ import (
 
 const (
 	CopyWriteUrl = "https://qqwry.mirror.noc.one/copywrite.rar"
-	QqwryUrl     = "https://qqwry.mirror.noc.one/qqwry.rar"
+	Url          = "https://qqwry.mirror.noc.one/qqwry.rar"
 )
 
 func get(url string) (b []byte, err error) {
@@ -34,8 +35,7 @@ func get(url string) (b []byte, err error) {
 	}
 	defer resp.Body.Close()
 
-	b, err = ioutil.ReadAll(resp.Body)
-	return b, err
+	return io.ReadAll(resp.Body)
 }
 
 func getKey(b []byte) (key uint32, err error) {
@@ -58,15 +58,17 @@ func decrypt(b []byte, key uint32) (_ []byte, err error) {
 		return
 	}
 	defer rc.Close()
-	return ioutil.ReadAll(rc)
+	return io.ReadAll(rc)
 }
 
 func download() (err error) {
 	var (
 		copyWriteData, qqwryData []byte
 		wg                       sync.WaitGroup
+		key                      uint32
 	)
 	log.Info("Downloading qqwry.dat...")
+
 	wg.Add(2)
 	go func() {
 		defer wg.Done()
@@ -77,23 +79,21 @@ func download() (err error) {
 
 	go func() {
 		defer wg.Done()
-		if qqwryData, err = get(QqwryUrl); err != nil {
+		if qqwryData, err = get(Url); err != nil {
 			return
 		}
 	}()
 	wg.Wait()
-	if err != nil {
-		return err
-	}
-	var key uint32
-	if key, err = getKey(copyWriteData); err != nil {
-		return
-	}
-	b, err := decrypt(qqwryData, key)
-	if err != nil {
-		return err
-	}
-	_ = ioutil.WriteFile("qqwry.dat", b, 0644)
 
-	return nil
+	if err != nil {
+		return err
+	}
+	if key, err = getKey(copyWriteData); err != nil {
+		return err
+	}
+	if b, err := decrypt(qqwryData, key); err != nil {
+		return err
+	} else {
+		return os.WriteFile("qqwry.dat", b, 0644)
+	}
 }

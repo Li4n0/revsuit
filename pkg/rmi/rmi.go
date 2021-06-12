@@ -10,7 +10,7 @@ import (
 	"time"
 
 	"github.com/li4n0/revsuit/internal/database"
-	"github.com/li4n0/revsuit/internal/qqwry"
+	"github.com/li4n0/revsuit/internal/ipinfo"
 	"github.com/li4n0/revsuit/internal/recycler"
 	"github.com/pkg/errors"
 	log "unknwon.dev/clog/v2"
@@ -111,7 +111,7 @@ func (s *Server) handleConnection(conn net.Conn) {
 			continue
 		}
 
-		area := qqwry.Area(ip)
+		area := ipinfo.Area(ip)
 
 		// create new record
 		r, err := NewRecord(_rule, flag, path, ip, area)

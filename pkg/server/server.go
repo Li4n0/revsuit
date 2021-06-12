@@ -6,6 +6,7 @@ import (
 	"github.com/gin-gonic/gin"
 	"github.com/li4n0/revsuit/internal/database"
 	"github.com/li4n0/revsuit/internal/file"
+	"github.com/li4n0/revsuit/internal/ipinfo"
 	"github.com/li4n0/revsuit/internal/notice"
 	"github.com/li4n0/revsuit/internal/record"
 	"github.com/li4n0/revsuit/pkg/dns"
@@ -178,6 +179,7 @@ func New(c *Config) *Revsuit {
 
 	initDatabase(c.Database)
 	logLevel := initLog(c.LogLevel)
+	ipinfo.Init(c.IpLocationDatabase)
 	initNotice(c.Notice)
 
 	s := &Revsuit{

@@ -2,6 +2,20 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+### [0.1.5-beta](https://github.com/Li4n0/revsuit/compare/v0.1.4-beta-fix-1...v0.1.5-beta) (2021-06-13)
+
+
+### Features
+
+* **ipinfo:** support GeoIP ([#26](https://github.com/Li4n0/revsuit/issues/26)) ([dc43b69](https://github.com/Li4n0/revsuit/commit/dc43b6973a5ac98e439d1353102ade2029b1d382))
+* **platform:** support custom admin path prefix ([#25](https://github.com/Li4n0/revsuit/issues/25)) ([f7be2bc](https://github.com/Li4n0/revsuit/commit/f7be2bc2e67841178e9316995999b20f80a49df7))
+
+
+### Bug Fixes
+
+* **frontend:** fix the bug of autoRefresh ([#27](https://github.com/Li4n0/revsuit/issues/27)) ([d1013c2](https://github.com/Li4n0/revsuit/commit/d1013c2416c04bd72b9cbb0c7e6b4b3f2e717837))
+* **frontend:** fix the frontend display bugs ([#28](https://github.com/Li4n0/revsuit/issues/28)) ([ddeced3](https://github.com/Li4n0/revsuit/commit/ddeced354042e0be6db5dd4feffa13ef22db231f))
+
 ### [0.1.4-beta-fix-1](https://github.com/Li4n0/revsuit/compare/v0.1.4-beta...v0.1.4-beta-fix-1) (2021-05-28)
 
 

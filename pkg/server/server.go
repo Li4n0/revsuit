@@ -18,7 +18,7 @@ import (
 	log "unknwon.dev/clog/v2"
 )
 
-const VERSION = "0.1.4-beta"
+const VERSION = "0.1.5-beta"
 
 type Revsuit struct {
 	config   *Config

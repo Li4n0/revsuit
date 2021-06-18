@@ -1,5 +1,7 @@
 # RevSuit - A Flexible and Powerful Reverse Connection Platform
 
+[中文文档](./README.zh-CN.md)
+
 ## Overview
 
 RevSuit is a flexible and powerful reverse connection platform designed for receiving connection from target host in
@@ -7,13 +9,13 @@ penetration. It currently supports HTTP, DNS, RMI, MySQL and FTP protocols.
 
 Flexible:
 
-1. Revsuit can set flexible rules to capture different connections.
+1. RevSuit can set flexible rules to capture different connections.
 2. Deploy and run via binaries without worrying about nasty dependency errors.
 
 Powerful:
 
-1. Revsuit allows users to customize the response for different connections through rules and supports dynamic response
-   generation using template variables.
+1. Allows to customize the response for different connections through rules and supports dynamic response generation
+   using template variables.
 2. Support a variety of protocols, and support the in-depth utilization of some protocols, such as DNS rebinding, MySQL
    Load Local Data, JDBC Deserialize Exploit, FTP Passive Mode SSRF, etc.
 3. Native support for use with scanners.
@@ -29,7 +31,7 @@ Download the latest release firstly.
 RevSuit will generate default configuration file on first run. Modify the configuration file according to your needs,
 then re-run.
 
-In order to confirm the IP location, you need to use the IP location database. `QQwry` is used as the data source by
+In order to confirm the IP location, it needs to use the IP location database. `QQwry` is used as the data source by
 default, you can also modify the configuration to use `GeoIP`. If the selected database is not available in the current
 directory or the database is updated for more than a week, RevSuit will automatically download the latest database. If
 the download fails, the `IpArea` field will always be null.
@@ -65,8 +67,8 @@ A few notes are as follows：
 2. `FlagFormat` uses regular expression syntax, and for different protocols, the fields matched by flagFormat are
    different, you can check the corresponding hints to get details when creating rules.
 3. Rules with high rank will take effect first.
-4. For different protocol rules, you can make different custom configurations, and for some protocols, template
-   variables can be used.
+4. For different protocol rules, you can make different custom responses, and for some protocols, template variables can
+   be used.
 5. You can set the named grouping of regular expressions in `flagFormat`, and the result of the matching grouping will
    also be used as a template variable.
 
@@ -129,7 +131,7 @@ RevSuit was split from my scanner project, so its native support works with scan
 
 From RevSuit's perspective, we call a scanner a client.
 
-#### Create Connection
+#### Establish connection
 
 RevSuit
 uses [HTTP Server-sent Events](https://developer.mozilla.org/en-US/docs/Web/API/Server-sent_events/Using_server-sent_events)
@@ -145,8 +147,8 @@ example.
 
 #### Multi-client
 
-As shown above, RevSuit supports multiple clients, and each client in the connected state receives a push of `flag`, so
-distributed scanning can be supported.
+As shown above, RevSuit supports multiple clients, and each client **in the connected state** receives a push of `flag`,
+so distributed scanning can be supported.
 
 #### Temporary storage queue
 
@@ -156,14 +158,14 @@ helpful for discovering delay-triggered vulnerabilities.)
 
 #### Use flagGroup
 
-`FlagGroup` is the content matched by the anonymous group in the `flagFormat` field of the rule. The platform will check
-the content matched in the grouping,and the flag is only pushed to the client when then content(`flagGroup`) captured
-for the first time.
-
 In a real-world vulnerability scanning scenario, you may send a large number of different payloads for a single
 vulnerability point, and they may all be valid, which can result in the backlink platform receiving many requests, yet
 they are caused by the same vulnerability. If you don't want the client to receive so many `flags` for the same
 vulnerability, you can take advantage of the `flagGroup` feature of rule's flagFormat.
+
+`FlagGroup` is the content matched by the anonymous group in the `flagFormat` field of the rule. The platform will check
+the content matched in the grouping,and the flag is only pushed to the client when then content(`flagGroup`) captured
+for the first time.
 
 For example, SSRF scanning.
 
@@ -183,23 +185,22 @@ http:
 
 Suppose our target is `https://www.testvuln.com?url=api.com&p=useless`, and for SSRF we have 5 payloads. The final
 request sent by the scanner may
-be `['https://www.testvuln.com?url=http://revsuit.com/ssrfa98oni1&p=useless, ... ,'https://www.testvuln.com?url=//revsuit.com/ssrfa98oni5&p=useless`']
+be `['https://www.testvuln.com?url=http://revsuit.com/ssrfa98oni1&p=useless','https://www.testvuln.com?url=http://revsuit.com/ssrfa98oni2&p=useless', ... ,'https://www.testvuln.com?url=//revsuit.com/ssrfa98oni5&p=useless`']
 . They may all attack successfully.
 
 However, because anonymous grouping is used in the rule's `flagFormat`, The platform will query the
 connected `flagGroup`, in this case `ssrfa98oni`, and push `flag` to the client only at its first appearance, so the
-client will only receive one flag:`ssrfa98oni1`. But this is enough, because it already proves that the `url` parameter
-of the target is vulnerable.
+client will only receive one flag:`ssrfa98oni1`. It already proves that the `url` parameter of the target is vulnerable.
 
 ### Multi-module collocation
 
 In actual penetration testing scenarios, certain tasks can be done easily and quickly by combining and matching various
-modules of RevSuit. The following is an example of a blind XXE scenario, showing how to use RevSuit's HTTP and FTP
-modules, combined with template variables, to quickly complete a port scan.
+modules of RevSuit. The following is an example of a blind XXE in Java Web, showing how to use RevSuit's HTTP
+and FTP modules, combined with template variables, to quickly complete a port scan.
 
-First use create an HTTP rule to return evil.dtd, customize the response to the contents of dtd so that it goes to
-connect to RevSuit's FTP service, and use template variables to pass the Host and Port to be scanned to FTP via FTP's
-user and password.
+First create an HTTP rule to return evil.dtd, customize the response to the contents of dtd so that it goes to connect
+to RevSuit's FTP service, and use template variables to pass the Host and Port to be scanned to FTP via FTP's user and
+password.
 
 ![create evil.dtd rule](./images/evil_dtd_rule.png)
 
@@ -225,13 +226,15 @@ and 8080 are open.
 
 A more detailed wiki is being prepared, you can explore by yourself before it.
 
-## Advice and Communication
+## Feedback, Suggestions and Communication
 
-Submit an issue or contact me through Weixin: `Li4n06`
+Submit an issue or contact me through Weixin: `TGk0bjA2Cg==`
 
 ## Acknowledgements
 
 ### Reference
+
+This project draws on the code of the following outstanding projects:
 
 * [https://github.com/rmb122/rogue_mysql_server](https://github.com/rmb122/rogue_mysql_server)
 * [https://github.com/256dpi/newdns](https://github.com/256dpi/newdns)

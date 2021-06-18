@@ -1,6 +1,6 @@
 # RevSuit - A Flexible and Powerful Reverse Connection Platform
 
-[中文文档](./README.zh-CN.md)
+English ｜[简体中文](./README.zh-CN.md)
 
 ## Overview
 
@@ -195,8 +195,8 @@ client will only receive one flag:`ssrfa98oni1`. It already proves that the `url
 ### Multi-module collocation
 
 In actual penetration testing scenarios, certain tasks can be done easily and quickly by combining and matching various
-modules of RevSuit. The following is an example of a blind XXE in Java Web, showing how to use RevSuit's HTTP
-and FTP modules, combined with template variables, to quickly complete a port scan.
+modules of RevSuit. The following is an example of a blind XXE in Java Web, showing how to use RevSuit's HTTP and FTP
+modules, combined with template variables, to quickly complete a port scan.
 
 First create an HTTP rule to return evil.dtd, customize the response to the contents of dtd so that it goes to connect
 to RevSuit's FTP service, and use template variables to pass the Host and Port to be scanned to FTP via FTP's user and

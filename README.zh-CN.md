@@ -1,6 +1,6 @@
-# RevSuit ——灵活并且强大的反连平台
+# RevSuit - A Flexible and Powerful Reverse Connection Platform
 
-[English Document](./README.md)
+简体中文 ｜[English](./README.md)
 
 ## 简介
 

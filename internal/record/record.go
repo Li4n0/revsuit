@@ -13,7 +13,7 @@ type Record interface {
 }
 
 type BaseRecord struct {
-	Record      `gorm:"-" json:"-"`
+	Record      `gorm:"-" json:"-" notice:"-"`
 	ID          uint      `gorm:"primarykey" form:"id" json:"id" notice:"-"`
 	RuleName    string    `gorm:"index" form:"rule_name" json:"rule_name" notice:"rule"`
 	Flag        string    `gorm:"index" form:"flag" json:"flag" `

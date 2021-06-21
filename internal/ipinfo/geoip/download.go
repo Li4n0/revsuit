@@ -58,7 +58,6 @@ func extractTarGz(gzipStream io.Reader) error {
 
 		switch header.Typeflag {
 		case tar.TypeReg:
-			log.Trace(header.Name)
 			if !strings.HasSuffix(header.Name, "GeoLite2-City.mmdb") {
 				continue
 			}

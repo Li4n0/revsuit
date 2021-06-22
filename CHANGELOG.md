@@ -2,6 +2,13 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+### [0.1.5](https://github.com/Li4n0/revsuit/compare/v0.1.5-beta...v0.1.5) (2021-06-22)
+
+
+### Bug Fixes
+
+* **notice:** fix the buf of notice with null record field ([#31](https://github.com/Li4n0/revsuit/issues/31)) ([ef38cbc](https://github.com/Li4n0/revsuit/commit/ef38cbc790f69716a335167321e1c7c8bdee2e41))
+
 ### [0.1.5-beta](https://github.com/Li4n0/revsuit/compare/v0.1.4-beta-fix-1...v0.1.5-beta) (2021-06-13)
 
 

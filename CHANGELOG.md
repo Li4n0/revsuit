@@ -2,7 +2,7 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
-### [0.1.5](https://github.com/Li4n0/revsuit/compare/v0.1.5-beta...v0.1.5) (2021-06-22)
+### [0.1.5](https://github.com/Li4n0/revsuit/compare/v0.1.5-beta...v0.1.5) (2021-06-22 公开该项目以庆祝毕业，愿工作多年后的我，归来时仍是少年)
 
 
 ### Bug Fixes

@@ -16,6 +16,7 @@ func Start() {
 		log.ConsoleConfig{
 			Level: log.LevelInfo,
 		})
+	defer log.Stop()
 	app := &cli.App{
 		Name:  "RevSuit",
 		Usage: "An Open-Sourced Reverse Platform Designed for Receive Various Kinds of Connection",

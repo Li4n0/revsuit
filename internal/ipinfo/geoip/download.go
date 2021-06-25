@@ -20,6 +20,7 @@ const (
 )
 
 func get(url string) (b []byte, err error) {
+	var resp *http.Response
 	client := http.Client{
 		Timeout: 90 * time.Second,
 		Transport: &http.Transport{
@@ -28,11 +29,17 @@ func get(url string) (b []byte, err error) {
 	request, _ := http.NewRequest(http.MethodGet, url, nil)
 	request.Header.Add("User-Agent", "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.77 Safari/537.36")
 
-	resp, err := client.Do(request)
+	resp, err = client.Do(request)
 	if err != nil {
 		return
 	}
-	defer resp.Body.Close()
+
+	defer func(Body io.ReadCloser) {
+		err := Body.Close()
+		if err != nil {
+			log.Warn("%v", err)
+		}
+	}(resp.Body)
 
 	return io.ReadAll(resp.Body)
 }
@@ -65,9 +72,13 @@ func extractTarGz(gzipStream io.Reader) error {
 			if err != nil {
 				return err
 			}
-			defer outFile.Close()
 			if _, err := io.Copy(outFile, tarReader); err != nil {
+				_ = outFile.Close()
 				return err
+			}
+			err = outFile.Close()
+			if err != nil {
+				log.Warn("%v", err)
 			}
 		}
 	}

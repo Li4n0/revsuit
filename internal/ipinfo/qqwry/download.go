@@ -21,6 +21,7 @@ const (
 )
 
 func get(url string) (b []byte, err error) {
+	var resp *http.Response
 	client := http.Client{
 		Timeout: 90 * time.Second,
 		Transport: &http.Transport{
@@ -29,11 +30,17 @@ func get(url string) (b []byte, err error) {
 	request, _ := http.NewRequest("GET", url, nil)
 	request.Header.Add("User-Agent", "Nali/2.1.2 (Nali CLI, https://nali.skk.moe)")
 
-	resp, err := client.Do(request)
+	resp, err = client.Do(request)
 	if err != nil {
 		return
 	}
-	defer resp.Body.Close()
+
+	defer func(Body io.ReadCloser) {
+		err := Body.Close()
+		if err != nil {
+			log.Warn("%v", err)
+		}
+	}(resp.Body)
 
 	return io.ReadAll(resp.Body)
 }
@@ -47,17 +54,25 @@ func getKey(b []byte) (key uint32, err error) {
 }
 
 func decrypt(b []byte, key uint32) (_ []byte, err error) {
+	var rc io.ReadCloser
 	for i := 0; i < 0x200; i++ {
 		key *= uint32(0x805)
 		key++
 		key &= uint32(0xff)
 		b[i] = b[i] ^ byte(key)
 	}
-	rc, err := zlib.NewReader(bytes.NewBuffer(b))
+	rc, err = zlib.NewReader(bytes.NewBuffer(b))
 	if err != nil {
 		return
 	}
-	defer rc.Close()
+
+	defer func(rc io.ReadCloser) {
+		err := rc.Close()
+		if err != nil {
+			log.Warn("%v", err)
+		}
+	}(rc)
+
 	return io.ReadAll(rc)
 }
 

@@ -2,6 +2,14 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+### [0.1.6](https://github.com/Li4n0/revsuit/compare/v0.1.5...v0.1.6) (2021-06-25)
+
+
+### Bug Fixes
+
+* **cli:** fix the bug that the prompt may not be output when generating config file ([5615351](https://github.com/Li4n0/revsuit/commit/56153510e11783c08843cbb8b0f827d5f8567842))
+* **ipinfo:** fix a potential panic when downloading ip location database ([#33](https://github.com/Li4n0/revsuit/issues/33)) ([b1773ee](https://github.com/Li4n0/revsuit/commit/b1773ee5e9ebd8c8be72f315981268992c08b3f1))
+
 ### [0.1.5](https://github.com/Li4n0/revsuit/compare/v0.1.5-beta...v0.1.5) (2021-06-22 公开该项目以庆祝毕业，愿工作多年后的我，归来时仍是少年)
 
 

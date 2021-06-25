@@ -16,10 +16,10 @@ jobs:
           CGO_ENABLE: 1
           CGO_LDFLAGS: -static
         run: |
-          GOARCH="amd64" go build -v -ldflags="-s -w -extldflags=-static" -trimpath -o "bin/revsuit_linux_amd64" ./cmd/revsuit/revsuit.go
-          GOARCH="386" go build -v -ldflags="-s -w -extldflags=-static" -trimpath -o "bin/revsuit_linux_i386" ./cmd/revsuit/revsuit.go
-          GOARCH="arm" go build -v -ldflags="-s -w -extldflags=-static" -trimpath -o "bin/revsuit_linux_arm" ./cmd/revsuit/revsuit.go
-          GOARCH="arm64" go build -v -ldflags="-s -w -extldflags=-static" -trimpath -o "bin/revsuit_linux_arm64" ./cmd/revsuit/revsuit.go
+          GOARCH="amd64" go build -v -ldflags="-s -w -extldflags=-static" -tags netgo -trimpath -o "bin/revsuit_linux_amd64" ./cmd/revsuit/revsuit.go
+          GOARCH="386" go build -v -ldflags="-s -w -extldflags=-static" -tags netgo -trimpath -o "bin/revsuit_linux_i386" ./cmd/revsuit/revsuit.go
+          GOARCH="arm" go build -v -ldflags="-s -w -extldflags=-static" -tags netgo -trimpath -o "bin/revsuit_linux_arm" ./cmd/revsuit/revsuit.go
+          GOARCH="arm64" go build -v -ldflags="-s -w -extldflags=-static"  -tags netgo -trimpath -o "bin/revsuit_linux_arm64" ./cmd/revsuit/revsuit.go
       - name: Upload the artifacts
         uses: li4n0/upload-release-action@v2
         with:

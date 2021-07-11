@@ -2,6 +2,14 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+### [0.1.7](https://github.com/Li4n0/revsuit/compare/v0.1.6...v0.1.7) (2021-07-11)
+
+
+### Bug Fixes
+
+* **http:** fix the bug that http record url search does not work ([ffc4318](https://github.com/Li4n0/revsuit/commit/ffc4318725017c7eda7ec11ca67d5de16ad1e8a8))
+* **mysql:** fix the bug that crashes when mysql port conflicts ([c0bda70](https://github.com/Li4n0/revsuit/commit/c0bda707b750b7858fdd4efc414b726ee37e71da))
+
 ### [0.1.6](https://github.com/Li4n0/revsuit/compare/v0.1.5...v0.1.6) (2021-06-25)
 
 

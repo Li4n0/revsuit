@@ -78,7 +78,7 @@ func ListRecords(c *gin.Context) {
 		db.Where("method = ?", httpRecord.Method)
 	}
 	if httpRecord.URI != "" {
-		db.Where("path like ?", "%"+httpRecord.URI+"%")
+		db.Where("uri like ?", "%"+httpRecord.URI+"%")
 	}
 	if httpRecord.RemoteIP != "" {
 		db.Where("remote_ip = ?", httpRecord.RemoteIP)

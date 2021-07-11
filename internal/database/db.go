@@ -2,11 +2,19 @@ package database
 
 import "gorm.io/gorm"
 
-var DB *gorm.DB
+var (
+	DB     *gorm.DB
+	Driver DriverType
+)
 
-func InitDB(driver, dsn string) (err error) {
+type DriverType = string
+
+const Sqlite = "sqlite"
+
+func InitDB(driver DriverType, dsn string) (err error) {
+	Driver = driver
 	switch driver {
-	case "sqlite":
+	case Sqlite:
 		DB, err = NewSqlite3(dsn)
 	}
 	return err

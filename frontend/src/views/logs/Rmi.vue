@@ -37,7 +37,7 @@
 </style>
 <script>
 
-import {getRmiRecord} from '@/api/record'
+import {deleteRmiRecord, getRmiRecord} from '@/api/record'
 import {store} from '@/main'
 import FilterDropdown from '@/components/FilterDropdown'
 
@@ -110,7 +110,8 @@ export default {
         onShowSizeChange: (current, size) => {
           store.pageSize = size
         }
-      }, filters: {},
+      },
+      filters: {},
       order: "desc",
       loading: false,
       columns,
@@ -143,6 +144,21 @@ export default {
       }).catch(e => {
         if (e.response.status !== 403) {
           this.$message.error('Unknown error with status code: ' + e.response.status)
+        }
+      })
+    },
+    delete: function () {
+      let params = {
+        ...this.filters,
+      }
+      this.loading = true;
+      deleteRmiRecord(params).then(() => {
+        this.$message.success('Deleted successfully')
+        this.filters = {}
+        this.fetch()
+      }).catch(e => {
+        if (e.response.status !== 403) {
+          this.$message.error('Failed to delete: ' + e.response.data.error)
         }
       })
     },

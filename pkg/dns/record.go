@@ -1,6 +1,7 @@
 package dns
 
 import (
+	"net/http"
 	"strconv"
 	"time"
 
@@ -8,6 +9,8 @@ import (
 	"github.com/li4n0/revsuit/internal/database"
 	"github.com/li4n0/revsuit/internal/notice"
 	"github.com/li4n0/revsuit/internal/record"
+	"gorm.io/gorm"
+	log "unknwon.dev/clog/v2"
 )
 
 var _ record.Record = (*Record)(nil)
@@ -41,7 +44,7 @@ func newRecord(rule *Rule, flag, domain, remoteIp, ipArea string) (r *Record, er
 	return r, database.DB.Create(r).Error
 }
 
-func ListRecords(c *gin.Context) {
+func Records(c *gin.Context) {
 	var (
 		dnsRecord Record
 		res       []Record
@@ -80,6 +83,31 @@ func ListRecords(c *gin.Context) {
 		db.Where("rule_name = ?", dnsRecord.RuleName)
 	}
 
+	//Delete records
+	if c.Request.Method == http.MethodDelete {
+		if err := db.Session(&gorm.Session{AllowGlobalUpdate: true}).Delete(&res).Error; err != nil {
+			c.JSON(400, gin.H{
+				"status": "failed",
+				"error":  err.Error(),
+				"data":   nil,
+			})
+			return
+		}
+
+		if database.Driver == database.Sqlite {
+			db.Exec("VACUUM")
+		}
+
+		c.JSON(200, gin.H{
+			"status": "succeed",
+			"error":  nil,
+		})
+
+		log.Info("%d dns records deleted by %s", count, c.Request.RemoteAddr, db.RowsAffected)
+		return
+	}
+
+	//List records
 	page, err := strconv.Atoi(c.Query("page"))
 	if err != nil {
 		c.JSON(400, gin.H{

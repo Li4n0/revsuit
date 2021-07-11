@@ -302,10 +302,11 @@ func (s *Server) Run() {
 	s.listener, err = vmysql.NewListener("tcp", s.Addr, authServer, s, s.VersionString, 0, 0)
 	if err != nil {
 		log.Error("New MySQL Server failed: %s", err)
+		return
 	}
 
 	go func() {
-
+		s.livingLock.Lock()
 		if !s.Enable {
 			s.listener.Close()
 		}

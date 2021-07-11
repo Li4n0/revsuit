@@ -127,7 +127,7 @@ func Records(c *gin.Context) {
 			"error":  nil,
 		})
 
-		log.Info("%d ftp records deleted by %s", count, c.Request.RemoteAddr, db.RowsAffected)
+		log.Info("%d ftp records deleted by %s", db.RowsAffected, c.Request.RemoteAddr)
 		return
 	}
 

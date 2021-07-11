@@ -109,7 +109,7 @@ func Records(c *gin.Context) {
 			"status": "succeed",
 			"error":  nil,
 		})
-		log.Info("%d http records deleted by %s", count, c.Request.RemoteAddr, db.RowsAffected)
+		log.Info("%d http records deleted by %s", db.RowsAffected, c.Request.RemoteAddr)
 		return
 	}
 

@@ -49,7 +49,7 @@
 </style>
 <script>
 
-import {getHttpRecord} from '@/api/record'
+import {getHttpRecord, deleteHttpRecord} from '@/api/record'
 import {store} from '@/main'
 import FilterDropdown from '@/components/FilterDropdown'
 
@@ -176,6 +176,21 @@ export default {
       }).catch(e => {
         if (e.response.status !== 403) {
           this.$message.error('Unknown error with status code: ' + e.response.status)
+        }
+      })
+    },
+    delete: function () {
+      let params = {
+        ...this.filters,
+      }
+      this.loading = true;
+      deleteHttpRecord(params).then(() => {
+        this.$message.success('Deleted successfully')
+        this.filters = {}
+        this.fetch()
+      }).catch(e => {
+        if (e.response.status !== 403) {
+          this.$message.error('Failed to delete: ' + e.response.data.error)
         }
       })
     },

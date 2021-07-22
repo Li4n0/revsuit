@@ -18,7 +18,7 @@ import (
 	log "unknwon.dev/clog/v2"
 )
 
-const VERSION = "0.1.7"
+const VERSION = "0.2.0"
 
 type Revsuit struct {
 	config   *Config
@@ -60,7 +60,7 @@ func initDatabase(dsn string) {
 			Level: log.LevelInfo,
 		})
 
-	err := database.InitDB("sqlite", dsn)
+	err := database.InitDB(database.Sqlite, dsn)
 	if err != nil {
 		log.Fatal(err.Error())
 	}

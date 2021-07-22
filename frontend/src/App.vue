@@ -62,7 +62,7 @@
         />
         <div v-if="isLogMode" style="float: right; min-width:60% ;padding: 12px 0;line-height: 24px;">
           <a-row :gutter="24" type="flex">
-            <a-col :span="21">
+            <a-col :span="20">
               <a-form-model v-show="showSettings" ref="settings" layout="inline">
                 <a-row :gutter="24" type="flex">
                   <a-col :span="9" :offset="2">
@@ -80,9 +80,23 @@
                 </a-row>
               </a-form-model>
             </a-col>
-            <a-col :span="3">
+            <a-col :span="4">
+              <a-popconfirm
+                  :title="showLogNum?`This will delete all logs in the current filtered state, a total of ${this.$refs.content.pagination.total}, are you sure?`:'This will delete all logs in the current filtered state, a total of 0, are you sure?'"
+                  ok-text="Yes"
+                  cancel-text="No"
+                  @visibleChange="showLogNum?delayChangeShowLogNum():showLogNum=!showLogNum"
+                  @confirm="deleteLogs"
+              >
+                <a-icon slot="icon" type="question-circle-o" style="color: red"/>
+                <a-icon
+                    :style="'font-size: 18px;padding: 12px 0;'"
+                    type="delete"
+                    @click="()=>{}"
+                />
+              </a-popconfirm>
               <a-icon
-                  :style="'font-size: 18px;padding: 12px 0;'+(showSettings?'color: #1b90ff;':'')"
+                  :style="'font-size: 18px;padding:12px 15px;'+(showSettings?'color: #1b90ff;':'')"
                   type="setting"
                   @click="showSettings = !showSettings"
               />
@@ -123,6 +137,7 @@ export default {
       pageSize: store.pageSize,
       collapsed: false,
       showSettings: false,
+      showLogNum: false,
       openKeys: [],
       version: "",
     };
@@ -130,7 +145,7 @@ export default {
   computed: {
     isLogMode() {
       return this.$route.path.includes('logs')
-    }
+    },
   },
   methods: {
     timing() {
@@ -145,6 +160,14 @@ export default {
       getVersion().then(res => {
         this.version = res.data.result
       })
+    },
+    deleteLogs() {
+      this.$refs.content.delete()
+    },
+    delayChangeShowLogNum() {
+      setTimeout(() => {
+        this.showLogNum = !this.showLogNum
+      }, 1000)
     }
   },
   mounted() {

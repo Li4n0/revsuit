@@ -77,19 +77,24 @@ func (revsuit *Revsuit) registerHttpRouter() {
 	recordGroup := revsuit.http.ApiGroup.Group("/record")
 
 	httpGroup := recordGroup.Group("/http")
-	httpGroup.GET("", rhttp.ListRecords)
+	httpGroup.GET("", rhttp.Records)
+	httpGroup.DELETE("", rhttp.Records)
 
 	dnsGroup := recordGroup.Group("/dns")
-	dnsGroup.GET("", dns.ListRecords)
+	dnsGroup.GET("", dns.Records)
+	dnsGroup.DELETE("", dns.Records)
 
 	mysqlGroup := recordGroup.Group("/mysql")
-	mysqlGroup.GET("", mysql.ListRecords)
+	mysqlGroup.GET("", mysql.Records)
+	mysqlGroup.DELETE("", mysql.Records)
 
 	rmiGroup := recordGroup.Group("/rmi")
-	rmiGroup.GET("", rmi.ListRecords)
+	rmiGroup.GET("", rmi.Records)
+	rmiGroup.DELETE("", rmi.Records)
 
 	ftpGroup := recordGroup.Group("/ftp")
-	ftpGroup.GET("", ftp.ListRecords)
+	ftpGroup.GET("", ftp.Records)
+	ftpGroup.DELETE("", ftp.Records)
 
 	// init rule router group
 	ruleGroup := revsuit.http.ApiGroup.Group("/rule")

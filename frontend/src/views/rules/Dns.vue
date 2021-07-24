@@ -51,7 +51,7 @@
               <span slot="label">
                   Value
                   <a-tooltip
-                      title="Support template such as ${varname}">
+                      title="Support template such as ${flag}/${custom_varname}">
                     <a-icon type="question-circle-o"/>
                   </a-tooltip>
               </span>
@@ -90,7 +90,7 @@
     </a-drawer>
     <!--    rule table -->
     <a-table
-      style="overflow-x: auto;"
+        style="overflow-x: auto;"
         :columns="columns"
         :data-source="data"
         :loading="loading"

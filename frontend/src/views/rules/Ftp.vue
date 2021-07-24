@@ -42,7 +42,7 @@
                   <a-tooltip
                       title="1. The data to be returned when the client executes the download request.
                       2. Please use base64 encoding.
-                      3. Support template such as ${user}/${password}/${varname}">
+                      3. Support template such as ${user}/${password}/${flag}/${custom_varname}">
                     <a-icon type="question-circle-o"/>
                   </a-tooltip>
               </span>

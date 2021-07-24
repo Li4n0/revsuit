@@ -60,6 +60,7 @@ func (br BaseRule) Match(s string) (flag, flagGroup string, vars map[string]stri
 			vars[name] = strings.TrimSpace(matched[j])
 		}
 	}
+	vars["flag"] = flag
 
 	return flag, flagGroup, vars
 }

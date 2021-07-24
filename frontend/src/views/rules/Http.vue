@@ -21,7 +21,7 @@
               <span slot="label">
                   Response Status Code
                   <a-tooltip
-                      title="Number between 100-600, or template such as ${query.varname}/${body.varname}/${header.varname}">
+                      title="Number between 100-600, or template such as ${query.varname}/${body.varname}/${header.varname}/${flag}/${custom_varname}">
                     <a-icon type="question-circle-o"/>
                   </a-tooltip>
               </span>

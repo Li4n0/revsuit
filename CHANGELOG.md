@@ -2,6 +2,13 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+### [0.2.1](https://github.com/Li4n0/revsuit/compare/v0.2.0...v0.2.1) (2021-07-24)
+
+
+### Features
+
+* **rule:** add `flag` as a built-in template variable ([ee36205](https://github.com/Li4n0/revsuit/commit/ee36205ac160a75d23dbb244c72f3bb2d185ab80))
+
 ## [0.2.0](https://github.com/Li4n0/revsuit/compare/v0.1.7...v0.2.0) (2021-07-22)
 
 

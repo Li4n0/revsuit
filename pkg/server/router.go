@@ -82,6 +82,7 @@ func (revsuit *Revsuit) registerHttpRouter() {
 
 	dnsGroup := recordGroup.Group("/dns")
 	dnsGroup.GET("", dns.Records)
+	dnsGroup.POST("batchFind", dns.FindDomains)
 	dnsGroup.DELETE("", dns.Records)
 
 	mysqlGroup := recordGroup.Group("/mysql")

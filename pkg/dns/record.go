@@ -22,6 +22,10 @@ type Record struct {
 	Rule Rule `gorm:"foreignKey:RuleName;references:Name;constraint:OnUpdate:CASCADE,OnDelete:SET NULL;" form:"-" json:"-" notice:"-"`
 }
 
+type Domains struct {
+	Domains []string `json:"domains"`
+}
+
 func (Record) TableName() string {
 	return "dns_records"
 }
@@ -42,6 +46,36 @@ func newRecord(rule *Rule, flag, domain, remoteIp, ipArea string) (r *Record, er
 		Rule:   *rule,
 	}
 	return r, database.DB.Create(r).Error
+}
+
+func FindDomains(c *gin.Context) {
+	var (
+		dnsRecord Record
+		domains   Domains
+		count     int64
+	)
+	res := []string{}
+	if err := c.ShouldBind(&domains); err != nil {
+		c.JSON(400, gin.H{
+			"status": "failed",
+			"error":  err.Error(),
+			"result": nil,
+		})
+	}
+	for i := 0; i < len(domains.Domains); i++ {
+		db := database.DB.Model(&dnsRecord)
+		domain := domains.Domains[i]
+		if err := db.Where("domain like ?", "%"+domain+"%").Count(&count); err != nil {
+			log.Info("find %s : %d", domain, count)
+			if count > 0 {
+				res = append(res, domain)
+			}
+		}
+
+	}
+	c.JSON(200, gin.H{
+		"found": res,
+	})
 }
 
 func Records(c *gin.Context) {

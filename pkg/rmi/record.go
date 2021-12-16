@@ -21,6 +21,10 @@ type Record struct {
 	Rule Rule `gorm:"foreignKey:RuleName;references:Name;constraint:OnUpdate:CASCADE,OnDelete:SET NULL;" form:"-" json:"-" notice:"-"`
 }
 
+type Rmis struct {
+	Rmis []string `json:"rmis"`
+}
+
 func (Record) TableName() string {
 	return "rmi_records"
 }
@@ -41,6 +45,35 @@ func NewRecord(rule *Rule, flag, path, ip, area string) (r *Record, err error) {
 		Rule: *rule,
 	}
 	return r, database.DB.Create(r).Error
+}
+
+func FindRmis(c *gin.Context) {
+	var (
+		rmiRecord Record
+		rmis      Rmis
+		count     int64
+	)
+	res := []string{}
+	if err := c.ShouldBind(&rmis); err != nil {
+		c.JSON(400, gin.H{
+			"status": "failed",
+			"error":  err.Error(),
+			"result": nil,
+		})
+	}
+	for i := 0; i < len(rmis.Rmis); i++ {
+		db := database.DB.Model(&rmiRecord)
+		rmi := rmis.Rmis[i]
+		if err := db.Where("path like ?", "%"+rmi+"%").Count(&count); err != nil {
+			if count > 0 {
+				res = append(res, rmi)
+			}
+		}
+
+	}
+	c.JSON(200, gin.H{
+		"found": res,
+	})
 }
 
 func Records(c *gin.Context) {

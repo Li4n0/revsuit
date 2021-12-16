@@ -91,7 +91,7 @@ func (revsuit *Revsuit) registerHttpRouter() {
 
 	rmiGroup := recordGroup.Group("/rmi")
 	rmiGroup.GET("", rmi.Records)
-	dnsGroup.POST("batchFind", rmi.FindRmis)
+	rmiGroup.POST("batchFind", rmi.FindRmis)
 	rmiGroup.DELETE("", rmi.Records)
 
 	ftpGroup := recordGroup.Group("/ftp")

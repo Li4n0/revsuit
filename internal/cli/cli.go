@@ -73,13 +73,13 @@ func Start() {
 				conf.Addr = c.String("addr")
 			}
 			if c.String("token") != "" {
-				conf.Addr = c.String("token")
+				conf.Token = c.String("token")
 			}
 			if c.String("db") != "" {
 				conf.Database = c.String("db")
 			}
 			if c.String("log") != "" {
-				conf.Database = c.String("log")
+				conf.LogLevel = c.String("log")
 			}
 			server.New(conf).Run()
 			return nil

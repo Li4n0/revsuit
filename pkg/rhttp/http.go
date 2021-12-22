@@ -87,7 +87,7 @@ func (s *Server) UpdateRules() error {
 	db := database.DB.Model(new(Rule))
 	defer s.rulesLock.Unlock()
 	s.rulesLock.Lock()
-	return db.Order("rank desc").Find(&s.rules).Error
+	return db.Order("`rank` desc").Find(&s.rules).Error
 }
 
 func (s *Server) startHttpServer() {

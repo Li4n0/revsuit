@@ -45,7 +45,7 @@ func (s *Server) UpdateRules() error {
 	db := database.DB.Model(new(Rule))
 	defer s.rulesLock.Unlock()
 	s.rulesLock.Lock()
-	return errors.Wrap(db.Order("rank desc").Find(&s.rules).Error, "RMI update rules error")
+	return errors.Wrap(db.Order("`rank` desc").Find(&s.rules).Error, "RMI update rules error")
 }
 
 func (s *Server) handleConnection(conn net.Conn) {

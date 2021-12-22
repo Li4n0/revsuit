@@ -1,6 +1,8 @@
 package server
 
 import (
+	"github.com/pkg/errors"
+	"strings"
 	"sync"
 
 	"github.com/gin-gonic/gin"
@@ -60,7 +62,14 @@ func initDatabase(dsn string) {
 			Level: log.LevelInfo,
 		})
 
-	err := database.InitDB(database.Sqlite, dsn)
+	var err error
+	if strings.Contains(dsn, "@tcp") {
+		err = database.InitDB(database.Mysql, dsn)
+	} else if strings.Contains(dsn, ".db") {
+		err = database.InitDB(database.Sqlite, dsn)
+	} else {
+		err = errors.New("unsupported database")
+	}
 	if err != nil {
 		log.Fatal(err.Error())
 	}

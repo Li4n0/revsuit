@@ -1,9 +1,10 @@
 package server
 
 import (
-	"github.com/pkg/errors"
 	"strings"
 	"sync"
+
+	"github.com/pkg/errors"
 
 	"github.com/gin-gonic/gin"
 	"github.com/li4n0/revsuit/internal/database"

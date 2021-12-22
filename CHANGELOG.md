@@ -2,6 +2,21 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+## [0.3.0](https://github.com/Li4n0/revsuit/compare/v0.2.1...v0.3.0) (2021-12-22)
+
+
+### Features
+
+* **database:** add mysql support ([#39](https://github.com/Li4n0/revsuit/issues/39)) ([9d7a5b4](https://github.com/Li4n0/revsuit/commit/9d7a5b45984bb3fee187146b0f27e77d6ec0ea0a))
+
+
+### Bug Fixes
+
+* **cli:** fix typos ([#41](https://github.com/Li4n0/revsuit/issues/41)) ([8e96962](https://github.com/Li4n0/revsuit/commit/8e969627917fda9ce220283eb34599b781f03ae3))
+* **database:** fix the error when load package ([3ca242d](https://github.com/Li4n0/revsuit/commit/3ca242d0866f5f10aade3557d80b8252be7ef938))
+* **mysql/record:** fix the bug when searching mysql record with username as keyword ([ce8d760](https://github.com/Li4n0/revsuit/commit/ce8d76056faec45d3e68164b3802ceaaec0468b9))
+* **pkg:** fix the conflict between rank field and built-in function ([#38](https://github.com/Li4n0/revsuit/issues/38)) ([a59540d](https://github.com/Li4n0/revsuit/commit/a59540d42ddf820e445a8395c2995fa89fc14323))
+
 ### [0.2.1](https://github.com/Li4n0/revsuit/compare/v0.2.0...v0.2.1) (2021-07-24)
 
 

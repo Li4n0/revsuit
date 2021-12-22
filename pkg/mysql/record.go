@@ -89,6 +89,9 @@ func Records(c *gin.Context) {
 	if mysqlRecord.RuleName != "" {
 		db.Where("rule_name = ?", mysqlRecord.RuleName)
 	}
+	if mysqlRecord.Username != "" {
+		db.Where("username = ?", mysqlRecord.Username)
+	}
 	if mysqlRecord.ClientOS != "" {
 		db.Where("client_os like ?", "%"+mysqlRecord.ClientOS)
 	}

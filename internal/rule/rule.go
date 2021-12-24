@@ -14,16 +14,17 @@ type Rule interface {
 }
 
 type BaseRule struct {
-	Rule         `gorm:"-" json:"-" yaml:"-"`
-	ID           uint           `gorm:"primarykey" form:"id" json:"id" yaml:"-"`
-	CreatedAt    time.Time      `json:"created_at" yaml:"-"`
-	UpdatedAt    time.Time      `json:"updated_at" yaml:"-"`
-	Name         string         `gorm:"index;unique;not null;" form:"name" json:"name"`
-	FlagFormat   string         `gorm:"unique;not null;" form:"flag_format" json:"flag_format" yaml:"flag_format"`
-	flagCatcher  *regexp.Regexp `gorm:"-" json:"-"`
-	Rank         int            `gorm:"default:0" json:"rank" form:"rank"`
-	PushToClient bool           `gorm:"default:false;not null;" form:"push_to_client" json:"push_to_client" yaml:"push_to_client"`
-	Notice       bool           `gorm:"default:false;not null;" form:"notice" json:"notice"`
+	Rule        `gorm:"-" json:"-" yaml:"-"`
+	ID          uint           `gorm:"primarykey" form:"id" json:"id" yaml:"-"`
+	CreatedAt   time.Time      `json:"created_at" yaml:"-"`
+	UpdatedAt   time.Time      `json:"updated_at" yaml:"-"`
+	Name        string         `gorm:"index;unique;not null;" form:"name" json:"name"`
+	FlagFormat  string         `gorm:"unique;not null;" form:"flag_format" json:"flag_format" yaml:"flag_format"`
+	flagCatcher *regexp.Regexp `gorm:"-" json:"-"`
+	// base_bank 解决 mysql 中关键字 rank 冲突和 pg 下不能使用 ``
+	Rank         int  `gorm:"default:0;column:base_rank" json:"rank" form:"rank"`
+	PushToClient bool `gorm:"default:false;not null;" form:"push_to_client" json:"push_to_client" yaml:"push_to_client"`
+	Notice       bool `gorm:"default:false;not null;" form:"notice" json:"notice"`
 }
 
 func (br BaseRule) Match(s string) (flag, flagGroup string, vars map[string]string) {

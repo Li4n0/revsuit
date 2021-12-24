@@ -46,7 +46,7 @@ func (r *Rule) CreateOrUpdate() (err error) {
 			[]string{
 				"name",
 				"flag_format",
-				"rank",
+				"base_rank",
 				"response_status_code",
 				"response_headers",
 				"response_body",
@@ -121,7 +121,7 @@ func ListRules(c *gin.Context) {
 		order = "desc"
 	}
 
-	if err := db.Order("`rank` desc").Order("id" + " " + order).Count(&count).Offset((page - 1) * pageSize).Limit(pageSize).Find(&res).Error; err != nil {
+	if err := db.Order("base_rank desc").Order("id" + " " + order).Count(&count).Offset((page - 1) * pageSize).Limit(pageSize).Find(&res).Error; err != nil {
 		c.JSON(400, gin.H{
 			"status": "failed",
 			"error":  err.Error(),

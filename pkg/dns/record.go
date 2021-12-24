@@ -61,6 +61,7 @@ func FindDomains(c *gin.Context) {
 			"error":  err.Error(),
 			"result": nil,
 		})
+		return
 	}
 	for i := 0; i < len(domains.Domains); i++ {
 		db := database.DB.Model(&dnsRecord)

@@ -128,28 +128,6 @@ dns:
 
 ## Advance Usage
 
-### Database Configuration
-
-#### mysql
-
-```yaml
-database: "mysql://root:password@tcp(127.0.0.1:3306)/revsuit?charset=utf8mb4&parseTime=True&loc=Local"
-```
-
-#### PostgresSQL
-
-```yaml
-database: "postgres://host=127.0.0.1 user=postgres password=postgres dbname=postgres port=5432 sslmode=disable TimeZone=Asia/Shanghai"
-```
-
-#### sqlite3
-
-```yaml
-database: revsuit.db
-```
-
-
-
 ### Use with Scanner
 
 RevSuit was split from my scanner project, so its native support works with scanners.

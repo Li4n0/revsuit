@@ -66,6 +66,7 @@ func FindDomains(c *gin.Context) {
 		db := database.DB.Model(&dnsRecord)
 		count := int64(0)
 		if err := db.Where("domain like ?", "%"+domain+"%").Count(&count).Error; err != nil {
+			log.Fatal("%s: %d", domain, count)
 			if count > 0 {
 				res = append(res, domain)
 			}

@@ -31,8 +31,11 @@ func (revsuit *Revsuit) registerPlatformRouter() {
 	// /api need Authorization
 	api := revsuit.http.Router.Group(revsuit.config.AdminPathPrefix + "/api")
 	api.Use(func(c *gin.Context) {
-		cookieToken, err := c.Request.Cookie("token")
-		if !(c.Request.Header.Get("Token") == revsuit.http.Token || err == nil && cookieToken.Value == revsuit.http.Token) {
+		token, err := c.Cookie("token")
+		if err == http.ErrNoCookie {
+			token = c.Request.Header.Get("Token")
+		}
+		if !(token == revsuit.http.Token) {
 			c.Abort()
 			c.Status(403)
 		}

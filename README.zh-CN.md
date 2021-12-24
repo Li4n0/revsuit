@@ -110,6 +110,28 @@ dns:
 
 ## 高级功能
 
+### 数据库配置
+
+#### mysql
+
+```yaml
+database: "mysql://root:password@tcp(127.0.0.1:3306)/revsuit?charset=utf8mb4&parseTime=True&loc=Local"
+```
+
+#### PostgresSQL
+
+```yaml
+database: "postgres://host=127.0.0.1 user=postgres password=postgres dbname=postgres port=5432 sslmode=disable TimeZone=Asia/Shanghai"
+```
+
+#### sqlite3
+
+```yaml
+database: revsuit.db
+```
+
+
+
 ### 与扫描器适配
 
 RevSuit 拆分自我的扫描器项目，因此它原生支持搭配扫描器使用。

@@ -52,7 +52,7 @@ func (s *Server) UpdateRules() error {
 	db := database.DB.Model(new(Rule))
 	defer s.rulesLock.Unlock()
 	s.rulesLock.Lock()
-	return errors.Wrap(db.Order("`rank` desc").Find(&s.rules).Error, "MySQL update rules error")
+	return errors.Wrap(db.Order("base_rank desc").Find(&s.rules).Error, "MySQL update rules error")
 }
 
 // NewConnection is part of the mysql.Handler interface.

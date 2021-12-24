@@ -42,7 +42,7 @@ func dbType(dsn string) (DriverType, string) {
 		return Postgres, strings.TrimPrefix(dsn, "postgres://")
 	} else if strings.HasPrefix(dsn, "mysql://") {
 		return Mysql, strings.TrimPrefix(dsn, "mysql://")
-	} else if strings.Contains(dsn, "@tcp") { //兼容前面的
+	} else if strings.Contains(dsn, "@tcp") { //兼容上个版本的写法
 		return Mysql, dsn
 	}
 	return UnknowDatabase, dsn

@@ -2,8 +2,9 @@ package database
 
 import (
 	"errors"
-	"gorm.io/gorm"
 	"strings"
+
+	"gorm.io/gorm"
 )
 
 var (
@@ -19,32 +20,30 @@ const Postgres = "postgres"
 const UnknowDatabase = "unknown database"
 
 func InitDB(dsn string) (err error) {
-	switch dbType(dsn) {
+	dbName, dbDsn := dbType(dsn)
+
+	switch dbName {
 	case Sqlite:
-		sqliteDsn := strings.TrimLeft(strings.TrimLeft(dsn, "sqlite3://"), "sqlite://")
-		DB, err = NewSqlite3(sqliteDsn)
+		DB, err = NewSqlite3(dbDsn)
 	case Mysql:
-		mysqlDsn := strings.TrimLeft(dsn, "mysql://")
-		DB, err = NewMysql(mysqlDsn)
+		DB, err = NewMysql(dbDsn)
 	case Postgres:
-		postgresDsn := strings.TrimLeft(dsn, "postgres://")
-		DB, err = NewPostgres(postgresDsn)
+		DB, err = NewPostgres(dbDsn)
 	default:
-		return errors.New("unsupported database")
+		err = errors.New("unsupported database")
 	}
 	return err
 }
 
-func dbType(dsn string) DriverType {
-
-	if strings.HasSuffix(dsn, ".db") || strings.HasPrefix(dsn, "sqlite://") || strings.HasPrefix(dsn, "sqlite3://") {
-		return Sqlite
+func dbType(dsn string) (DriverType, string) {
+	if strings.HasSuffix(dsn, ".db") || strings.HasPrefix(dsn, "sqlite3://") {
+		return Sqlite, strings.TrimPrefix(dsn, "sqlite3://")
 	} else if strings.HasPrefix(dsn, "postgres://") {
-		return Postgres
+		return Postgres, strings.TrimPrefix(dsn, "postgres://")
 	} else if strings.HasPrefix(dsn, "mysql://") {
-		return Mysql
+		return Mysql, strings.TrimPrefix(dsn, "mysql://")
 	} else if strings.Contains(dsn, "@tcp") { //兼容前面的
-		return Mysql
+		return Mysql, dsn
 	}
-	return UnknowDatabase
+	return UnknowDatabase, dsn
 }

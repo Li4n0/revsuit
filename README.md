@@ -24,13 +24,15 @@ Powerful:
 
 ## Basic Usage
 
-### Preparation
+### Installation and Configuration
 
 Download the latest release firstly. For the time being, only the binary for amd64 architecture is available for
 download, if you need to use it in other architectures, you can compile it yourself.
 
 RevSuit will generate default configuration file on first run. Modify the configuration file according to your needs,
-then re-run.
+then re-run.  A detailed description of the configuration file can be found at: [Configuration Notes](./CONFIG.md)
+
+### Run
 
 In order to confirm the IP location, it needs to use the IP location database. `QQwry` is used as the data source by
 default, you can also modify the configuration to use `GeoIP`. If the selected database is not available in the current

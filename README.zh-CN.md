@@ -21,13 +21,14 @@ RevSuit 是一款灵活并且强大的反连平台。目前支持 HTTP、DNS、R
 
 ## 基础使用
 
-### 安装
+### 安装及配置
 
 在 Releases 里下载最新版本的 RevSuit。暂时只提供 amd64 架构下的二进制文件下载，如需要在其它架构下使用，可以自行编译。
 
-RevSuit 首次运行时将会生成配置文件模板，你需要编辑其中的内容然后重新运行。
+RevSuit首次运行将会在当前目录生成配置文件，您可以根据需要自定义其中的某些内容。配置文件的详细说明可见：[配置说明](./CONFIG.zh-CN.md)
 
-为了确认连接 IP 的归属地，RevSuit 需要依赖 IP 归属地数据库。默认情况下使用纯真 IP 库，你也可以在配置文件中指定使用 GeoIP。如果当前目录下没有被选中的数据库文件，或者数据库文件更新的时间大于一周，RevSuit
+### 运行
+为了确认连接 IP 的归属地，RevSuit 需要依赖 IP 归属地数据库。默认情况下使用纯真 IP 库，你也可以在配置文件中指定使用 GeoIP。如果当前目录下没有被选中的IP数据库文件，或者IP数据库文件更新的时间大于一周，RevSuit
 将会自动下载最新版的数据库文件到本地。如果下载失败，连接记录的`IpArea`字段将始终为空。
 
 ```bash
@@ -109,28 +110,6 @@ dns:
 ```
 
 ## 高级功能
-
-### 数据库配置
-
-#### mysql
-
-```yaml
-database: "mysql://root:password@tcp(127.0.0.1:3306)/revsuit?charset=utf8mb4&parseTime=True&loc=Local"
-```
-
-#### PostgresSQL
-
-```yaml
-database: "postgres://host=127.0.0.1 user=postgres password=postgres dbname=postgres port=5432 sslmode=disable TimeZone=Asia/Shanghai"
-```
-
-#### sqlite3
-
-```yaml
-database: revsuit.db
-```
-
-
 
 ### 与扫描器适配
 

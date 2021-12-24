@@ -51,7 +51,6 @@ func FindRmis(c *gin.Context) {
 	var (
 		rmiRecord Record
 		rmis      Rmis
-		count     int64
 	)
 	res := []string{}
 	if err := c.ShouldBind(&rmis); err != nil {
@@ -60,10 +59,11 @@ func FindRmis(c *gin.Context) {
 			"error":  err.Error(),
 			"result": nil,
 		})
+		return
 	}
-	for i := 0; i < len(rmis.Rmis); i++ {
+	for _, rmi := range rmis.Rmis {
 		db := database.DB.Model(&rmiRecord)
-		rmi := rmis.Rmis[i]
+		count := int64(0)
 		if err := db.Where("path like ?", "%"+rmi+"%").Count(&count); err != nil {
 			if count > 0 {
 				res = append(res, rmi)

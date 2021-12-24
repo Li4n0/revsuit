@@ -35,7 +35,7 @@ func (revsuit *Revsuit) registerPlatformRouter() {
 		if err == http.ErrNoCookie {
 			token = c.Request.Header.Get("Token")
 		}
-		if !(token == revsuit.http.Token) {
+		if token != revsuit.http.Token {
 			c.Abort()
 			c.Status(403)
 		}

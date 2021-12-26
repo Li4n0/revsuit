@@ -143,6 +143,7 @@ func (s *Server) handleConnection(conn net.Conn) {
 				log.Trace("RMI record[id:%d] notice has been sent", r.ID)
 			}()
 		}
+		return
 	}
 }
 

@@ -2,6 +2,19 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+## [0.4.0](https://github.com/Li4n0/revsuit/compare/v0.3.0...v0.4.0) (2021-12-26)
+
+
+### Features
+
+* **database:** support postgres ([#43](https://github.com/Li4n0/revsuit/issues/43)) ([8b30f83](https://github.com/Li4n0/revsuit/commit/8b30f83075bab3f62546793c471b74075745d8d0))
+
+
+### Bug Fixes
+
+* **rmi:** fix the problem that rmi has multiple rules matching in one record ([6f921f6](https://github.com/Li4n0/revsuit/commit/6f921f6c97f39638c73de13d87879514485125ef))
+* **server:** fix auth failure when complex characters in token ([#42](https://github.com/Li4n0/revsuit/issues/42)) ([3242a49](https://github.com/Li4n0/revsuit/commit/3242a49b2731392125e5c22375549586495ee6fc))
+
 ## [0.3.0](https://github.com/Li4n0/revsuit/compare/v0.2.1...v0.3.0) (2021-12-22)
 
 

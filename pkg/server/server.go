@@ -104,6 +104,14 @@ func initDatabase(dsn string) {
 	if err != nil {
 		log.Fatal(err.Error())
 	}
+	err = database.DB.AutoMigrate(&ldap.Record{})
+	if err != nil {
+		log.Fatal(err.Error())
+	}
+	err = database.DB.AutoMigrate(&ldap.Rule{})
+	if err != nil {
+		log.Fatal(err.Error())
+	}
 	err = database.DB.AutoMigrate(&ftp.Record{})
 	if err != nil {
 		log.Fatal(err.Error())

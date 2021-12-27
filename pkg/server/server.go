@@ -1,6 +1,7 @@
 package server
 
 import (
+	"github.com/li4n0/revsuit/pkg/ldap"
 	"sync"
 
 	"github.com/gin-gonic/gin"
@@ -28,6 +29,7 @@ type Revsuit struct {
 	dns   *dns.Server
 	mysql *mysql.Server
 	rmi   *rmi.Server
+	ldap  *ldap.Server
 	ftp   *ftp.Server
 
 	clients     map[int]*gin.Context
@@ -198,6 +200,9 @@ func New(c *Config) *Revsuit {
 	s.rmi = rmi.GetServer()
 	s.rmi.Config = c.RMI
 
+	s.ldap = ldap.GetServer()
+	s.ldap.Config = c.LDAP
+
 	s.ftp = ftp.GetServer()
 	s.ftp.Config = c.FTP
 
@@ -231,6 +236,9 @@ func (revsuit *Revsuit) Run() {
 	}
 	if revsuit.rmi != nil && revsuit.rmi.Enable {
 		go revsuit.rmi.Run()
+	}
+	if revsuit.ldap != nil && revsuit.ldap.Enable {
+		go revsuit.ldap.Run()
 	}
 	if revsuit.mysql != nil && revsuit.mysql.Enable {
 		go revsuit.mysql.Run()

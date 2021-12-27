@@ -1,6 +1,7 @@
 package server
 
 import (
+	"github.com/li4n0/revsuit/pkg/ldap"
 	"io/fs"
 	"net/http"
 	"path"
@@ -95,6 +96,10 @@ func (revsuit *Revsuit) registerHttpRouter() {
 	rmiGroup.GET("", rmi.Records)
 	rmiGroup.DELETE("", rmi.Records)
 
+	ldapGroup := recordGroup.Group("/ldap")
+	ldapGroup.GET("", ldap.Records)
+	ldapGroup.DELETE("", ldap.Records)
+
 	ftpGroup := recordGroup.Group("/ftp")
 	ftpGroup.GET("", ftp.Records)
 	ftpGroup.DELETE("", ftp.Records)
@@ -121,6 +126,11 @@ func (revsuit *Revsuit) registerHttpRouter() {
 	rmiGroup.GET("", rmi.ListRules)
 	rmiGroup.POST("", rmi.UpsertRules)
 	rmiGroup.DELETE("", rmi.DeleteRules)
+
+	ldapGroup = ruleGroup.Group("/ldap")
+	ldapGroup.GET("", ldap.ListRules)
+	ldapGroup.POST("", ldap.UpsertRules)
+	ldapGroup.DELETE("", ldap.DeleteRules)
 
 	ftpGroup = ruleGroup.Group("/ftp")
 	ftpGroup.GET("", ftp.ListRules)

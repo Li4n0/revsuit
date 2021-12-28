@@ -2,9 +2,8 @@ package ldap
 
 import (
 	"bytes"
-	"encoding/binary"
+	"fmt"
 	"net"
-	"strconv"
 	"strings"
 	"sync"
 	"time"
@@ -61,7 +60,7 @@ func (s *Server) handleConnection(conn net.Conn) {
 		return
 	}
 
-	ip, port, _ := net.SplitHostPort(conn.RemoteAddr().String())
+	ip, _, _ := net.SplitHostPort(conn.RemoteAddr().String())
 
 	buf := make([]byte, 1024)
 	_, err := conn.Read(buf)
@@ -69,41 +68,36 @@ func (s *Server) handleConnection(conn net.Conn) {
 		log.Warn("LDAP read connection error:%v", err)
 		return
 	}
+	fmt.Printf("%x", buf)
 
-	if !bytes.Contains(buf, []byte{0x4a, 0x52, 0x4d, 0x49}) {
+	if !bytes.Contains(buf, []byte{
+		0x30, 0x0c, 0x02, 0x01, 0x01, 0x60, 0x07,
+		0x02, 0x01, 0x03, 0x04, 0x00, 0x80, 0x00}) {
 		return
 	}
 
-	send := []byte{0x4e}
-	bs := make([]byte, 8)
-	binary.BigEndian.PutUint16(bs, uint16(len(ip)))
-	send = append(send, bs...)
-	send = append(send, []byte(ip)...)
-	send = append(send, []byte{0x00, 0x00}...)
-	uintPort, _ := strconv.Atoi(port)
-	bs = make([]byte, 8)
-	binary.BigEndian.PutUint16(bs, uint16(uintPort))
-	send = append(send, bs...)
-
+	send := []byte{
+		0x30, 0x0c, 0x02, 0x01, 0x01, 0x61, 0x07,
+		0x0a, 0x01, 0x00, 0x04, 0x00, 0x04, 0x00,
+	}
 	_, err = conn.Write(send)
 	if err != nil {
 		log.Warn("LDAP write connection error: %v", err)
 		return
 	}
-
-	data := make([]byte, 512)
-
-	for length := 0; length < 50; {
-		n, err := conn.Read(data)
-		if err != nil {
-			log.Warn("LDAP read connection error: %v", err)
-			return
-		}
-		length += n
+	_, err = conn.Read(buf)
+	if err != nil {
+		log.Warn("LDAP read connection error:%v", err)
+		return
 	}
 
-	frags := bytes.Split(data, []byte{0xdf, 0x74})
-	path := strings.TrimRight(string(frags[len(frags)-1][2:]), "\x00")
+	length := buf[8]
+	pathBytes := bytes.Buffer{}
+	for i := 1; i <= int(length); i++ {
+		temp := []byte{buf[8+i]}
+		pathBytes.Write(temp)
+	}
+	path := pathBytes.String()
 
 	for _, _rule := range s.getRules() {
 		flag, flagGroup, _ := _rule.Match(path)

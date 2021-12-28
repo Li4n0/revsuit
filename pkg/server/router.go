@@ -1,7 +1,6 @@
 package server
 
 import (
-	"github.com/li4n0/revsuit/pkg/ldap"
 	"io/fs"
 	"net/http"
 	"path"
@@ -11,6 +10,7 @@ import (
 	"github.com/li4n0/revsuit/internal/file"
 	"github.com/li4n0/revsuit/pkg/dns"
 	"github.com/li4n0/revsuit/pkg/ftp"
+	"github.com/li4n0/revsuit/pkg/ldap"
 	"github.com/li4n0/revsuit/pkg/mysql"
 	"github.com/li4n0/revsuit/pkg/rhttp"
 	"github.com/li4n0/revsuit/pkg/rmi"

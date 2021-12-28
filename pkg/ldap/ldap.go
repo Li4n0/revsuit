@@ -2,7 +2,6 @@ package ldap
 
 import (
 	"bytes"
-	"fmt"
 	"net"
 	"strings"
 	"sync"
@@ -68,7 +67,6 @@ func (s *Server) handleConnection(conn net.Conn) {
 		log.Warn("LDAP read connection error:%v", err)
 		return
 	}
-	fmt.Printf("%x", buf)
 
 	if !bytes.Contains(buf, []byte{
 		0x30, 0x0c, 0x02, 0x01, 0x01, 0x60, 0x07,

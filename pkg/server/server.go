@@ -1,7 +1,6 @@
 package server
 
 import (
-	"github.com/li4n0/revsuit/pkg/ldap"
 	"sync"
 
 	"github.com/gin-gonic/gin"
@@ -12,6 +11,7 @@ import (
 	"github.com/li4n0/revsuit/internal/record"
 	"github.com/li4n0/revsuit/pkg/dns"
 	"github.com/li4n0/revsuit/pkg/ftp"
+	"github.com/li4n0/revsuit/pkg/ldap"
 	"github.com/li4n0/revsuit/pkg/mysql"
 	http "github.com/li4n0/revsuit/pkg/rhttp"
 	"github.com/li4n0/revsuit/pkg/rmi"

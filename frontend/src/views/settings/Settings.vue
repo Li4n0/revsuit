@@ -8,6 +8,7 @@
       <http ref="settings" v-if="tabKey==='HTTP'"></http>
       <dns ref="settings" v-else-if="tabKey==='DNS'"></dns>
       <rmi ref="settings" v-else-if="tabKey==='RMI'"></rmi>
+      <ldap ref="settings" v-else-if="tabKey==='LDAP'"></ldap>
       <mysql ref="settings" v-else-if="tabKey==='MYSQL'"></mysql>
       <ftp ref="settings" v-else-if="tabKey==='FTP'"></ftp>
       <notice ref="settings" v-else-if="tabKey==='NOTICE'"></notice>
@@ -20,6 +21,7 @@
 import Http from "./Http"
 import Dns from "./Dns"
 import Rmi from "./Rmi"
+import Ldap from "./Ldap"
 import Mysql from "./Mysql"
 import Ftp from "./Ftp"
 import Notice from "./Notice"
@@ -33,6 +35,7 @@ export default {
         {key: "HTTP", tab: "PLATFORM|HTTP"},
         {key: "DNS", tab: "DNS"},
         {key: "RMI", tab: "RMI"},
+        {key: "LDAP", tab: "LDAP"},
         {key: "MYSQL", tab: "MYSQL"},
         {key: "FTP", tab: "FTP"},
         {key: "NOTICE", tab: "NOTICE"},
@@ -51,6 +54,7 @@ export default {
     Http,
     Dns,
     Rmi,
+    Ldap,
     Mysql,
     Ftp,
     Notice,

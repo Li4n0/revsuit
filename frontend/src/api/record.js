@@ -66,6 +66,22 @@ export function deleteRmiRecord(params) {
     })
 }
 
+export function getLdapRecord(params) {
+    return request({
+        url: '/record/ldap',
+        params: params,
+        method: 'get'
+    })
+}
+
+export function deleteLdapRecord(params) {
+    return request({
+        url: '/record/ldap',
+        params: params,
+        method: 'delete'
+    })
+}
+
 export function getFtpRecord(params) {
     return request({
         url: '/record/ftp',

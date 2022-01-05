@@ -154,7 +154,7 @@ func (s *Server) Stop() {
 }
 
 func (s *Server) Restart() {
-	s.Enable = false
+	s.Stop()
 	time.Sleep(time.Second * 2)
 	go s.Run()
 }

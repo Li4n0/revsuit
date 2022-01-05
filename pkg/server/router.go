@@ -70,6 +70,8 @@ func (revsuit *Revsuit) registerHttpRouter() {
 	settingsGroup.POST("/updateDnsConfig", revsuit.updateDnsConfig)
 	settingsGroup.GET("/getRmiConfig", revsuit.getRmiConfig)
 	settingsGroup.POST("/updateRmiConfig", revsuit.updateRmiConfig)
+	settingsGroup.GET("/getLdapConfig", revsuit.getLdapConfig)
+	settingsGroup.POST("/updateLdapConfig", revsuit.updateLdapConfig)
 	settingsGroup.GET("/getMySQLConfig", revsuit.getMySQLConfig)
 	settingsGroup.POST("/updateMySQLConfig", revsuit.updateMySQLConfig)
 	settingsGroup.GET("/getFtpConfig", revsuit.getFtpConfig)

@@ -9,6 +9,7 @@ import (
 	"github.com/li4n0/revsuit/internal/database"
 	"github.com/li4n0/revsuit/pkg/dns"
 	"github.com/li4n0/revsuit/pkg/ftp"
+	"github.com/li4n0/revsuit/pkg/ldap"
 	"github.com/li4n0/revsuit/pkg/mysql"
 	"github.com/li4n0/revsuit/pkg/rhttp"
 	"github.com/li4n0/revsuit/pkg/rmi"
@@ -22,6 +23,7 @@ type Rules struct {
 	Dns   []dns.Rule
 	Mysql []mysql.Rule
 	Rmi   []rmi.Rule
+	Ldap  []ldap.Rule
 	Ftp   []ftp.Rule
 }
 
@@ -35,6 +37,7 @@ func exportRules(c *gin.Context) {
 	db.Model(&dns.Rule{}).Find(&rules.Dns)
 	db.Model(&mysql.Rule{}).Find(&rules.Mysql)
 	db.Model(&rmi.Rule{}).Find(&rules.Rmi)
+	db.Model(&rmi.Rule{}).Find(&rules.Ldap)
 	db.Model(&ftp.Rule{}).Find(&rules.Ftp)
 
 	out, err := yaml.Marshal(rules)
@@ -127,6 +130,17 @@ func (revsuit *Revsuit) importRules(c *gin.Context) {
 		count++
 	}
 	if err := revsuit.rmi.UpdateRules(); err != nil {
+		errs = append(errs, err.Error())
+	}
+
+	for _, rule := range rules.Ldap {
+		if err := db.Model(&ldap.Rule{}).Create(&rule).Error; err != nil {
+			errs = append(errs, errors.Wrap(err, fmt.Sprintf("ldap rule[%s]", rule.Name)).Error())
+			continue
+		}
+		count++
+	}
+	if err := revsuit.ldap.UpdateRules(); err != nil {
 		errs = append(errs, err.Error())
 	}
 
@@ -378,6 +392,42 @@ func (revsuit *Revsuit) updateRmiConfig(c *gin.Context) {
 
 	if revsuit.rmi.Enable {
 		revsuit.rmi.Restart()
+	}
+}
+
+func (revsuit *Revsuit) getLdapConfig(c *gin.Context) {
+	c.JSON(200, revsuit.ldap.Config)
+}
+
+func (revsuit *Revsuit) updateLdapConfig(c *gin.Context) {
+	var form = ldap.Config{}
+
+	if err := c.ShouldBindJSON(&form); err != nil {
+		c.JSON(400, gin.H{
+			"status": "failed",
+			"error":  err.Error(),
+			"data":   nil,
+		})
+		return
+	}
+
+	if form.Addr != revsuit.ldap.Addr {
+		revsuit.ldap.Addr = form.Addr
+		log.Info("Update ldap config [addr] to %s", form.Addr)
+	}
+
+	if form.Enable != revsuit.ldap.Enable {
+		log.Info("Update ldap config [enable] to %v", form.Enable)
+		if form.Enable {
+			go revsuit.ldap.Run()
+		} else {
+			revsuit.ldap.Stop()
+		}
+		return
+	}
+
+	if revsuit.ldap.Enable {
+		revsuit.ldap.Restart()
 	}
 }
 

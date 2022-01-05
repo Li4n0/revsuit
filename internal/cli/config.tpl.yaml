@@ -19,6 +19,9 @@ dns:
 rmi:
   enable: true
   addr: :1099
+ldap:
+  enable: true
+  addr: :389
 mysql:
   enable: true
   addr: :3306

@@ -211,6 +211,7 @@ payload，最后被扫描器发出的请求是：`['https://www.testvuln.com?url
 
 * [https://github.com/rmb122/rogue_mysql_server](https://github.com/rmb122/rogue_mysql_server)
 * [https://github.com/256dpi/newdns](https://github.com/256dpi/newdns)
+* [https://github.com/EmYiQing/JNDIScan](https://github.com/EmYiQing/JNDIScan)
 
 ### 特别感谢
 

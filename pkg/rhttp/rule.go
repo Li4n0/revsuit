@@ -102,10 +102,7 @@ func ListRules(c *gin.Context) {
 	}
 
 	db := database.DB.Model(&httpRule)
-	if httpRule.Name != "" {
-		db.Where("name = ?", httpRule.Name)
-	}
-	db.Count(&count)
+	db.Where(&httpRule).Count(&count)
 
 	page, err := strconv.Atoi(c.Query("page"))
 	if err != nil {
@@ -139,10 +136,7 @@ func ListRules(c *gin.Context) {
 
 // UpsertRules create or update http rule from user submit
 func UpsertRules(c *gin.Context) {
-	var (
-		httpRule Rule
-		update   bool
-	)
+	var httpRule Rule
 
 	if err := c.ShouldBind(&httpRule); err != nil {
 		c.JSON(400, gin.H{
@@ -151,10 +145,6 @@ func UpsertRules(c *gin.Context) {
 			"data":   nil,
 		})
 		return
-	}
-
-	if httpRule.ID != 0 {
-		update = true
 	}
 
 	if err := httpRule.CreateOrUpdate(); err != nil {
@@ -166,7 +156,7 @@ func UpsertRules(c *gin.Context) {
 		return
 	}
 
-	if update {
+	if httpRule.ID != 0 {
 		log.Trace("HTTP rule[id:%d] has been updated", httpRule.ID)
 	} else {
 		log.Trace("HTTP rule[id:%d] has been created", httpRule.ID)

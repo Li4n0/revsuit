@@ -96,10 +96,7 @@ func ListRules(c *gin.Context) {
 	}
 
 	db := database.DB.Model(&ftpRule)
-	if ftpRule.Name != "" {
-		db.Where("name = ?", ftpRule.Name)
-	}
-	db.Count(&count)
+	db.Where(&ftpRule).Count(&count)
 
 	page, err := strconv.Atoi(c.Query("page"))
 	if err != nil {
@@ -133,10 +130,7 @@ func ListRules(c *gin.Context) {
 
 // UpsertRules creates or updates ftp rule from user submit
 func UpsertRules(c *gin.Context) {
-	var (
-		ftpRule Rule
-		update  bool
-	)
+	var ftpRule Rule
 
 	if err := c.ShouldBind(&ftpRule); err != nil {
 		c.JSON(400, gin.H{
@@ -145,10 +139,6 @@ func UpsertRules(c *gin.Context) {
 			"data":   nil,
 		})
 		return
-	}
-
-	if ftpRule.ID != 0 {
-		update = true
 	}
 
 	if err := ftpRule.CreateOrUpdate(); err != nil {
@@ -160,7 +150,7 @@ func UpsertRules(c *gin.Context) {
 		return
 	}
 
-	if update {
+	if ftpRule.ID != 0 {
 		log.Trace("FTP rule[id:%d] has been updated", ftpRule.ID)
 	} else {
 		log.Trace("FTP rule[id:%d] has been created", ftpRule.ID)

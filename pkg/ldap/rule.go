@@ -93,10 +93,7 @@ func ListRules(c *gin.Context) {
 	}
 
 	db := database.DB.Model(&ldapRule)
-	if ldapRule.Name != "" {
-		db.Where("name = ?", ldapRule.Name)
-	}
-	db.Count(&count)
+	db.Where(&ldapRule).Count(&count)
 
 	page, err := strconv.Atoi(c.Query("page"))
 	if err != nil {
@@ -130,10 +127,7 @@ func ListRules(c *gin.Context) {
 
 // UpsertRules creates or updates ldap rule from user submit
 func UpsertRules(c *gin.Context) {
-	var (
-		ldapRule Rule
-		update   bool
-	)
+	var ldapRule Rule
 
 	if err := c.ShouldBind(&ldapRule); err != nil {
 		c.JSON(400, gin.H{
@@ -142,10 +136,6 @@ func UpsertRules(c *gin.Context) {
 			"data":   nil,
 		})
 		return
-	}
-
-	if ldapRule.ID != 0 {
-		update = true
 	}
 
 	if err := ldapRule.CreateOrUpdate(); err != nil {
@@ -157,7 +147,7 @@ func UpsertRules(c *gin.Context) {
 		return
 	}
 
-	if update {
+	if ldapRule.ID != 0 {
 		log.Trace("LDAP rule[id:%d] has been updated", ldapRule.ID)
 	} else {
 		log.Trace("LDAP rule[id:%d] has been created", ldapRule.ID)

@@ -68,63 +68,35 @@ func initDatabase(dsn string) {
 		log.Fatal(err.Error())
 	}
 
-	err = database.DB.AutoMigrate(&http.Record{})
-	if err != nil {
-		log.Fatal(err.Error())
-	}
-	err = database.DB.AutoMigrate(&dns.Record{})
-	if err != nil {
-		log.Fatal(err.Error())
-	}
-	err = database.DB.AutoMigrate(&mysql.Record{})
-	if err != nil {
-		log.Fatal(err.Error())
-	}
-	err = database.DB.AutoMigrate(&http.Rule{})
-	if err != nil {
-		log.Fatal(err.Error())
-	}
-	err = database.DB.AutoMigrate(&dns.Rule{})
-	if err != nil {
-		log.Fatal(err.Error())
-	}
-	err = database.DB.AutoMigrate(&mysql.Rule{})
-	if err != nil {
-		log.Fatal(err.Error())
-	}
-	err = database.DB.AutoMigrate(&file.MySQLFile{})
-	if err != nil {
-		log.Fatal(err.Error())
-	}
-	err = database.DB.AutoMigrate(&rmi.Record{})
-	if err != nil {
-		log.Fatal(err.Error())
-	}
-	err = database.DB.AutoMigrate(&rmi.Rule{})
-	if err != nil {
-		log.Fatal(err.Error())
-	}
-	err = database.DB.AutoMigrate(&ldap.Record{})
-	if err != nil {
-		log.Fatal(err.Error())
-	}
-	err = database.DB.AutoMigrate(&ldap.Rule{})
-	if err != nil {
-		log.Fatal(err.Error())
-	}
-	err = database.DB.AutoMigrate(&ftp.Record{})
-	if err != nil {
-		log.Fatal(err.Error())
-	}
-	err = database.DB.AutoMigrate(&ftp.Rule{})
-	if err != nil {
-		log.Fatal(err.Error())
-	}
-	err = database.DB.AutoMigrate(&file.FTPFile{})
+	err = database.DB.AutoMigrate(&http.Record{}, &http.Rule{})
 	if err != nil {
 		log.Fatal(err.Error())
 	}
 
+	err = database.DB.AutoMigrate(&dns.Record{}, &dns.Rule{})
+	if err != nil {
+		log.Fatal(err.Error())
+	}
+
+	err = database.DB.AutoMigrate(&mysql.Record{}, &mysql.Rule{}, &file.MySQLFile{})
+	if err != nil {
+		log.Fatal(err.Error())
+	}
+
+	err = database.DB.AutoMigrate(&rmi.Record{}, &rmi.Rule{})
+	if err != nil {
+		log.Fatal(err.Error())
+	}
+
+	err = database.DB.AutoMigrate(&ldap.Record{}, &ldap.Rule{})
+	if err != nil {
+		log.Fatal(err.Error())
+	}
+
+	err = database.DB.AutoMigrate(&ftp.Record{}, &ftp.Rule{}, &file.FTPFile{})
+	if err != nil {
+		log.Fatal(err.Error())
+	}
 }
 
 func initLog(level string) (logLevel log.Level) {

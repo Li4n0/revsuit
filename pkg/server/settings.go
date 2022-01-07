@@ -91,7 +91,7 @@ func (revsuit *Revsuit) importRules(c *gin.Context) {
 
 	for _, rule := range rules.Http {
 		if err := db.Model(&rhttp.Rule{}).Create(&rule).Error; err != nil {
-			errs = append(errs, errors.Wrap(err, fmt.Sprintf("http rule[%s]", rule.Name)).Error())
+			errs = append(errs, errors.Wrapf(err, "http rule[%s]", rule.Name).Error())
 			continue
 		}
 		count++
@@ -102,7 +102,7 @@ func (revsuit *Revsuit) importRules(c *gin.Context) {
 
 	for _, rule := range rules.Dns {
 		if err := db.Model(&dns.Rule{}).Create(&rule).Error; err != nil {
-			errs = append(errs, errors.Wrap(err, fmt.Sprintf("dns rule[%s]", rule.Name)).Error())
+			errs = append(errs, errors.Wrapf(err, "dns rule[%s]", rule.Name).Error())
 			continue
 		}
 		count++
@@ -113,7 +113,7 @@ func (revsuit *Revsuit) importRules(c *gin.Context) {
 
 	for _, rule := range rules.Mysql {
 		if err := db.Model(&mysql.Rule{}).Create(&rule).Error; err != nil {
-			errs = append(errs, errors.Wrap(err, fmt.Sprintf("mysql rule[%s]", rule.Name)).Error())
+			errs = append(errs, errors.Wrapf(err, "mysql rule[%s]", rule.Name).Error())
 			continue
 		}
 		count++
@@ -124,7 +124,7 @@ func (revsuit *Revsuit) importRules(c *gin.Context) {
 
 	for _, rule := range rules.Rmi {
 		if err := db.Model(&rmi.Rule{}).Create(&rule).Error; err != nil {
-			errs = append(errs, errors.Wrap(err, fmt.Sprintf("rmi rule[%s]", rule.Name)).Error())
+			errs = append(errs, errors.Wrapf(err, "rmi rule[%s]", rule.Name).Error())
 			continue
 		}
 		count++
@@ -135,7 +135,7 @@ func (revsuit *Revsuit) importRules(c *gin.Context) {
 
 	for _, rule := range rules.Ldap {
 		if err := db.Model(&ldap.Rule{}).Create(&rule).Error; err != nil {
-			errs = append(errs, errors.Wrap(err, fmt.Sprintf("ldap rule[%s]", rule.Name)).Error())
+			errs = append(errs, errors.Wrapf(err, "ldap rule[%s]", rule.Name).Error())
 			continue
 		}
 		count++
@@ -146,7 +146,7 @@ func (revsuit *Revsuit) importRules(c *gin.Context) {
 
 	for _, rule := range rules.Ftp {
 		if err := db.Model(&ftp.Rule{}).Create(&rule).Error; err != nil {
-			errs = append(errs, errors.Wrap(err, fmt.Sprintf("ftp rule[%s]", rule.Name)).Error())
+			errs = append(errs, errors.Wrapf(err, "ftp rule[%s]", rule.Name).Error())
 			continue
 		}
 		count++

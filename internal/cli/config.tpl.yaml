@@ -1,7 +1,7 @@
-version: 1.4
+version: 1.5
 addr: :10000
 token:
-domain:
+domains: []
 external_ip:                        # You need to make sure that your target can access the server through this ip.
 admin_path_prefix: "/revsuit"
 database: revsuit.db

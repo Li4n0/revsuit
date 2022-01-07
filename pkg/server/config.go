@@ -21,7 +21,7 @@ type Config struct {
 	Version            float64
 	Addr               string
 	Token              string
-	Domain             string
+	Domains            []string
 	ExternalIP         string `yaml:"external_ip"`
 	AdminPathPrefix    string `yaml:"admin_path_prefix"`
 	Database           string

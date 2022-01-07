@@ -180,6 +180,7 @@ func (s *Server) Run() {
 		if !s.Enable {
 			_ = listener.Close()
 		}
+		s.livingLock.Unlock()
 	}()
 
 	for {

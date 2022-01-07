@@ -3,6 +3,7 @@ package server
 import (
 	"fmt"
 	"io"
+	"strings"
 	"time"
 
 	"github.com/gin-gonic/gin"
@@ -166,7 +167,7 @@ func (revsuit *Revsuit) getPlatformConfig(c *gin.Context) {
 	var res = make(map[string]string)
 	res["Addr"] = revsuit.config.Addr
 	res["Token"] = revsuit.config.Token
-	res["Domain"] = revsuit.config.Domain
+	res["Domains"] = strings.Join(revsuit.config.Domains, ",")
 	res["AdminPathPrefix"] = revsuit.config.AdminPathPrefix
 	res["ExternalIP"] = revsuit.config.ExternalIP
 	res["Database"] = revsuit.config.Database
@@ -215,10 +216,10 @@ func (revsuit *Revsuit) updatePlatformConfig(c *gin.Context) {
 		log.Info("Update http config [ip_header] to %s", form["IpHeader"])
 	}
 
-	if form["Domain"] != revsuit.config.Domain {
-		revsuit.config.Domain = form["Domain"]
-		revsuit.dns.SetServerDomain(form["Domain"])
-		log.Info("Update platform config [domain] to %s", form["Domain"])
+	if form["Domains"] != strings.Join(revsuit.config.Domains, ",") {
+		revsuit.config.Domains = strings.Split(form["Domains"], ",")
+		revsuit.dns.SetServerDomain(revsuit.config.Domains)
+		log.Info("Update platform config [domain] to %v", revsuit.config.Domains)
 		if revsuit.dns.Enable {
 			revsuit.dns.Restart()
 		}
@@ -307,6 +308,11 @@ func (revsuit *Revsuit) updateDnsConfig(c *gin.Context) {
 		return
 	}
 
+	if form.Addr != revsuit.dns.Addr {
+		revsuit.dns.Addr = form.Addr
+		log.Info("Update dns config [addr] to %s", form.Addr)
+	}
+
 	if form.Enable != revsuit.dns.Enable {
 		log.Info("Update dns config [enable] to %v", form.Enable)
 		if form.Enable {
@@ -316,6 +322,11 @@ func (revsuit *Revsuit) updateDnsConfig(c *gin.Context) {
 		}
 		return
 	}
+
+	if revsuit.dns.Enable {
+		revsuit.dns.Restart()
+	}
+
 }
 
 func (revsuit *Revsuit) getMySQLConfig(c *gin.Context) {

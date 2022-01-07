@@ -310,6 +310,7 @@ func (s *Server) Run() {
 		if !s.Enable {
 			s.listener.Close()
 		}
+		s.livingLock.Unlock()
 	}()
 
 	s.listener.Accept()

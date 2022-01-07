@@ -17,11 +17,11 @@ import (
 
 type Server struct {
 	Config
-	serverDomain string
-	serverIP     string
-	rules        []*Rule
-	rulesLock    sync.RWMutex
-	livingLock   sync.Mutex
+	serverDomains []string
+	serverIP      string
+	rules         []*Rule
+	rulesLock     sync.RWMutex
+	livingLock    sync.Mutex
 }
 
 var (
@@ -37,8 +37,8 @@ func GetServer() *Server {
 	return server
 }
 
-func (s *Server) SetServerDomain(serverDomain string) *Server {
-	s.serverDomain = serverDomain
+func (s *Server) SetServerDomain(serverDomains []string) *Server {
+	s.serverDomains = serverDomains
 	return s
 }
 
@@ -217,39 +217,42 @@ func (s *Server) Run() {
 	// create server
 	server := newdns.NewServer(newdns.Config{
 		Handler: func(name string) (*newdns.Zone, error) {
-			if name == s.serverDomain+"." {
-				return &newdns.Zone{
-					Name:             getZoneName(s.serverDomain),
-					MasterNameServer: "ns1.hostmaster.com.",
-					AllNameServers: []string{
-						"ns1.hostmaster.com.",
-						"ns2.hostmaster.com.",
-						"ns3.hostmaster.com.",
-					},
-					Handler: func(_, remoteAddr string) ([]newdns.Set, error) {
-						return []newdns.Set{
-							{
-								Name: name,
-								Type: newdns.A,
-								TTL:  10,
-								Records: []newdns.Record{
-									{
-										Address: s.serverIP,
-									},
-								}}}, nil
-					}}, nil
+			for _, serverDomain := range s.serverDomains {
+				if name == serverDomain+"." {
+					return &newdns.Zone{
+						Name:             getZoneName(serverDomain),
+						MasterNameServer: "ns1.hostmaster.com.",
+						AllNameServers: []string{
+							"ns1.hostmaster.com.",
+							"ns2.hostmaster.com.",
+							"ns3.hostmaster.com.",
+						},
+						Handler: func(_, remoteAddr string) ([]newdns.Set, error) {
+							return []newdns.Set{
+								{
+									Name: name,
+									Type: newdns.A,
+									TTL:  10,
+									Records: []newdns.Record{
+										{
+											Address: s.serverIP,
+										},
+									}}}, nil
+						}}, nil
+				}
 			}
 			return s.newZone(name), nil
 		},
 	})
 
 	// run server
-	log.Info("Starting DNS Server at :53, resolve %s to %s", s.serverDomain, s.serverIP)
+	log.Info("Starting DNS Server at :53, resolve %v to %s", s.serverDomains, s.serverIP)
 	go func() {
 		s.livingLock.Lock()
 		if !s.Enable {
 			server.Close()
 		}
+		s.livingLock.Unlock()
 	}()
 
 	err := server.Run(s.Addr)

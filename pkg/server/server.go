@@ -195,8 +195,8 @@ func New(c *Config) *Revsuit {
 	if c.HTTP.IpHeader != "" {
 		s.http.SetIpHeader(c.HTTP.IpHeader)
 	}
-	if c.Domain != "" {
-		s.dns.SetServerDomain(c.Domain)
+	if len(c.Domains) != 0 {
+		s.dns.SetServerDomain(c.Domains)
 	}
 	if c.ExternalIP != "" {
 		s.dns.SetServerIP(c.ExternalIP)

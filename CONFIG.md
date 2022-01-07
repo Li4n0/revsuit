@@ -5,7 +5,7 @@ RevSuit will generate a profile template the first time it is run, and you can e
 version: 1.3
 addr: :10000                          # Address of the HTTP service will listen
 token:                                # Authentication Token, both the admin page and the client need to be authenticated by this Token
-domain:                               # The domain name used by the platform
+domains: []                           # The domain names used by the platform
 external_ip:                          # The external IP of the platform, you need to make sure that the target you want to test can access the platform through this IP
 admin_path_prefix: "/revsuit"          # The http path prefix for the admin page, the page will be located at: /admin_path_prefix/admin
 database: revsuit.db                  # Database connection information, support using Sqlite3, MySQL, Postgres

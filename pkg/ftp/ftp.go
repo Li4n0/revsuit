@@ -395,10 +395,10 @@ func (s *Server) Run() {
 		}
 	}()
 
-	for s.Enable {
+	for {
 		tcpConn, err := listener.Accept()
 		if err != nil {
-			if !strings.Contains(err.Error(), net.ErrClosed.Error()) {
+			if !errors.Is(err, net.ErrClosed) {
 				log.Warn("FTP accept connection error: %v", err)
 			} else {
 				break

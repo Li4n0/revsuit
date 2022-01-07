@@ -146,7 +146,6 @@ func UpsertRules(c *gin.Context) {
 		return
 	}
 
-
 	if err := dnsRule.CreateOrUpdate(); err != nil {
 		c.JSON(400, gin.H{
 			"status": "failed",

@@ -4,7 +4,7 @@
 version: 1.3
 addr: :10000                          # HTTP 服务监听的地址
 token:                                # 鉴权Token，管理页面和客户端都需要通过该 Token 进行鉴权
-domain:                               # 反连平台绑定的域名
+domains: []                           # 反连平台绑定的域名
 external_ip:                          # 反连平台的外部IP，需要确保你想测试的目标能通过该 IP 访问到平台
 admin_path_prefix: "/revsuit"          # 管理页面的 http path 前缀，管理页面将位于：/admin_path_prefix/admin
 database: revsuit.db                  # 数据库连接信息 支持Sqlite3、MySQL、Postgres

@@ -21,6 +21,9 @@
           <a-menu-item key="/logs/rmi">
             <router-link to="/logs/rmi">RMI Logs</router-link>
           </a-menu-item>
+          <a-menu-item key="/logs/ldap">
+            <router-link to="/logs/ldap">Ldap Logs</router-link>
+          </a-menu-item>
           <a-menu-item key="/logs/mysql">
             <router-link to="/logs/mysql">MySQL Logs</router-link>
           </a-menu-item>
@@ -38,6 +41,9 @@
           </a-menu-item>
           <a-menu-item key="/rules/rmi">
             <router-link to="/rules/rmi">RMI Rules</router-link>
+          </a-menu-item>
+          <a-menu-item key="/rules/ldap">
+            <router-link to="/rules/ldap">Ldap Rules</router-link>
           </a-menu-item>
           <a-menu-item key="/rules/mysql">
             <router-link to="/rules/mysql">MySQL Rules</router-link>

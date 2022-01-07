@@ -1,4 +1,4 @@
-version: 1.3
+version: 1.4
 addr: :10000
 token:
 domain:
@@ -19,6 +19,9 @@ dns:
 rmi:
   enable: true
   addr: :1099
+ldap:
+  enable: true
+  addr: :1389
 mysql:
   enable: true
   addr: :3306

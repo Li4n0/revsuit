@@ -9,6 +9,7 @@ import (
 	"github.com/li4n0/revsuit/internal/database"
 	"github.com/li4n0/revsuit/pkg/dns"
 	"github.com/li4n0/revsuit/pkg/ftp"
+	"github.com/li4n0/revsuit/pkg/ldap"
 	"github.com/li4n0/revsuit/pkg/mysql"
 	"github.com/li4n0/revsuit/pkg/rhttp"
 	"github.com/li4n0/revsuit/pkg/rmi"
@@ -22,6 +23,7 @@ type Rules struct {
 	Dns   []dns.Rule
 	Mysql []mysql.Rule
 	Rmi   []rmi.Rule
+	Ldap  []ldap.Rule
 	Ftp   []ftp.Rule
 }
 
@@ -35,6 +37,7 @@ func exportRules(c *gin.Context) {
 	db.Model(&dns.Rule{}).Find(&rules.Dns)
 	db.Model(&mysql.Rule{}).Find(&rules.Mysql)
 	db.Model(&rmi.Rule{}).Find(&rules.Rmi)
+	db.Model(&rmi.Rule{}).Find(&rules.Ldap)
 	db.Model(&ftp.Rule{}).Find(&rules.Ftp)
 
 	out, err := yaml.Marshal(rules)
@@ -88,7 +91,7 @@ func (revsuit *Revsuit) importRules(c *gin.Context) {
 
 	for _, rule := range rules.Http {
 		if err := db.Model(&rhttp.Rule{}).Create(&rule).Error; err != nil {
-			errs = append(errs, errors.Wrap(err, fmt.Sprintf("http rule[%s]", rule.Name)).Error())
+			errs = append(errs, errors.Wrapf(err, "http rule[%s]", rule.Name).Error())
 			continue
 		}
 		count++
@@ -99,7 +102,7 @@ func (revsuit *Revsuit) importRules(c *gin.Context) {
 
 	for _, rule := range rules.Dns {
 		if err := db.Model(&dns.Rule{}).Create(&rule).Error; err != nil {
-			errs = append(errs, errors.Wrap(err, fmt.Sprintf("dns rule[%s]", rule.Name)).Error())
+			errs = append(errs, errors.Wrapf(err, "dns rule[%s]", rule.Name).Error())
 			continue
 		}
 		count++
@@ -110,7 +113,7 @@ func (revsuit *Revsuit) importRules(c *gin.Context) {
 
 	for _, rule := range rules.Mysql {
 		if err := db.Model(&mysql.Rule{}).Create(&rule).Error; err != nil {
-			errs = append(errs, errors.Wrap(err, fmt.Sprintf("mysql rule[%s]", rule.Name)).Error())
+			errs = append(errs, errors.Wrapf(err, "mysql rule[%s]", rule.Name).Error())
 			continue
 		}
 		count++
@@ -121,7 +124,7 @@ func (revsuit *Revsuit) importRules(c *gin.Context) {
 
 	for _, rule := range rules.Rmi {
 		if err := db.Model(&rmi.Rule{}).Create(&rule).Error; err != nil {
-			errs = append(errs, errors.Wrap(err, fmt.Sprintf("rmi rule[%s]", rule.Name)).Error())
+			errs = append(errs, errors.Wrapf(err, "rmi rule[%s]", rule.Name).Error())
 			continue
 		}
 		count++
@@ -130,9 +133,20 @@ func (revsuit *Revsuit) importRules(c *gin.Context) {
 		errs = append(errs, err.Error())
 	}
 
+	for _, rule := range rules.Ldap {
+		if err := db.Model(&ldap.Rule{}).Create(&rule).Error; err != nil {
+			errs = append(errs, errors.Wrapf(err, "ldap rule[%s]", rule.Name).Error())
+			continue
+		}
+		count++
+	}
+	if err := revsuit.ldap.UpdateRules(); err != nil {
+		errs = append(errs, err.Error())
+	}
+
 	for _, rule := range rules.Ftp {
 		if err := db.Model(&ftp.Rule{}).Create(&rule).Error; err != nil {
-			errs = append(errs, errors.Wrap(err, fmt.Sprintf("ftp rule[%s]", rule.Name)).Error())
+			errs = append(errs, errors.Wrapf(err, "ftp rule[%s]", rule.Name).Error())
 			continue
 		}
 		count++
@@ -378,6 +392,42 @@ func (revsuit *Revsuit) updateRmiConfig(c *gin.Context) {
 
 	if revsuit.rmi.Enable {
 		revsuit.rmi.Restart()
+	}
+}
+
+func (revsuit *Revsuit) getLdapConfig(c *gin.Context) {
+	c.JSON(200, revsuit.ldap.Config)
+}
+
+func (revsuit *Revsuit) updateLdapConfig(c *gin.Context) {
+	var form = ldap.Config{}
+
+	if err := c.ShouldBindJSON(&form); err != nil {
+		c.JSON(400, gin.H{
+			"status": "failed",
+			"error":  err.Error(),
+			"data":   nil,
+		})
+		return
+	}
+
+	if form.Addr != revsuit.ldap.Addr {
+		revsuit.ldap.Addr = form.Addr
+		log.Info("Update ldap config [addr] to %s", form.Addr)
+	}
+
+	if form.Enable != revsuit.ldap.Enable {
+		log.Info("Update ldap config [enable] to %v", form.Enable)
+		if form.Enable {
+			go revsuit.ldap.Run()
+		} else {
+			revsuit.ldap.Stop()
+		}
+		return
+	}
+
+	if revsuit.ldap.Enable {
+		revsuit.ldap.Restart()
 	}
 }
 

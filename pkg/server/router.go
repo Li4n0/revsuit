@@ -10,6 +10,7 @@ import (
 	"github.com/li4n0/revsuit/internal/file"
 	"github.com/li4n0/revsuit/pkg/dns"
 	"github.com/li4n0/revsuit/pkg/ftp"
+	"github.com/li4n0/revsuit/pkg/ldap"
 	"github.com/li4n0/revsuit/pkg/mysql"
 	"github.com/li4n0/revsuit/pkg/rhttp"
 	"github.com/li4n0/revsuit/pkg/rmi"
@@ -69,6 +70,8 @@ func (revsuit *Revsuit) registerHttpRouter() {
 	settingsGroup.POST("/updateDnsConfig", revsuit.updateDnsConfig)
 	settingsGroup.GET("/getRmiConfig", revsuit.getRmiConfig)
 	settingsGroup.POST("/updateRmiConfig", revsuit.updateRmiConfig)
+	settingsGroup.GET("/getLdapConfig", revsuit.getLdapConfig)
+	settingsGroup.POST("/updateLdapConfig", revsuit.updateLdapConfig)
 	settingsGroup.GET("/getMySQLConfig", revsuit.getMySQLConfig)
 	settingsGroup.POST("/updateMySQLConfig", revsuit.updateMySQLConfig)
 	settingsGroup.GET("/getFtpConfig", revsuit.getFtpConfig)
@@ -94,6 +97,10 @@ func (revsuit *Revsuit) registerHttpRouter() {
 	rmiGroup := recordGroup.Group("/rmi")
 	rmiGroup.GET("", rmi.Records)
 	rmiGroup.DELETE("", rmi.Records)
+
+	ldapGroup := recordGroup.Group("/ldap")
+	ldapGroup.GET("", ldap.Records)
+	ldapGroup.DELETE("", ldap.Records)
 
 	ftpGroup := recordGroup.Group("/ftp")
 	ftpGroup.GET("", ftp.Records)
@@ -121,6 +128,11 @@ func (revsuit *Revsuit) registerHttpRouter() {
 	rmiGroup.GET("", rmi.ListRules)
 	rmiGroup.POST("", rmi.UpsertRules)
 	rmiGroup.DELETE("", rmi.DeleteRules)
+
+	ldapGroup = ruleGroup.Group("/ldap")
+	ldapGroup.GET("", ldap.ListRules)
+	ldapGroup.POST("", ldap.UpsertRules)
+	ldapGroup.DELETE("", ldap.DeleteRules)
 
 	ftpGroup = ruleGroup.Group("/ftp")
 	ftpGroup.GET("", ftp.ListRules)

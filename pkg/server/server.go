@@ -11,6 +11,7 @@ import (
 	"github.com/li4n0/revsuit/internal/record"
 	"github.com/li4n0/revsuit/pkg/dns"
 	"github.com/li4n0/revsuit/pkg/ftp"
+	"github.com/li4n0/revsuit/pkg/ldap"
 	"github.com/li4n0/revsuit/pkg/mysql"
 	http "github.com/li4n0/revsuit/pkg/rhttp"
 	"github.com/li4n0/revsuit/pkg/rmi"
@@ -28,6 +29,7 @@ type Revsuit struct {
 	dns   *dns.Server
 	mysql *mysql.Server
 	rmi   *rmi.Server
+	ldap  *ldap.Server
 	ftp   *ftp.Server
 
 	clients     map[int]*gin.Context
@@ -66,55 +68,35 @@ func initDatabase(dsn string) {
 		log.Fatal(err.Error())
 	}
 
-	err = database.DB.AutoMigrate(&http.Record{})
-	if err != nil {
-		log.Fatal(err.Error())
-	}
-	err = database.DB.AutoMigrate(&dns.Record{})
-	if err != nil {
-		log.Fatal(err.Error())
-	}
-	err = database.DB.AutoMigrate(&mysql.Record{})
-	if err != nil {
-		log.Fatal(err.Error())
-	}
-	err = database.DB.AutoMigrate(&http.Rule{})
-	if err != nil {
-		log.Fatal(err.Error())
-	}
-	err = database.DB.AutoMigrate(&dns.Rule{})
-	if err != nil {
-		log.Fatal(err.Error())
-	}
-	err = database.DB.AutoMigrate(&mysql.Rule{})
-	if err != nil {
-		log.Fatal(err.Error())
-	}
-	err = database.DB.AutoMigrate(&file.MySQLFile{})
-	if err != nil {
-		log.Fatal(err.Error())
-	}
-	err = database.DB.AutoMigrate(&rmi.Record{})
-	if err != nil {
-		log.Fatal(err.Error())
-	}
-	err = database.DB.AutoMigrate(&rmi.Rule{})
-	if err != nil {
-		log.Fatal(err.Error())
-	}
-	err = database.DB.AutoMigrate(&ftp.Record{})
-	if err != nil {
-		log.Fatal(err.Error())
-	}
-	err = database.DB.AutoMigrate(&ftp.Rule{})
-	if err != nil {
-		log.Fatal(err.Error())
-	}
-	err = database.DB.AutoMigrate(&file.FTPFile{})
+	err = database.DB.AutoMigrate(&http.Record{}, &http.Rule{})
 	if err != nil {
 		log.Fatal(err.Error())
 	}
 
+	err = database.DB.AutoMigrate(&dns.Record{}, &dns.Rule{})
+	if err != nil {
+		log.Fatal(err.Error())
+	}
+
+	err = database.DB.AutoMigrate(&mysql.Record{}, &mysql.Rule{}, &file.MySQLFile{})
+	if err != nil {
+		log.Fatal(err.Error())
+	}
+
+	err = database.DB.AutoMigrate(&rmi.Record{}, &rmi.Rule{})
+	if err != nil {
+		log.Fatal(err.Error())
+	}
+
+	err = database.DB.AutoMigrate(&ldap.Record{}, &ldap.Rule{})
+	if err != nil {
+		log.Fatal(err.Error())
+	}
+
+	err = database.DB.AutoMigrate(&ftp.Record{}, &ftp.Rule{}, &file.FTPFile{})
+	if err != nil {
+		log.Fatal(err.Error())
+	}
 }
 
 func initLog(level string) (logLevel log.Level) {
@@ -198,6 +180,9 @@ func New(c *Config) *Revsuit {
 	s.rmi = rmi.GetServer()
 	s.rmi.Config = c.RMI
 
+	s.ldap = ldap.GetServer()
+	s.ldap.Config = c.LDAP
+
 	s.ftp = ftp.GetServer()
 	s.ftp.Config = c.FTP
 
@@ -231,6 +216,9 @@ func (revsuit *Revsuit) Run() {
 	}
 	if revsuit.rmi != nil && revsuit.rmi.Enable {
 		go revsuit.rmi.Run()
+	}
+	if revsuit.ldap != nil && revsuit.ldap.Enable {
+		go revsuit.ldap.Run()
 	}
 	if revsuit.mysql != nil && revsuit.mysql.Enable {
 		go revsuit.mysql.Run()

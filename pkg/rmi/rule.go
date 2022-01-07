@@ -93,10 +93,7 @@ func ListRules(c *gin.Context) {
 	}
 
 	db := database.DB.Model(&rmiRule)
-	if rmiRule.Name != "" {
-		db.Where("name = ?", rmiRule.Name)
-	}
-	db.Count(&count)
+	db.Where(&rmiRule).Count(&count)
 
 	page, err := strconv.Atoi(c.Query("page"))
 	if err != nil {
@@ -130,10 +127,7 @@ func ListRules(c *gin.Context) {
 
 // UpsertRules creates or updates rmi rule from user submit
 func UpsertRules(c *gin.Context) {
-	var (
-		rmiRule Rule
-		update  bool
-	)
+	var rmiRule Rule
 
 	if err := c.ShouldBind(&rmiRule); err != nil {
 		c.JSON(400, gin.H{
@@ -142,10 +136,6 @@ func UpsertRules(c *gin.Context) {
 			"data":   nil,
 		})
 		return
-	}
-
-	if rmiRule.ID != 0 {
-		update = true
 	}
 
 	if err := rmiRule.CreateOrUpdate(); err != nil {
@@ -157,7 +147,7 @@ func UpsertRules(c *gin.Context) {
 		return
 	}
 
-	if update {
+	if rmiRule.ID != 0 {
 		log.Trace("RMI rule[id:%d] has been updated", rmiRule.ID)
 	} else {
 		log.Trace("RMI rule[id:%d] has been created", rmiRule.ID)

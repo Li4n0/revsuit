@@ -101,10 +101,7 @@ func ListRules(c *gin.Context) {
 	}
 
 	db := database.DB.Model(&dnsRule)
-	if dnsRule.Name != "" {
-		db.Where("name = ?", dnsRule.Name)
-	}
-	db.Count(&count)
+	db.Where(&dnsRule).Count(&count)
 
 	page, err := strconv.Atoi(c.Query("page"))
 	if err != nil {
@@ -138,10 +135,7 @@ func ListRules(c *gin.Context) {
 
 // UpsertRules creates or updates dns rule from user submit
 func UpsertRules(c *gin.Context) {
-	var (
-		dnsRule Rule
-		update  bool
-	)
+	var dnsRule Rule
 
 	if err := c.ShouldBind(&dnsRule); err != nil {
 		c.JSON(400, gin.H{
@@ -150,10 +144,6 @@ func UpsertRules(c *gin.Context) {
 			"data":   nil,
 		})
 		return
-	}
-
-	if dnsRule.ID != 0 {
-		update = true
 	}
 
 	if err := dnsRule.CreateOrUpdate(); err != nil {
@@ -165,7 +155,7 @@ func UpsertRules(c *gin.Context) {
 		return
 	}
 
-	if update {
+	if dnsRule.ID != 0 {
 		log.Trace("DNS rule[id:%d] has been updated", dnsRule.ID)
 	} else {
 		log.Trace("DNS rule[id:%d] has been created", dnsRule.ID)

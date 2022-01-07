@@ -1,4 +1,4 @@
-package rhttp
+package ldap
 
 import (
 	"strconv"
@@ -10,20 +10,17 @@ import (
 	log "unknwon.dev/clog/v2"
 )
 
-// Rule Http rule struct
+// Rule LDAP rule struct
 type Rule struct {
-	rule.BaseRule      `yaml:",inline"`
-	ResponseStatusCode string            `gorm:"index;default:200;not null" form:"response_status_code" json:"response_status_code" yaml:"response_status_code"`
-	ResponseHeaders    database.MapField `form:"response_headers" json:"response_headers" yaml:"response_headers"`
-	ResponseBody       string            `gorm:"default:Hello RevSuit!" form:"response_body" json:"response_body" yaml:"response_body"`
+	rule.BaseRule `yaml:",inline"`
 }
 
 func (Rule) TableName() string {
-	return "http_rules"
+	return "ldap_rules"
 }
 
-// NewRule new http rule struct
-func NewRule(name, flagFormat, responseBody string, pushToClient, notice bool, responseStatus string, responseHeaders database.MapField) *Rule {
+// NewRule new ldap rule struct
+func NewRule(name, flagFormat string, pushToClient, notice bool) *Rule {
 	return &Rule{
 		BaseRule: rule.BaseRule{
 			Name:         name,
@@ -31,13 +28,10 @@ func NewRule(name, flagFormat, responseBody string, pushToClient, notice bool, r
 			PushToClient: pushToClient,
 			Notice:       notice,
 		},
-		ResponseStatusCode: responseStatus,
-		ResponseHeaders:    responseHeaders,
-		ResponseBody:       responseBody,
 	}
 }
 
-// CreateOrUpdate creates or updates the http rule in database and ruleSet
+// CreateOrUpdate creates or updates the ldap rule in database and ruleSet
 func (r *Rule) CreateOrUpdate() (err error) {
 	db := database.DB.Model(r)
 	err = db.Clauses(clause.OnConflict{
@@ -47,9 +41,6 @@ func (r *Rule) CreateOrUpdate() (err error) {
 				"name",
 				"flag_format",
 				"base_rank",
-				"response_status_code",
-				"response_headers",
-				"response_body",
 				"push_to_client",
 				"notice",
 			}),
@@ -62,7 +53,7 @@ func (r *Rule) CreateOrUpdate() (err error) {
 	return err
 }
 
-// Delete deletes the http rule in database and ruleSet
+// Delete deletes the ldap rule in database and ruleSet
 func (r *Rule) Delete() (err error) {
 	db := database.DB.Model(r)
 	err = db.Delete(r).Error
@@ -74,10 +65,10 @@ func (r *Rule) Delete() (err error) {
 	return err
 }
 
-// ListRules lists all http rules those satisfy the filter
+// ListRules lists all ldap rules those satisfy the filter
 func ListRules(c *gin.Context) {
 	var (
-		httpRule Rule
+		ldapRule Rule
 		res      []Rule
 		count    int64
 		order    = c.Query("order")
@@ -92,7 +83,7 @@ func ListRules(c *gin.Context) {
 		}
 	}
 
-	if err := c.ShouldBind(&httpRule); err != nil {
+	if err := c.ShouldBind(&ldapRule); err != nil {
 		c.JSON(400, gin.H{
 			"status": "failed",
 			"error":  err.Error(),
@@ -101,8 +92,8 @@ func ListRules(c *gin.Context) {
 		return
 	}
 
-	db := database.DB.Model(&httpRule)
-	db.Where(&httpRule).Count(&count)
+	db := database.DB.Model(&ldapRule)
+	db.Where(&ldapRule).Count(&count)
 
 	page, err := strconv.Atoi(c.Query("page"))
 	if err != nil {
@@ -134,11 +125,11 @@ func ListRules(c *gin.Context) {
 	})
 }
 
-// UpsertRules create or update http rule from user submit
+// UpsertRules creates or updates ldap rule from user submit
 func UpsertRules(c *gin.Context) {
-	var httpRule Rule
+	var ldapRule Rule
 
-	if err := c.ShouldBind(&httpRule); err != nil {
+	if err := c.ShouldBind(&ldapRule); err != nil {
 		c.JSON(400, gin.H{
 			"status": "failed",
 			"error":  err.Error(),
@@ -147,7 +138,7 @@ func UpsertRules(c *gin.Context) {
 		return
 	}
 
-	if err := httpRule.CreateOrUpdate(); err != nil {
+	if err := ldapRule.CreateOrUpdate(); err != nil {
 		c.JSON(400, gin.H{
 			"status": "failed",
 			"error":  err.Error(),
@@ -156,10 +147,10 @@ func UpsertRules(c *gin.Context) {
 		return
 	}
 
-	if httpRule.ID != 0 {
-		log.Trace("HTTP rule[id:%d] has been updated", httpRule.ID)
+	if ldapRule.ID != 0 {
+		log.Trace("LDAP rule[id:%d] has been updated", ldapRule.ID)
 	} else {
-		log.Trace("HTTP rule[id:%d] has been created", httpRule.ID)
+		log.Trace("LDAP rule[id:%d] has been created", ldapRule.ID)
 	}
 
 	c.JSON(200, gin.H{
@@ -169,11 +160,11 @@ func UpsertRules(c *gin.Context) {
 	})
 }
 
-// DeleteRules deletes http rule from user submit
+// DeleteRules deletes ldap rule from user submit
 func DeleteRules(c *gin.Context) {
-	var httpRule Rule
+	var ldapRule Rule
 
-	if err := c.ShouldBind(&httpRule); err != nil {
+	if err := c.ShouldBind(&ldapRule); err != nil {
 		c.JSON(400, gin.H{
 			"status": "failed",
 			"error":  err.Error(),
@@ -182,7 +173,7 @@ func DeleteRules(c *gin.Context) {
 		return
 	}
 
-	if err := httpRule.Delete(); err != nil {
+	if err := ldapRule.Delete(); err != nil {
 		c.JSON(400, gin.H{
 			"status": "failed",
 			"error":  err.Error(),
@@ -191,7 +182,7 @@ func DeleteRules(c *gin.Context) {
 		return
 	}
 
-	log.Trace("HTTP rule[id:%d] has been deleted", httpRule.ID)
+	log.Trace("LDAP rule[id:%d] has been deleted", ldapRule.ID)
 
 	c.JSON(200, gin.H{
 		"status": "succeed",

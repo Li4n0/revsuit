@@ -42,6 +42,20 @@ export function updateRmiConfig(data) {
     })
 }
 
+export function getLdapConfig() {
+    return request({
+        url: '/setting/getLdapConfig',
+    })
+}
+
+export function updateLdapConfig(data) {
+    return request({
+        url: '/setting/updateLdapConfig',
+        method: "post",
+        data: data,
+    })
+}
+
 export function getMySQLConfig() {
     return request({
         url: '/setting/getMySQLConfig',

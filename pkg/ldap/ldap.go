@@ -1,11 +1,8 @@
-package rmi
+package ldap
 
 import (
 	"bytes"
-	"encoding/binary"
 	"net"
-	"strconv"
-	"strings"
 	"sync"
 	"time"
 
@@ -45,7 +42,7 @@ func (s *Server) UpdateRules() error {
 	db := database.DB.Model(new(Rule))
 	defer s.rulesLock.Unlock()
 	s.rulesLock.Lock()
-	return errors.Wrap(db.Order("base_rank desc").Find(&s.rules).Error, "RMI update rules error")
+	return errors.Wrap(db.Order("base_rank desc").Find(&s.rules).Error, "LDAP update rules error")
 }
 
 func (s *Server) handleConnection(conn net.Conn) {
@@ -57,53 +54,47 @@ func (s *Server) handleConnection(conn net.Conn) {
 	}()
 
 	if err := conn.SetDeadline(time.Now().Add(time.Second * 30)); err != nil {
-		log.Warn("RMI set connection deadline error:%v", err)
+		log.Warn("LDAP set connection deadline error:%v", err)
 		return
 	}
 
-	ip, port, _ := net.SplitHostPort(conn.RemoteAddr().String())
+	ip, _, _ := net.SplitHostPort(conn.RemoteAddr().String())
 
 	buf := make([]byte, 1024)
 	_, err := conn.Read(buf)
 	if err != nil {
-		log.Warn("RMI read connection error:%v", err)
+		log.Warn("LDAP read connection error:%v", err)
 		return
 	}
 
-	if !bytes.Contains(buf, []byte{0x4a, 0x52, 0x4d, 0x49}) {
+	if !bytes.Contains(buf, []byte{
+		0x30, 0x0c, 0x02, 0x01, 0x01, 0x60, 0x07,
+		0x02, 0x01, 0x03, 0x04, 0x00, 0x80, 0x00}) {
 		return
 	}
 
-	send := []byte{0x4e}
-	bs := make([]byte, 8)
-	binary.BigEndian.PutUint16(bs, uint16(len(ip)))
-	send = append(send, bs...)
-	send = append(send, []byte(ip)...)
-	send = append(send, []byte{0x00, 0x00}...)
-	uintPort, _ := strconv.Atoi(port)
-	bs = make([]byte, 8)
-	binary.BigEndian.PutUint16(bs, uint16(uintPort))
-	send = append(send, bs...)
-
+	send := []byte{
+		0x30, 0x0c, 0x02, 0x01, 0x01, 0x61, 0x07,
+		0x0a, 0x01, 0x00, 0x04, 0x00, 0x04, 0x00,
+	}
 	_, err = conn.Write(send)
 	if err != nil {
-		log.Warn("RMI write connection error: %v", err)
+		log.Warn("LDAP write connection error: %v", err)
+		return
+	}
+	_, err = conn.Read(buf)
+	if err != nil {
+		log.Warn("LDAP read connection error:%v", err)
 		return
 	}
 
-	data := make([]byte, 512)
-
-	for length := 0; length < 50; {
-		n, err := conn.Read(data)
-		if err != nil {
-			log.Warn("RMI read connection error: %v", err)
-			return
-		}
-		length += n
+	length := buf[8]
+	pathBytes := bytes.Buffer{}
+	for i := 1; i <= int(length); i++ {
+		temp := []byte{buf[8+i]}
+		pathBytes.Write(temp)
 	}
-
-	frags := bytes.Split(data, []byte{0xdf, 0x74})
-	path := strings.TrimRight(string(frags[len(frags)-1][2:]), "\x00")
+	path := pathBytes.String()
 
 	for _, _rule := range s.getRules() {
 		flag, flagGroup, _ := _rule.Match(path)
@@ -116,10 +107,10 @@ func (s *Server) handleConnection(conn net.Conn) {
 		// create new record
 		r, err := NewRecord(_rule, flag, path, ip, area)
 		if err != nil {
-			log.Warn("RMI record[rule_id:%d] created failed :%s", _rule.ID, err)
+			log.Warn("LDAP record[rule_id:%d] created failed :%s", _rule.ID, err)
 			return
 		}
-		log.Info("RMI record[id:%d rule:%s remote_ip:%s] has been created", r.ID, _rule.Name, ip)
+		log.Info("LDAP record[id:%d rule:%s remote_ip:%s] has been created", r.ID, _rule.Name, ip)
 
 		//only send to client when this connection recorded first time.
 		if _rule.PushToClient {
@@ -128,11 +119,11 @@ func (s *Server) handleConnection(conn net.Conn) {
 				database.DB.Where("rule_name=? and path like ?", _rule.Name, "%"+flagGroup+"%").Model(&Record{}).Count(&count)
 				if count <= 1 {
 					r.PushToClient()
-					log.Trace("RMI record[id:%d, flagGroup:%s] has been put to client message queue", r.ID, flagGroup)
+					log.Trace("LDAP record[id:%d, flagGroup:%s] has been put to client message queue", r.ID, flagGroup)
 				}
 			} else {
 				r.PushToClient()
-				log.Trace("RMI record[id:%d, flag:%s] has been put to client message queue", r.ID, flag)
+				log.Trace("LDAP record[id:%d, flag:%s] has been put to client message queue", r.ID, flag)
 			}
 		}
 
@@ -140,7 +131,7 @@ func (s *Server) handleConnection(conn net.Conn) {
 		if _rule.Notice {
 			go func() {
 				r.Notice()
-				log.Trace("RMI record[id:%d] notice has been sent", r.ID)
+				log.Trace("LDAP record[id:%d] notice has been sent", r.ID)
 			}()
 		}
 		return
@@ -148,7 +139,7 @@ func (s *Server) handleConnection(conn net.Conn) {
 }
 
 func (s *Server) Stop() {
-	log.Info("RMI Server is stopping...")
+	log.Info("LDAP Server is stopping...")
 	s.Enable = false
 	s.livingLock.Unlock()
 }
@@ -164,7 +155,7 @@ func (s *Server) Run() {
 	s.livingLock.Lock()
 	defer func() {
 		if s.Enable {
-			log.Error("RMI Server exited unexpectedly")
+			log.Error("LDAP Server exited unexpectedly")
 		}
 		s.Enable = false
 		s.livingLock.Unlock()
@@ -176,7 +167,7 @@ func (s *Server) Run() {
 	}
 
 	// run server
-	log.Info("Starting RMI Server at %v", s.Addr)
+	log.Info("Starting LDAP Server at %v", s.Addr)
 
 	listener, err := net.Listen("tcp", s.Addr)
 	if err != nil {
@@ -195,7 +186,7 @@ func (s *Server) Run() {
 		tcpConn, err := listener.Accept()
 		if err != nil {
 			if !errors.Is(err, net.ErrClosed) {
-				log.Warn("RMI accept connection error: %v", err)
+				log.Warn("LDAP accept connection error: %v", err)
 			} else {
 				break
 			}

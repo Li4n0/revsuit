@@ -31,6 +31,11 @@ const routes = [
         component: () => import( '../views/logs/Rmi')
     },
     {
+        path: '/logs/ldap',
+        name: 'LdapLogs',
+        component: () => import( '../views/logs/Ldap')
+    },
+    {
         path: '/logs/ftp',
         name: 'FtpLogs',
         component: () => import( '../views/logs/Ftp')
@@ -55,6 +60,11 @@ const routes = [
         path: '/rules/rmi',
         name: 'RmiRules',
         component: () => import( '../views/rules/Rmi')
+    },
+    {
+        path: '/rules/ldap',
+        name: 'LdapRules',
+        component: () => import( '../views/rules/Ldap')
     },
     {
         path: '/rules/ftp',

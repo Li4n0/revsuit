@@ -97,6 +97,30 @@ export function deleteRmiRule(data) {
     })
 }
 
+export function getLdapRule(params) {
+    return request({
+        url: '/rule/ldap',
+        params: params,
+        method: 'get'
+    })
+}
+
+export function upsertLdapRule(data) {
+    return request({
+        url: '/rule/ldap',
+        data: data,
+        method: 'post'
+    })
+}
+
+export function deleteLdapRule(data) {
+    return request({
+        url: '/rule/ldap',
+        data: data,
+        method: 'delete'
+    })
+}
+
 export function getFtpRule(params) {
     return request({
         url: '/rule/ftp',

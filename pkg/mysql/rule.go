@@ -84,10 +84,7 @@ func ListRules(c *gin.Context) {
 	}
 
 	db := database.DB.Model(&mysqlRule)
-	if mysqlRule.Name != "" {
-		db.Where("name = ?", mysqlRule.Name)
-	}
-	db.Count(&count)
+	db.Where(&mysqlRule).Count(&count)
 
 	page, err := strconv.Atoi(c.Query("page"))
 	if err != nil {
@@ -121,10 +118,7 @@ func ListRules(c *gin.Context) {
 
 // UpsertRules create or update mysql rule from user submit
 func UpsertRules(c *gin.Context) {
-	var (
-		mysqlRule Rule
-		update    bool
-	)
+	var mysqlRule Rule
 
 	if err := c.ShouldBind(&mysqlRule); err != nil {
 		c.JSON(400, gin.H{
@@ -133,10 +127,6 @@ func UpsertRules(c *gin.Context) {
 			"data":   nil,
 		})
 		return
-	}
-
-	if mysqlRule.ID != 0 {
-		update = true
 	}
 
 	if err := mysqlRule.CreateOrUpdate(); err != nil {
@@ -148,7 +138,7 @@ func UpsertRules(c *gin.Context) {
 		return
 	}
 
-	if update {
+	if mysqlRule.ID != 0 {
 		log.Trace("MySQL rule[id:%d] has been updated", mysqlRule.ID)
 	} else {
 		log.Trace("MySQL rule[id:%d] has been created", mysqlRule.ID)

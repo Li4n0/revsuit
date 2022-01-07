@@ -1,7 +1,7 @@
 ## 配置文件说明
 
 ```yaml
-version: 1.3
+version: 1.5
 addr: :10000                          # HTTP 服务监听的地址
 token:                                # 鉴权Token，管理页面和客户端都需要通过该 Token 进行鉴权
 domains: []                           # 反连平台绑定的域名
@@ -25,6 +25,9 @@ dns:                                  # DNS 反连相关配置
 rmi:                                  # RMI 反连相关配置
   enable: true                                
   addr: :1099                         # RMI 服务监听的地址
+ldap:
+  enable: true
+  addr: :1389                         # Ldap 服务监听的地址
 mysql:                                # MySQL 反连相关配置
   enable: true                        
   addr: :3306                         # MySQL 服务监听的地址        

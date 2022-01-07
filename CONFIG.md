@@ -2,7 +2,7 @@
 
 RevSuit will generate a profile template the first time it is run, and you can edit its contents to implement some customization requirements.
 ```yaml
-version: 1.3
+version: 1.5
 addr: :10000                          # Address of the HTTP service will listen
 token:                                # Authentication Token, both the admin page and the client need to be authenticated by this Token
 domains: []                           # The domain names used by the platform
@@ -26,6 +26,9 @@ dns:                                  # DNS receive connection related configura
 rmi:                                  # RMI receive connection related configuration
   enable: true                                
   addr: :1099                         # Address of the RMI service will listen  
+ldap:
+  enable: true
+  addr: :1389                         # Address of the Ldap service will listen 
 mysql:                                # MySQL receive connection related configuration
   enable: true                        
   addr: :3306                         # Address of the MySQL service will listen         

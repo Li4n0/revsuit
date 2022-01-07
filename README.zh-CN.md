@@ -4,7 +4,7 @@
 
 ## 简介
 
-RevSuit 是一款灵活并且强大的反连平台。目前支持 HTTP、DNS、RMI、MySQL 和 FTP 协议。
+RevSuit 是一款灵活并且强大的反连平台。目前支持 HTTP、DNS、RMI、LDAP、MySQL 和 FTP 协议。
 
 灵活：
 

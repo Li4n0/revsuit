@@ -22,7 +22,7 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@v2
       - name: create dist directory
-        run: mkdir frontend/dist
+        run: mkdir frontend/dist && touch frontend/dist/revsuit
       - name: Run golangci-lint
         uses: golangci/golangci-lint-action@v2.4.0
         with:

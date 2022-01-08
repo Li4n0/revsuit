@@ -11,7 +11,7 @@ GeoLite2-City.mmdb
 config.yaml*
 
 # binary
-revsuit
+/revsuit
 
 # Editor directories and files
 .idea
@@ -23,6 +23,9 @@ revsuit
 *.sw?
 
 ## node
-package.json
+/package.json
 package-lock.json
 node_modules/
+
+## frontend dist
+dist/

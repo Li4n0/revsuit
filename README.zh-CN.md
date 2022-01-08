@@ -23,7 +23,13 @@ RevSuit 是一款灵活并且强大的反连平台。目前支持 HTTP、DNS、R
 
 ### 安装及配置
 
-在 Releases 里下载最新版本的 RevSuit。暂时只提供 amd64 架构下的二进制文件下载，如需要在其它架构下使用，可以自行编译。
+在 Releases 里下载最新版本的 RevSuit，或者通过以下命令自行编译：
+
+```bash
+git clone https://github.com/Li4n0/revsuit.git
+cd revsuit/frontend && yarn install && yarn build
+cd ../ && go build ./cmd/revsuit/revsuit.go
+```
 
 RevSuit首次运行将会在当前目录生成配置文件，您可以根据需要自定义其中的某些内容。配置文件的详细说明可见：[配置说明](./CONFIG.zh-CN.md)
 

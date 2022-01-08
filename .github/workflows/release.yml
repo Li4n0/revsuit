@@ -4,60 +4,40 @@ on:
 name: Build
 jobs:
   release-linux:
-    name: release linux
+    name: release
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@master
       - uses: actions/setup-go@v2
         with:
           go-version: '^1.16.0'
-      - name: compile
-        run: |
-          GOARCH="amd64" go build -v -ldflags="-s -w -extldflags=-static" -tags netgo -trimpath -o "bin/revsuit_linux_amd64" ./cmd/revsuit/revsuit.go
-#          GOARCH="386" go build -v -ldflags="-s -w -extldflags=-static" -tags netgo -trimpath -o "bin/revsuit_linux_i386" ./cmd/revsuit/revsuit.go
-#          GOARCH="arm" go build -v -ldflags="-s -w -extldflags=-static" -tags netgo -trimpath -o "bin/revsuit_linux_arm" ./cmd/revsuit/revsuit.go
-#          GOARCH="arm64" go build -v -ldflags="-s -w -extldflags=-static"  -tags netgo -trimpath -o "bin/revsuit_linux_arm64" ./cmd/revsuit/revsuit.go
-      - name: Upload the artifacts
-        uses: li4n0/upload-release-action@v2
+
+      - name: install nodejs
+        uses: actions/setup-node@v2
         with:
-          repo_token: ${{ secrets.GITHUB_TOKEN }}
-          file: bin/*
-          tag: ${{ github.ref }}
-          overwrite: true
-          file_glob: true
-  release-darwin-amd64:
-    name: release darwin/amd64
-    runs-on: macos-latest
-    steps:
-      - uses: actions/checkout@master
-      - uses: actions/setup-go@v2
-        with:
-          go-version: '^1.16.0'
-      - name: compile
-        run: |
-          GOARCH="amd64" go build -v -ldflags="-s -w" -trimpath -o "bin/revsuit_darwin_amd64" ./cmd/revsuit/revsuit.go
-#          GOARCH="arm64" go build -v -ldflags="-s -w" -trimpath -o "bin/revsuit_darwin_arm64" ./cmd/revsuit/revsuit.go
-      - name: Upload the artifacts
-        uses: li4n0/upload-release-action@v2
-        with:
-          repo_token: ${{ secrets.GITHUB_TOKEN }}
-          file: bin/*
-          tag: ${{ github.ref }}
-          overwrite: true
-          file_glob: true
-  release-windows:
-    name: release windows
-    runs-on: windows-latest
-    steps:
-      - uses: actions/checkout@master
-      - uses: actions/setup-go@v2
-        with:
-          go-version: '^1.16.0'
-      - name: compile
-        run: |
-          env GOARCH=amd64 go build -v -ldflags="-s -w -extldflags=-static" -trimpath -o "bin/revsuit_windows_amd64.exe" ./cmd/revsuit/revsuit.go
-#          env GOARCH=386 go build -v -ldflags="-s -w -extldflags=-static" -trimpath -o "bin/revsuit_windows_i386.exe" ./cmd/revsuit/revsuit.go
-#          env GOARCH=arm go build -v -ldflags="-s -w -extldflags=-static" -trimpath -o "bin/revsuit_windows_arm.exe" ./cmd/revsuit/revsuit.go
+          node-version: '12'
+
+      - name: install yarn
+        run: npm install -g yarn
+
+      - name: build frontend
+        run: cd frontend && yarn install && yarn build
+
+      - name: get the version
+        id: get_version
+        run: echo ::set-output name=VERSION::$(echo $GITHUB_REF | cut -d / -f 3)
+
+      - name: compile linux amd64
+        run: GOARCH="amd64" go build -ldflags="-s -w -X 'github.com/li4n0/revsuit/pkg/server.VERSION=${{ steps.get_version.outputs.VERSION }}'" -tags netgo -trimpath -o "bin/revsuit_linux_amd64" ./cmd/revsuit/revsuit.go
+      - name: compile linux arm64
+        run:  GOARCH="arm64" go build -ldflags="-s -w -X 'github.com/li4n0/revsuit/pkg/server.VERSION=${{ steps.get_version.outputs.VERSION }}'"  -tags netgo -trimpath -o "bin/revsuit_linux_arm64" ./cmd/revsuit/revsuit.go
+      - name: compile darwin amd64
+        run:  GOOS="darwin" GOARCH="amd64" go build -ldflags="-s -w -X 'github.com/li4n0/revsuit/pkg/server.VERSION=${{ steps.get_version.outputs.VERSION }}'" -trimpath -o "bin/revsuit_darwin_amd64" ./cmd/revsuit/revsuit.go
+      - name: compile darwin arm64
+        run:  GOOS="darwin" GOARCH="arm64" go build -ldflags="-s -w -X 'github.com/li4n0/revsuit/pkg/server.VERSION=${{ steps.get_version.outputs.VERSION }}'" -trimpath -o "bin/revsuit_darwin_arm64" ./cmd/revsuit/revsuit.go
+      - name: compile windows amd64
+        run:  GOOS="windows" GOARCH="amd64" go build -ldflags="-s -w -X 'github.com/li4n0/revsuit/pkg/server.VERSION=${{ steps.get_version.outputs.VERSION }}' " -trimpath -o "bin/revsuit_windows_amd64.exe" ./cmd/revsuit/revsuit.go
+
       - name: Upload the artifacts
         uses: li4n0/upload-release-action@v2
         with:

@@ -19,7 +19,7 @@ import (
 	log "unknwon.dev/clog/v2"
 )
 
-const VERSION = "0.4.0"
+var VERSION = ""
 
 type Revsuit struct {
 	config   *Config

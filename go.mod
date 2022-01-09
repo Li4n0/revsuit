@@ -4,6 +4,7 @@ go 1.16
 
 require (
 	github.com/axgle/mahonia v0.0.0-20180208002826-3358181d7394 // indirect
+	github.com/blang/semver v3.5.1+incompatible
 	github.com/fatih/color v1.10.0 // indirect
 	github.com/gabriel-vasile/mimetype v1.2.0
 	github.com/gin-gonic/gin v1.7.2
@@ -18,6 +19,7 @@ require (
 	github.com/oschwald/geoip2-golang v1.5.0
 	github.com/patrickmn/go-cache v2.1.0+incompatible
 	github.com/pkg/errors v0.9.1
+	github.com/rhysd/go-github-selfupdate v1.2.3
 	github.com/russross/blackfriday/v2 v2.1.0 // indirect
 	github.com/sinlov/qqwry-golang v0.0.0-20191204062238-bea9868bbbf4
 	github.com/stretchr/testify v1.7.0

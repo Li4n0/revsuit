@@ -42,6 +42,15 @@ func Start() {
 				Usage: "load configuration from FILE (default: config.yaml)",
 			},
 		},
+		Commands: []*cli.Command{
+			{
+				Name: "upgrade",
+				Action: func(c *cli.Context) error {
+					checkUpdateFromCli()
+					return nil
+				},
+			},
+		},
 		Action: func(c *cli.Context) error {
 			var configFile = "config.yaml"
 			if c.Path("config") != "" {
@@ -81,6 +90,11 @@ func Start() {
 			if c.String("log") != "" {
 				conf.LogLevel = c.String("log")
 			}
+
+			if conf.CheckUpgrade {
+				checkUpdateFromCli()
+			}
+
 			server.New(conf).Run()
 			return nil
 		},

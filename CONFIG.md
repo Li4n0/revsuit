@@ -13,6 +13,7 @@ database: revsuit.db                  # Database connection information, support
 # database: "postgres://host=127.0.0.1 user=root password=password dbname=revsuit port=5432 sslmode=disable TimeZone=Asia/Shanghai"
 
 log_level: info                       # Output log levels, divided into: debug, info, warning, error, fatal
+check_upgrade: true                   # Whether to automatically check for updates
   
 ip_location_database:                 # IP database related configuration
   database: "qqwry"                   # qqwry or geoip.

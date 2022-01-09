@@ -26,6 +26,7 @@ type Config struct {
 	AdminPathPrefix    string `yaml:"admin_path_prefix"`
 	Database           string
 	LogLevel           string        `yaml:"log_level"`
+	CheckUpgrade       bool          `yaml:"check_upgrade"`
 	IpLocationDatabase ipinfo.Config `yaml:"ip_location_database"`
 	Notice             noticeConfig
 	HTTP               rhttp.Config

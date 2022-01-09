@@ -22,7 +22,7 @@
             <router-link to="/logs/rmi">RMI Logs</router-link>
           </a-menu-item>
           <a-menu-item key="/logs/ldap">
-            <router-link to="/logs/ldap">Ldap Logs</router-link>
+            <router-link to="/logs/ldap">LDAP Logs</router-link>
           </a-menu-item>
           <a-menu-item key="/logs/mysql">
             <router-link to="/logs/mysql">MySQL Logs</router-link>
@@ -43,7 +43,7 @@
             <router-link to="/rules/rmi">RMI Rules</router-link>
           </a-menu-item>
           <a-menu-item key="/rules/ldap">
-            <router-link to="/rules/ldap">Ldap Rules</router-link>
+            <router-link to="/rules/ldap">LDAP Rules</router-link>
           </a-menu-item>
           <a-menu-item key="/rules/mysql">
             <router-link to="/rules/mysql">MySQL Rules</router-link>
@@ -118,10 +118,17 @@
         </transition>
       </a-layout-content>
       <div class="copyright">
-        <p class="">
-          RevSuit Current Version: {{ this.version }} &copy;2021 <a href="https://github.com/Li4n0">Li4n0</a>. <a
+        <p v-if="!this.upgrade.upgradeable">
+          RevSuit Current Version: {{ this.version }}｜&copy; 2021 <a href="https://github.com/Li4n0">Li4n0</a>｜<a
             href="https://github.com/Li4n0/revsuit">GitHub</a>
         </p>
+        <p v-else>
+          RevSuit {{ this.version }}(Upgrade Available: <a
+            target="_blank"
+            :href="this.upgrade.release">v{{ this.upgrade.version }}</a>)｜&copy; 2021 <a
+            href="https://github.com/Li4n0">Li4n0</a>｜<a href="https://github.com/Li4n0/revsuit">GitHub</a>
+        </p>
+
       </div>
     </a-layout>
     <Auth></Auth>
@@ -130,7 +137,7 @@
 <script>
 import Auth from '@/components/Auth'
 import RuleIcon from "@/components/Icon";
-import {getVersion} from "@/api/auth";
+import {getVersion, getUpgrade} from "@/api/version";
 import {store} from "@/main";
 
 
@@ -146,6 +153,7 @@ export default {
       showLogNum: false,
       openKeys: [],
       version: "",
+      upgrade: {},
     };
   },
   computed: {
@@ -162,9 +170,14 @@ export default {
         this.$refs.content.fetch()
       }, this.refreshInterval * 1000)
     },
-    GetVersion() {
+    _getVersion() {
       getVersion().then(res => {
         this.version = res.data.result
+      })
+    },
+    _getUpgrade() {
+      getUpgrade().then(res => {
+        this.upgrade = res.data.result
       })
     },
     deleteLogs() {
@@ -180,7 +193,8 @@ export default {
     if (localStorage.getItem("autoRefresh") === null) {
       this.autoRefresh = true;
     }
-    this.GetVersion()
+    this._getVersion()
+    this._getUpgrade()
   },
   created() {
     let unwatch = this.$watch('$route', function (to, from) {
@@ -224,7 +238,8 @@ export default {
     'store.authed'(val) {
       if (val) {
         this.$refs.content.fetch()
-        this.GetVersion()
+        this._getVersion()
+        this._getUpgrade()
       }
     },
     'store.pageSize'() {

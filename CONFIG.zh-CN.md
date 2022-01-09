@@ -12,7 +12,8 @@ database: revsuit.db                  # 数据库连接信息 支持Sqlite3、My
 # database: "postgres://host=127.0.0.1 user=root password=password dbname=revsuit port=5432 sslmode=disable TimeZone=Asia/Shanghai"
 
 log_level: info                       # 输出日志的级别，分为：debug、info、warning、error、fatal
-  
+check_upgrade: false                  # 是否自动检查更新
+
 ip_location_database:                 # IP 数据库相关配置
   database: "qqwry"                   # qqwry 或者 geoip.
   geo_license_key: ""                 # 如果你使用 GeoIP 则该字段为必填

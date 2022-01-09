@@ -6,6 +6,7 @@ external_ip:                        # You need to make sure that your target can
 admin_path_prefix: "/revsuit"
 database: revsuit.db
 log_level: info
+check_upgrade: true
 
 ip_location_database:
   database: "qqwry"                 # qqwry or geoip.

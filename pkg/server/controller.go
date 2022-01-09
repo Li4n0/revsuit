@@ -90,7 +90,18 @@ func version(c *gin.Context) {
 	})
 }
 
-func getUpgrade(c *gin.Context) {
+func (revsuit *Revsuit) getUpgrade(c *gin.Context) {
+	if !revsuit.config.CheckUpgrade {
+		c.JSON(200, gin.H{
+			"status": "succeed",
+			"error":  nil,
+			"result": gin.H{
+				"upgradeable": false,
+				"message":     "config of check upgrade is false",
+			},
+		})
+		return
+	}
 	if upgradeable, release, err := update.CheckUpgrade(VERSION); err == nil && upgradeable {
 		c.JSON(200, gin.H{
 			"status": "succeed",
@@ -102,11 +113,17 @@ func getUpgrade(c *gin.Context) {
 			},
 		})
 	} else {
+		message := VERSION + " is the latest"
+		if err != nil {
+			message = err.Error()
+		}
+
 		c.JSON(200, gin.H{
 			"status": "succeed",
 			"error":  nil,
 			"result": gin.H{
 				"upgradeable": false,
+				"message":     message,
 			},
 		})
 	}

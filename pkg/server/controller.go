@@ -12,6 +12,7 @@ import (
 
 	"github.com/gin-gonic/gin"
 	"github.com/li4n0/revsuit/internal/recycler"
+	"github.com/li4n0/revsuit/internal/update"
 	log "unknwon.dev/clog/v2"
 )
 
@@ -87,4 +88,26 @@ func version(c *gin.Context) {
 		"error":  nil,
 		"result": VERSION,
 	})
+}
+
+func getUpgrade(c *gin.Context) {
+	if upgradeable, release, err := update.CheckUpgrade(VERSION); err == nil && upgradeable {
+		c.JSON(200, gin.H{
+			"status": "succeed",
+			"error":  nil,
+			"result": gin.H{
+				"upgradeable": true,
+				"version":     release.Version,
+				"release":     release.URL,
+			},
+		})
+	} else {
+		c.JSON(200, gin.H{
+			"status": "succeed",
+			"error":  nil,
+			"result": gin.H{
+				"upgradeable": false,
+			},
+		})
+	}
 }

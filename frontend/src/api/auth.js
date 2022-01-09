@@ -7,10 +7,3 @@ export function auth(token) {
         headers: {"Token": token},
     })
 }
-
-export function getVersion() {
-    return request({
-        url: '/version',
-        method: 'get',
-    })
-}

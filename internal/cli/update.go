@@ -14,7 +14,7 @@ import (
 
 func checkUpdateFromCli() {
 	log.Info("Checking for updates...")
-	if upgradeable, release, err := update.CheckUpgrade(); err != nil {
+	if upgradeable, release, err := update.CheckUpgrade(server.VERSION); err != nil {
 		log.Warn(err.Error())
 	} else if upgradeable {
 		err := updateFromCli(release)

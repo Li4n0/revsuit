@@ -2,6 +2,21 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+## [0.5.0](https://github.com/Li4n0/revsuit/compare/v0.4.0...v0.5.0) (2022-01-16)
+
+
+### Features
+
+* **build:** replace sqlite driver with which does not depend cgo ([#52](https://github.com/Li4n0/revsuit/issues/52)) ([82a2023](https://github.com/Li4n0/revsuit/commit/82a20236e1b1a092277b645554a38513e3bb4087))
+* **dns:** support use multiple root domains ([#51](https://github.com/Li4n0/revsuit/issues/51)) ([913e0f7](https://github.com/Li4n0/revsuit/commit/913e0f78db380cb1beeb88b57dc30f47e7c26c1c))
+* **ldap:** add ldap protocol support ([#50](https://github.com/Li4n0/revsuit/issues/50)) ([fc505b0](https://github.com/Li4n0/revsuit/commit/fc505b0733a8375d29b910aa897c6e0b642ab34b))
+* support auto check upgrade ([#53](https://github.com/Li4n0/revsuit/issues/53)) ([f6afe0f](https://github.com/Li4n0/revsuit/commit/f6afe0fa12188f17b74548129035f7b89a149660))
+
+
+### Bug Fixes
+
+* **settings:** fix the bug of update rmi & mysql addr settings not working ([#49](https://github.com/Li4n0/revsuit/issues/49)) ([06ae3d0](https://github.com/Li4n0/revsuit/commit/06ae3d0555eff3bf2d6a53b2c405d1dd50beea87))
+
 ## [0.4.0](https://github.com/Li4n0/revsuit/compare/v0.3.0...v0.4.0) (2021-12-26)
 
 

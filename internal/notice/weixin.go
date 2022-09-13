@@ -3,7 +3,7 @@ package notice
 import (
 	"encoding/json"
 	"fmt"
-	"io/ioutil"
+	"io"
 	"net/http"
 	"strings"
 
@@ -54,7 +54,7 @@ func (w *Weixin) notice(r record.Record) error {
 	}
 	defer resp.Body.Close()
 	if resp.StatusCode/100 != 2 {
-		data, err := ioutil.ReadAll(resp.Body)
+		data, err := io.ReadAll(resp.Body)
 		if err != nil {
 			return errors.Wrap(err, "read HTTP response body")
 		}

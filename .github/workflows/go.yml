@@ -24,7 +24,7 @@ jobs:
       - name: create dist directory
         run: mkdir frontend/dist && touch frontend/dist/revsuit
       - name: Run golangci-lint
-        uses: golangci/golangci-lint-action@v2.4.0
+        uses: golangci/golangci-lint-action@v3
         with:
-          version: v1.37.0
+          version: v1.49.0
           args: --timeout=30m

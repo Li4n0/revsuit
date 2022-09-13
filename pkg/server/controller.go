@@ -18,7 +18,7 @@ import (
 
 func (revsuit *Revsuit) auth(c *gin.Context) {
 	c.SetSameSite(http.SameSiteLaxMode)
-	c.SetCookie("token", c.Request.Header["Token"][0], 0, revsuit.config.AdminPathPrefix, "", false, true)
+	c.SetCookie("token", c.Request.Header.Get("Token"), 0, revsuit.config.AdminPathPrefix, "", false, true)
 	c.String(200, "pong")
 }
 

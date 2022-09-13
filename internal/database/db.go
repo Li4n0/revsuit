@@ -3,6 +3,7 @@ package database
 import (
 	"errors"
 	"strings"
+	"sync"
 
 	"gorm.io/gorm"
 )
@@ -10,6 +11,7 @@ import (
 var (
 	DB     *gorm.DB
 	Driver DriverType
+	Locker sync.Mutex
 )
 
 type DriverType = string
@@ -17,7 +19,7 @@ type DriverType = string
 const Sqlite = "sqlite"
 const Mysql = "mysql"
 const Postgres = "postgres"
-const UnknowDatabase = "unknown database"
+const UnknownDatabase = "unknown database"
 
 func InitDB(dsn string) (err error) {
 	dbName, dbDsn := dbType(dsn)
@@ -25,10 +27,13 @@ func InitDB(dsn string) (err error) {
 	switch dbName {
 	case Sqlite:
 		DB, err = NewSqlite3(dbDsn)
+		Driver = Sqlite
 	case Mysql:
 		DB, err = NewMysql(dbDsn)
+		Driver = Mysql
 	case Postgres:
 		DB, err = NewPostgres(dbDsn)
+		Driver = Postgres
 	default:
 		err = errors.New("unsupported database")
 	}
@@ -45,5 +50,5 @@ func dbType(dsn string) (DriverType, string) {
 	} else if strings.Contains(dsn, "@tcp") { //兼容上个版本的写法
 		return Mysql, dsn
 	}
-	return UnknowDatabase, dsn
+	return UnknownDatabase, dsn
 }

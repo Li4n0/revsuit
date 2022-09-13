@@ -44,6 +44,13 @@ func NewRecord(rule *Rule, flag, method, url, ip, area, raw string) (r *Record, 
 		RawRequest: raw,
 		Rule:       *rule,
 	}
+
+	// sqlite db-level lock to prevent too much write operation lead to error of `database is locked` #54
+	if database.Driver == database.Sqlite {
+		database.Locker.Lock()
+		defer database.Locker.Unlock()
+	}
+
 	return r, database.DB.Create(r).Error
 }
 

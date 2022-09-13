@@ -10,14 +10,6 @@ All notable changes to this project will be documented in this file. See [standa
 * fix the bug that authentication always fails after token change ([#59](https://github.com/Li4n0/revsuit/issues/59)) ([3fa2cae](https://github.com/Li4n0/revsuit/commit/3fa2cae86260d39fa2ffd43d59b2754327f6169a))
 * fix the error of `database is locked` when use sqlite ([#60](https://github.com/Li4n0/revsuit/issues/60)) ([d29b767](https://github.com/Li4n0/revsuit/commit/d29b767d9cb2b70f365d0830c4bbeaae09524a5a))
 
-### [0.5.1](https://github.com/Li4n0/revsuit/compare/v0.5.0...v0.5.1) (2022-09-13)
-
-
-### Bug Fixes
-
-* fix the bug that authentication always fails after token change ([#59](https://github.com/Li4n0/revsuit/issues/59)) ([3fa2cae](https://github.com/Li4n0/revsuit/commit/3fa2cae86260d39fa2ffd43d59b2754327f6169a))
-* fix the error of `database is locked` when use sqlite ([#60](https://github.com/Li4n0/revsuit/issues/60)) ([d29b767](https://github.com/Li4n0/revsuit/commit/d29b767d9cb2b70f365d0830c4bbeaae09524a5a))
-
 ## [0.5.0](https://github.com/Li4n0/revsuit/compare/v0.4.0...v0.5.0) (2022-01-16)
 
 

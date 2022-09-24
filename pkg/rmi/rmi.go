@@ -165,9 +165,9 @@ func (s *Server) Run() {
 	defer func() {
 		if s.Enable {
 			log.Error("RMI Server exited unexpectedly")
+			s.Enable = false
+			s.livingLock.Unlock()
 		}
-		s.Enable = false
-		s.livingLock.Unlock()
 	}()
 
 	if err := s.UpdateRules(); err != nil {

@@ -10,7 +10,7 @@ import (
 
 type File struct {
 	ID       uint   `gorm:"primarykey" form:"id" json:"id"`
-	RecordID uint   `gorm:"constraint:OnUpdate:CASCADE,OnDelete:CASCADE;" json:"-"`
+	RecordID uint   `json:"-"`
 	Name     string `json:"name"`
 	Content  []byte `json:"-"`
 }

@@ -24,7 +24,7 @@ type Record struct {
 	Path     string        `form:"path" json:"path"`
 	Method   Method        `form:"method" json:"method"`
 	Status   Status        `form:"status" json:"status"`
-	File     *file.FTPFile `form:"file" json:"file" notice:"-"`
+	File     *file.FTPFile `gorm:"foreignKey:RecordID;constraint:OnUpdate:CASCADE,OnDelete:CASCADE;" form:"file" json:"file" notice:"-"`
 	Rule     Rule          `gorm:"foreignKey:RuleName;references:Name;constraint:OnUpdate:CASCADE,OnDelete:SET NULL;" form:"-" json:"-" notice:"-"`
 }
 

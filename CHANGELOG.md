@@ -2,6 +2,14 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+### [0.5.2](https://github.com/Li4n0/revsuit/compare/v0.5.1...v0.5.2) (2022-11-16)
+
+
+### Bug Fixes
+
+* fix bug that the files associated with records still exist after deleting mysql and ftp records ([5e80591](https://github.com/Li4n0/revsuit/commit/5e80591c856a63c851ba5e17812af89373d76cf5))
+* fix panic when update config ([#62](https://github.com/Li4n0/revsuit/issues/62)) ([48f55c5](https://github.com/Li4n0/revsuit/commit/48f55c53273fcea579c9fdfaf2939c90df3588b1))
+
 ### [0.5.1](https://github.com/Li4n0/revsuit/compare/v0.5.0...v0.5.1) (2022-09-13)
 
 

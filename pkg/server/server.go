@@ -233,7 +233,7 @@ func (revsuit *Revsuit) Run() {
 			revsuit.clientsLock.RLock()
 			for _, client := range revsuit.clients {
 				pushIt := false
-				flag := client.Request.Header.Get("Flag")
+				flag := client.Request.Header.Get("Flag-Filter")
 				if len(flag) == 0 || flag == "*" {
 					pushIt = true
 				} else {

@@ -1,8 +1,10 @@
 package server
 
 import (
+	"regexp"
 	"sync"
 
+	"github.com/gin-contrib/sse"
 	"github.com/gin-gonic/gin"
 	"github.com/li4n0/revsuit/internal/database"
 	"github.com/li4n0/revsuit/internal/file"
@@ -44,6 +46,8 @@ func (revsuit *Revsuit) addClient(c *gin.Context) int {
 
 	revsuit.clientID++
 	revsuit.clients[revsuit.clientID] = c
+	sse.Event{}.WriteContentType(c.Writer)
+	c.Writer.Flush()
 	revsuit.clientsNum <- struct{}{}
 	return revsuit.clientID
 }
@@ -231,8 +235,23 @@ func (revsuit *Revsuit) Run() {
 			<-revsuit.clientsNum
 			revsuit.clientsLock.RLock()
 			for _, client := range revsuit.clients {
-				client.SSEvent("message", r.GetFlag())
-				client.Writer.Flush()
+				pushIt := false
+				flag := client.Request.Header.Get("Flag-Filter")
+				if len(flag) == 0 || flag == "*" {
+					pushIt = true
+				} else {
+					if catcher, err := regexp.Compile(flag); err != nil {
+						log.Warn("%s[sse flag:%s]", err, flag)
+						continue
+					} else {
+						matched := catcher.FindStringSubmatch(r.GetFlag())
+						pushIt = len(matched) > 0
+					}
+				}
+				if pushIt {
+					client.SSEvent("message", r.GetFlag())
+					client.Writer.Flush()
+				}
 			}
 			revsuit.clientsNum <- struct{}{}
 			revsuit.clientsLock.RUnlock()

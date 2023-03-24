@@ -4,6 +4,7 @@ import (
 	"regexp"
 	"sync"
 
+	"github.com/gin-contrib/sse"
 	"github.com/gin-gonic/gin"
 	"github.com/li4n0/revsuit/internal/database"
 	"github.com/li4n0/revsuit/internal/file"
@@ -45,6 +46,8 @@ func (revsuit *Revsuit) addClient(c *gin.Context) int {
 
 	revsuit.clientID++
 	revsuit.clients[revsuit.clientID] = c
+	sse.Event{}.WriteContentType(c.Writer)
+	c.Writer.Flush()
 	revsuit.clientsNum <- struct{}{}
 	return revsuit.clientID
 }

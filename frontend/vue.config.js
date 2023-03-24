@@ -11,14 +11,11 @@ module.exports = {
         proxy: {
             '/api': {
                 target: 'http://localhost:10000',
-                pathRewrite: {
-                    '^/api': '/revsuit/api'
-                }
             }
         },
     },
     productionSourceMap: false,
     runtimeCompiler: true,
     filenameHashing: false,
-    publicPath: '/revsuit/admin/',
+    publicPath: '',
 }

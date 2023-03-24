@@ -3,13 +3,13 @@
     <a-space size="middle">
       <a-upload
           name="rules"
-          action="/revsuit/api/setting/importRules"
+          action="../api/setting/importRules"
           @change="handleChange"
           :showUploadList="false"
       >
         <a-button type="primary" icon="upload">Import</a-button>
       </a-upload>
-      <a-button type="primary" icon="download" onclick="window.open('/revsuit/api/setting/exportRules')">Export
+      <a-button type="primary" icon="download" onclick="window.open('../api/setting/exportRules')">Export
       </a-button>
     </a-space>
     <a-result v-if="status"

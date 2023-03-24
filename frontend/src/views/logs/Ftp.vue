@@ -47,7 +47,7 @@
      <a-tag
          v-if="file"
          color="#f5222d"
-     ><a target="_blank" :href="'/revsuit/api/file/ftp/'+file.id">TRUE</a> </a-tag>
+     ><a target="_blank" :href="'../api/file/ftp/'+file.id">TRUE</a> </a-tag>
      <a-tag v-else color="#722ed1">
       FALSE
       </a-tag>

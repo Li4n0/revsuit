@@ -10,7 +10,7 @@
   >
     <div v-if="record.files.length" slot="expandedRowRender" slot-scope="record" style="margin: 0">
       <b v-if="record.files.length" style="color: gray">FILES:</b><br>
-      <a v-for="file in record.files" :key="file.name+record.id" :href="'/revsuit/api/file/mysql/'+file.id"
+      <a v-for="file in record.files" :key="file.name+record.id" :href="'../api/file/mysql/'+file.id"
          target="_blank">{{ file.name }} </a>
     </div>
     <div slot="selectDropdown"

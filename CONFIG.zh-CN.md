@@ -7,9 +7,10 @@ token:                                # 鉴权Token，管理页面和客户端�
 domains: []                           # 反连平台绑定的域名
 external_ip:                          # 反连平台的外部IP，需要确保你想测试的目标能通过该 IP 访问到平台
 admin_path_prefix: "/revsuit"          # 管理页面的 http path 前缀，管理页面将位于：/admin_path_prefix/admin
-database: revsuit.db                  # 数据库连接信息 支持Sqlite3、MySQL、Postgres
-# database: "mysql://root:password@tcp(127.0.0.1:3306)/revsuit?charset=utf8mb4&parseTime=True&loc=Local"
+# 数据库连接信息 支持MySQL、Postgres、SQLite3
+database: "mysql://root:password@tcp(127.0.0.1:3306)/revsuit?charset=utf8mb4&parseTime=True&loc=Local"
 # database: "postgres://host=127.0.0.1 user=root password=password dbname=revsuit port=5432 sslmode=disable TimeZone=Asia/Shanghai"
+#database: revsuit.db # 在部分系统上使用 sqlite 数据库时，在并发场景下可能会出现 `SQLITE BUSY` 的问题，因此不推荐在正式环境中使用该类型数据库
 
 log_level: info                       # 输出日志的级别，分为：debug、info、warning、error、fatal
 check_upgrade: false                  # 是否自动检查更新

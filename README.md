@@ -158,6 +158,11 @@ example.
 As shown above, RevSuit supports multiple clients, and each client **in the connected state** receives a push of `flag`,
 so distributed scanning can be supported.
 
+If you don't want every client to receive all `flag` pushes, you can use the `Flag-Filter` request header when creating an sse connection to set the format(regular expressions) of the `flag` you want that client to receive:
+
+![img.png](./images/flag-filter.gif)
+
+
 #### Temporary storage queue
 
 RevSuit will store `flag` temporarily in the queue when there is no client connection and send it when the client

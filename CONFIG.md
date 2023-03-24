@@ -8,9 +8,10 @@ token:                                # Authentication Token, both the admin pag
 domains: []                           # The domain names used by the platform
 external_ip:                          # The external IP of the platform, you need to make sure that the target you want to test can access the platform through this IP
 admin_path_prefix: "/revsuit"          # The http path prefix for the admin page, the page will be located at: /admin_path_prefix/admin
-database: revsuit.db                  # Database connection information, support using Sqlite3, MySQL, Postgres
-# database: "mysql://root:password@tcp(127.0.0.1:3306)/revsuit?charset=utf8mb4&parseTime=True&loc=Local"
+# Database connection information, support using MySQL, Postgres, Sqlite3
+database: "mysql://root:password@tcp(127.0.0.1:3306)/revsuit?charset=utf8mb4&parseTime=True&loc=Local"
 # database: "postgres://host=127.0.0.1 user=root password=password dbname=revsuit port=5432 sslmode=disable TimeZone=Asia/Shanghai"
+#database: revsuit.db # The use of sqlite databases on some systems may cause `SQLITE BUSY` problems in concurrent scenarios, so it is not recommended for use in a formal environment
 
 log_level: info                       # Output log levels, divided into: debug, info, warning, error, fatal
 check_upgrade: true                   # Whether to automatically check for updates

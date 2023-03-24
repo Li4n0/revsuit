@@ -7,7 +7,7 @@ All notable changes to this project will be documented in this file. See [standa
 
 ### Features
 
-* support for using `Flag-Filter` request headers to filter the flags that the client expects to receive ([#64](https://github.com/Li4n0/revsuit/issues/64)) ([b33de11](https://github.com/Li4n0/revsuit/commit/b33de11ba8f126b03a45ad15cae69331ad59b865))
+* support for using `Flag-Filter` request headers to filter the flags that the client expects to receive ([#64](https://github.com/Li4n0/revsuit/issues/64)) ([b33de11](https://github.com/Li4n0/revsuit/commit/b33de11ba8f126b03a45ad15cae69331ad59b865)) (Thanks to @whwlsfb) 
 
 
 ### Bug Fixes

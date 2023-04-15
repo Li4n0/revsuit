@@ -28,15 +28,15 @@ jobs:
         run: echo ::set-output name=VERSION::$(echo $GITHUB_REF | cut -d / -f 3)
 
       - name: compile linux amd64
-        run: GOARCH="amd64" go build -ldflags="-s -w -X 'github.com/li4n0/revsuit/pkg/server.VERSION=${{ steps.get_version.outputs.VERSION }}'" -tags netgo -trimpath -o "bin/revsuit_linux_amd64" ./cmd/revsuit/revsuit.go
+        run: CGO_ENABLE=0 GOARCH="amd64" go build -ldflags="-s -w -X 'github.com/li4n0/revsuit/pkg/server.VERSION=${{ steps.get_version.outputs.VERSION }}'" -tags netgo -trimpath -o "bin/revsuit_linux_amd64" ./cmd/revsuit/revsuit.go
       - name: compile linux arm64
-        run:  GOARCH="arm64" go build -ldflags="-s -w -X 'github.com/li4n0/revsuit/pkg/server.VERSION=${{ steps.get_version.outputs.VERSION }}'"  -tags netgo -trimpath -o "bin/revsuit_linux_arm64" ./cmd/revsuit/revsuit.go
+        run: CGO_ENABLE=0 GOARCH="arm64" go build -ldflags="-s -w -X 'github.com/li4n0/revsuit/pkg/server.VERSION=${{ steps.get_version.outputs.VERSION }}'"  -tags netgo -trimpath -o "bin/revsuit_linux_arm64" ./cmd/revsuit/revsuit.go
       - name: compile darwin amd64
-        run:  GOOS="darwin" GOARCH="amd64" go build -ldflags="-s -w -X 'github.com/li4n0/revsuit/pkg/server.VERSION=${{ steps.get_version.outputs.VERSION }}'" -trimpath -o "bin/revsuit_darwin_amd64" ./cmd/revsuit/revsuit.go
+        run: CGO_ENABLE=0 GOOS="darwin" GOARCH="amd64" go build -ldflags="-s -w -X 'github.com/li4n0/revsuit/pkg/server.VERSION=${{ steps.get_version.outputs.VERSION }}'" -trimpath -o "bin/revsuit_darwin_amd64" ./cmd/revsuit/revsuit.go
       - name: compile darwin arm64
-        run:  GOOS="darwin" GOARCH="arm64" go build -ldflags="-s -w -X 'github.com/li4n0/revsuit/pkg/server.VERSION=${{ steps.get_version.outputs.VERSION }}'" -trimpath -o "bin/revsuit_darwin_arm64" ./cmd/revsuit/revsuit.go
+        run: CGO_ENABLE=0 GOOS="darwin" GOARCH="arm64" go build -ldflags="-s -w -X 'github.com/li4n0/revsuit/pkg/server.VERSION=${{ steps.get_version.outputs.VERSION }}'" -trimpath -o "bin/revsuit_darwin_arm64" ./cmd/revsuit/revsuit.go
       - name: compile windows amd64
-        run:  GOOS="windows" GOARCH="amd64" go build -ldflags="-s -w -X 'github.com/li4n0/revsuit/pkg/server.VERSION=${{ steps.get_version.outputs.VERSION }}' " -trimpath -o "bin/revsuit_windows_amd64.exe" ./cmd/revsuit/revsuit.go
+        run: CGO_ENABLE=0 GOOS="windows" GOARCH="amd64" go build -ldflags="-s -w -X 'github.com/li4n0/revsuit/pkg/server.VERSION=${{ steps.get_version.outputs.VERSION }}' " -trimpath -o "bin/revsuit_windows_amd64.exe" ./cmd/revsuit/revsuit.go
 
       - name: Upload the artifacts
         uses: li4n0/upload-release-action@v2

@@ -126,7 +126,7 @@ func (s *Server) newZone(name string) *newdns.Zone {
 			"ns2.hostmaster.com.",
 			"ns3.hostmaster.com.",
 		},
-		Handler: func(lookedName, remoteAddr string) ([]newdns.Set, error) {
+		Handler: func(lookedName, remoteAddr string) (set []newdns.Set, err error) {
 			ip := strings.Split(remoteAddr, ":")[0]
 
 			for _, _rule := range s.getRules() {
@@ -135,12 +135,24 @@ func (s *Server) newZone(name string) *newdns.Zone {
 					continue
 				}
 
-				r, err := newRecord(_rule, flag, domain, ip, ipinfo.Area(ip))
+				if _rule.Value != "" {
+					_type := _rule.Type
+					if _rule.Type == newdns.REBINDING {
+						_type = newdns.A
+					}
+					set = newSet(_rule, name, rule.CompileTpl(_rule.Value, vars), ip, _type)
+				}
+
+				var value string
+				if len(set) > 0 && len(set[0].Records) > 0 {
+					value = set[0].Records[0].Address
+				}
+				r, err := newRecord(_rule, flag, domain, value, ip, ipinfo.Area(ip))
 				if err != nil {
 					log.Warn("DNS record(rule_id:%s) created failed :%s", _rule.Name, err)
 					return nil, nil
 				}
-				log.Info("DNS record[id:%d rule:%s remote_ip:%s] has been created", r.ID, _rule.Name, ip)
+				log.Info("DNS record[id:%d rule:%s remote_ip:%s, value:%s] has been created", r.ID, _rule.Name, ip, value)
 
 				//only send to client or notify user when this connection recorded first time.
 				var count int64
@@ -168,15 +180,7 @@ func (s *Server) newZone(name string) *newdns.Zone {
 						}()
 					}
 				}
-				if _rule.Value != "" {
-					value := rule.CompileTpl(_rule.Value, vars)
-					_type := _rule.Type
-					if _rule.Type == newdns.REBINDING {
-						_type = newdns.A
-					}
-
-					return newSet(_rule, name, value, ip, _type), nil
-				}
+				return set, err
 			}
 
 			return nil, nil

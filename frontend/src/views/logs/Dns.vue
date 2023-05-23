@@ -83,6 +83,15 @@ const columns = [
     },
   },
   {
+    title: 'VALUE',
+    dataIndex: 'value',
+    key: 'value',
+    scopedSlots: {
+      filterDropdown: 'filterDropdown',
+      filterIcon: 'filterIcon',
+    },
+  },
+  {
     title: 'REMOTE IP',
     key: 'remote_ip',
     dataIndex: 'remote_ip',

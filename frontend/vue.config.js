@@ -10,7 +10,7 @@ module.exports = {
     devServer: {
         proxy: {
             '/api': {
-                target: 'http://localhost:10000',
+                target: 'http://127.0.0.1:10000/revsuit/',
             }
         },
     },

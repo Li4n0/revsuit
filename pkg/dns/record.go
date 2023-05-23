@@ -17,6 +17,7 @@ var _ record.Record = (*Record)(nil)
 
 type Record struct {
 	Domain string `gorm:"index" form:"domain" json:"domain"`
+	Value  string `form:"value" json:"value"`
 
 	record.BaseRecord
 	Rule Rule `gorm:"foreignKey:RuleName;references:Name;constraint:OnUpdate:CASCADE,OnDelete:SET NULL;" form:"-" json:"-" notice:"-"`
@@ -30,7 +31,7 @@ func (r Record) Notice() {
 	notice.Notice(r)
 }
 
-func newRecord(rule *Rule, flag, domain, remoteIp, ipArea string) (r *Record, err error) {
+func newRecord(rule *Rule, flag, domain, value, remoteIp, ipArea string) (r *Record, err error) {
 	r = &Record{
 		BaseRecord: record.BaseRecord{
 			Flag:        flag,
@@ -39,6 +40,7 @@ func newRecord(rule *Rule, flag, domain, remoteIp, ipArea string) (r *Record, er
 			RequestTime: time.Now(),
 		},
 		Domain: domain,
+		Value:  value,
 		Rule:   *rule,
 	}
 
@@ -88,6 +90,9 @@ func Records(c *gin.Context) {
 	}
 	if dnsRecord.RuleName != "" {
 		db.Where("rule_name = ?", dnsRecord.RuleName)
+	}
+	if dnsRecord.Value != "" {
+		db.Where("address= ?", dnsRecord.Value)
 	}
 
 	//Delete records

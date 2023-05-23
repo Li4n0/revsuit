@@ -2,6 +2,13 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+## [0.7.0](https://github.com/Li4n0/revsuit/compare/v0.6.0...v0.7.0) (2023-05-23)
+
+
+### Features
+
+* add `value` field to the dns log ([#67](https://github.com/Li4n0/revsuit/issues/67)) ([223c14a](https://github.com/Li4n0/revsuit/commit/223c14ab33757e06b0d8177091982582e08e70c4))
+
 ## [0.6.0](https://github.com/Li4n0/revsuit/compare/v0.5.2...v0.6.0) (2023-03-24)
 
 

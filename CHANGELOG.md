@@ -2,6 +2,13 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+### [0.7.1](https://github.com/Li4n0/revsuit/compare/v0.7.0...v0.7.1) (2023-06-01)
+
+
+### Bug Fixes
+
+* fix the error that the maximum length of http rule response body is 191 when using mysql ([bf8a43f](https://github.com/Li4n0/revsuit/commit/bf8a43fa875327c3191499a214c420bfa78334d0))
+
 ## [0.7.0](https://github.com/Li4n0/revsuit/compare/v0.6.0...v0.7.0) (2023-05-23)
 
 

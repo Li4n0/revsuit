@@ -15,7 +15,7 @@ type Rule struct {
 	rule.BaseRule      `yaml:",inline"`
 	ResponseStatusCode string            `gorm:"index;default:200;not null" form:"response_status_code" json:"response_status_code" yaml:"response_status_code"`
 	ResponseHeaders    database.MapField `form:"response_headers" json:"response_headers" yaml:"response_headers"`
-	ResponseBody       string            `gorm:"default:Hello RevSuit!" form:"response_body" json:"response_body" yaml:"response_body"`
+	ResponseBody       string            `gorm:"type:longtext" form:"response_body" json:"response_body" yaml:"response_body"`
 }
 
 func (Rule) TableName() string {
